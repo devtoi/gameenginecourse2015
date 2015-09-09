@@ -1,0 +1,6 @@
+[submodule "src/utility"]
+	path = src/utility
+	url = git@github.com:toimelin/tooIbox.git
+[submodule "src/input"]
+	path = src/input
+	url = git@github.com:toimelin/input-toi.git

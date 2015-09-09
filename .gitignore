@@ -1,0 +1,70 @@
+# Visual studio project files
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.opensdf
+*.sdf
+*.suo
+
+# Other visual studio files
+*.pdb
+*.ilk
+*.tlog
+*.log
+
+# Windows thumbnails
+Thumbs.db
+
+/proj/
+!/proj/CMakeLists.txt
+!/proj/generateSolution.bat
+
+#Qt Creator project files ignores
+*.cbp
+*.user
+*.autosave
+
+# Folders
+build/
+dump/
+/replay/
+
+# Compiled
+/bin
+src/.ycm_extra_conf.pyc
+
+# Installed
+install/*
+engineT/*
+
+# CMake files
+*CMakeCache.txt
+*CMakeFiles
+*Makefile
+*Testfile.cmake
+cmake_install.cmake
+install_manifest.txt
+
+# Other
+.directory
+
+# Config files
+/cfg/*.cfg
+
+# Temporary files
+*.swp
+*.swo
+
+*test.xml
+
+*.*~
+*.kdev4
+*.kdev_include_paths
+*.swp
+*.kate-swp
+*.ninja*
+
+# Utilities
+!/bin/linux\ Clang/Debug/valgrind.suppress
+!/bin/linux\ Clang/Debug/leakcheck.sh
