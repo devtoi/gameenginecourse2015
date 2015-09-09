@@ -4,6 +4,7 @@
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
 #include "testing/SSStackAllocatorBasicTest.h"
+#include "testing/SSToiPoolTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -15,6 +16,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
+	CreateSubsystemTemplate<SSToiPoolTest>();
 
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
@@ -31,6 +33,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
+	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
 
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
 	
