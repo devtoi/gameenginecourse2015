@@ -16,10 +16,6 @@
 # Windows thumbnails
 Thumbs.db
 
-/proj/
-!/proj/CMakeLists.txt
-!/proj/generateSolution.bat
-
 #Qt Creator project files ignores
 *.cbp
 *.user
@@ -68,3 +64,8 @@ install_manifest.txt
 # Utilities
 !/bin/linux\ Clang/Debug/valgrind.suppress
 !/bin/linux\ Clang/Debug/leakcheck.sh
+
+/proj/*
+!proj/CMakeLists.txt
+!proj/generateSolution.bat
+
