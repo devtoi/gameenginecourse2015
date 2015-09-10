@@ -17,8 +17,8 @@ public:
 	MEMORY_API explicit ToiPoolAllocator( size_t blockSize, size_t nrOfBlocks );
 	MEMORY_API ~ToiPoolAllocator();
 
-	MEMORY_API void* Allocate( );
-	MEMORY_API void Deallocate( void* memory );
+	MEMORY_API void* allocate( );
+	MEMORY_API void deallocate( void* memory );
 
 	template<typename Type>
 	void PrintMemory() {
@@ -26,8 +26,24 @@ public:
 
 		for ( size_t i = 0; i < m_NrOfBlocks * m_BlockSize; i+= m_BlockSize ) {
 			Type* block = reinterpret_cast<Type*>( m_Memory + i );
-			std::cout << *block << std::endl;
+			std::cout << std::hex << *block << std::endl;
 		}
+	}
+
+	template<typename Type, typename... Args>
+	Type* construct( Args&&... args ) {
+		assert( sizeof( Type ) <= m_BlockSize );
+
+		Type* data = static_cast<Type*>( allocate() );
+		new(data) Type(std::forward<Args>( args )...);
+		return data;
+	}
+
+	template<typename Type>
+	void destroy( Type* memory ) {
+		memory->~Type();
+		assert( sizeof( Type ) <= m_BlockSize );
+		deallocate( memory );
 	}
 
 private:

@@ -3,6 +3,8 @@
 #include <gfx/Window.h>
 #include "../SubsystemCollection.h"
 #include "SSWindow.h"
+#include <thread>
+#include <chrono>
 
 const pString SSGraphicsSwap::Name = "GraphicsSwap";
 int SSGraphicsSwap::ID = -1;
@@ -17,6 +19,7 @@ void SSGraphicsSwap::Shutdown( SubsystemCollection* const subsystemCollection ) 
 
 void SSGraphicsSwap::UpdateUserLayer( const float deltaTime ) {
 	SDL_GL_SwapWindow( m_SSWindowRef->GetWindow()->GetWindow() );
+	std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
 }
 
 void SSGraphicsSwap::UpdateSimulationLayer( const float timeStep ) {

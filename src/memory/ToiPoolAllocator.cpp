@@ -6,7 +6,9 @@
 ToiPoolAllocator::ToiPoolAllocator( size_t blockSize, size_t nrOfBlocks )
 : m_BlockSize( blockSize ), m_NrOfBlocks( nrOfBlocks ) {
 	assert( blockSize >= sizeof(void*) );
-	m_Memory = static_cast<uint8_t*>( malloc( blockSize * nrOfBlocks ) );
+
+	m_Memory = static_cast<uint8_t*>( operator new( blockSize * nrOfBlocks ) );
+
 	for ( size_t i = 0; i < nrOfBlocks * blockSize; i+= blockSize ) {
 		size_t* nextFree = reinterpret_cast<size_t*>( m_Memory + i );
 		*nextFree = reinterpret_cast<size_t>( m_Memory + i + blockSize );
@@ -22,7 +24,7 @@ ToiPoolAllocator::~ToiPoolAllocator() {
 	free( m_Memory );
 }
 
-void* ToiPoolAllocator::Allocate( ) {
+void* ToiPoolAllocator::allocate( ) {
 	assert( m_FirstFree != nullptr );
 	size_t* nextnextFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 	size_t* toAllocate = m_FirstFree;
@@ -35,7 +37,7 @@ void* ToiPoolAllocator::Allocate( ) {
 	return toAllocate;
 }
 
-void ToiPoolAllocator::Deallocate( void* memory ) {
+void ToiPoolAllocator::deallocate( void* memory ) {
 	size_t* firstFreeTemp = m_FirstFree;
 
 #ifdef TOI_POOL_ALLOCATOR_SET_FREED_MEMORY

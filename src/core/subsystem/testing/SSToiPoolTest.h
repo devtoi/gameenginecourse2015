@@ -24,5 +24,13 @@ public:
 private:
 	static int ID;
 
+	struct TestStruct {
+		TestStruct( bool derp, int herp )
+			: Derp( derp ), Herp( herp ) {
+		}
+		bool Derp;
+		int Herp;
+	};
+
 	ToiPoolAllocator* m_ToiPoolAllocator = nullptr;
 };

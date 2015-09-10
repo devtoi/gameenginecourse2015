@@ -7,23 +7,30 @@ int SSToiPoolTest::ID = -1;
 
 void SSToiPoolTest::Startup( SubsystemCollection* const ) {
 	m_ToiPoolAllocator = new ToiPoolAllocator( 8, 6 );
-	m_ToiPoolAllocator->PrintMemory<size_t>();
-
 	std::cout << "---Before---" << std::endl;
-	
-	bool* derp = static_cast<bool*>( m_ToiPoolAllocator->Allocate() );
-	*derp = true;
-	m_ToiPoolAllocator->Deallocate( derp );
-	bool* herp = static_cast<bool*>( m_ToiPoolAllocator->Allocate() );
-	*herp = true;
-	bool* kerp = static_cast<bool*>( m_ToiPoolAllocator->Allocate() );
-	*kerp = false;
-	bool* lerp = static_cast<bool*>( m_ToiPoolAllocator->Allocate() );
-	*lerp = false;
-	m_ToiPoolAllocator->Deallocate( kerp );
 	m_ToiPoolAllocator->PrintMemory<size_t>();
+	
+	int* derp = static_cast<int*>( m_ToiPoolAllocator->allocate() );
+	*derp = 2;
+	m_ToiPoolAllocator->deallocate( derp );
+	int* herp = static_cast<int*>( m_ToiPoolAllocator->allocate() );
+	*herp = 3;
+	int* kerp = static_cast<int*>( m_ToiPoolAllocator->allocate() );
+	*kerp = 4;
+	int* lerp = static_cast<int*>( m_ToiPoolAllocator->allocate() );
+	*lerp = 5;
+	m_ToiPoolAllocator->deallocate( kerp );
+
+	SSToiPoolTest::TestStruct* test = m_ToiPoolAllocator->construct<SSToiPoolTest::TestStruct>( true, 45 );
+	SSToiPoolTest::TestStruct* test2 = m_ToiPoolAllocator->construct<SSToiPoolTest::TestStruct>( false, 24 );
+	m_ToiPoolAllocator->destroy( test );
 
 	std::cout << "---After---" << std::endl;
+	m_ToiPoolAllocator->PrintMemory<size_t>();
+
+	m_ToiPoolAllocator->deallocate( lerp );
+	m_ToiPoolAllocator->deallocate( herp );
+	m_ToiPoolAllocator->destroy( test2 );
 }
 
 void SSToiPoolTest::Shutdown( SubsystemCollection* const ) {
