@@ -3,6 +3,7 @@
 #include "graphics/SSWindow.h"
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
+#include "graphics/SSParticles.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
 
@@ -15,6 +16,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
+	CreateSubsystemTemplate<SSParticles>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSToiPoolTest>();
 
@@ -34,6 +36,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
+	setUpdatePrio(SSParticles::GetStaticID(), 0);
 
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
 	
