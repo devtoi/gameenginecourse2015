@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
 	#include <mutex>
 #endif
@@ -45,6 +46,7 @@ public:
 			Type* block = reinterpret_cast<Type*>( m_Memory + i );
 			std::cout << std::hex << *block << std::endl;
 		}
+	std::cout << std::resetiosflags( std::ios::hex ) << std::endl;;
 #ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
 	m_Lock.clear(std::memory_order_release); 
 #endif
