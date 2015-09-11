@@ -25,6 +25,14 @@ ToiPoolAllocator::~ToiPoolAllocator() {
 }
 
 void* ToiPoolAllocator::allocate( ) {
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	while (m_Lock.test_and_set(std::memory_order_acquire)){}
+#endif
+
+#ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
+	std::lock_guard<std::mutex> lock( m_Mutex );
+#endif
+
 	assert( m_FirstFree != nullptr );
 	size_t* nextnextFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 	size_t* toAllocate = m_FirstFree;
@@ -34,10 +42,22 @@ void* ToiPoolAllocator::allocate( ) {
 #endif
 
 	m_FirstFree = nextnextFree;
+
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	m_Lock.clear(std::memory_order_release); 
+#endif
 	return toAllocate;
 }
 
 void ToiPoolAllocator::deallocate( void* memory ) {
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	while (m_Lock.test_and_set(std::memory_order_acquire)){}
+#endif
+
+#ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
+	std::lock_guard<std::mutex> lock( m_Mutex );
+#endif
+
 	size_t* firstFreeTemp = m_FirstFree;
 
 #ifdef TOI_POOL_ALLOCATOR_SET_FREED_MEMORY
@@ -47,4 +67,9 @@ void ToiPoolAllocator::deallocate( void* memory ) {
 	m_FirstFree = reinterpret_cast<size_t*>( memory );
 	size_t* toSet = reinterpret_cast<size_t*>( memory );
 	*toSet = reinterpret_cast<size_t>( firstFreeTemp );
+
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	m_Lock.clear(std::memory_order_release); 
+#endif
 }
+

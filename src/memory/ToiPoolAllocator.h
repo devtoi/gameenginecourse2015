@@ -1,16 +1,25 @@
 #pragma once
 
-#include "MemoryLibraryDefine.h"
-#include <cstddef>
-#include <stdint.h>
-#include <cassert>
-#include <iostream>
-
 #define TOI_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
 #define TOI_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE 0
 
 #define TOI_POOL_ALLOCATOR_SET_FREED_MEMORY
 #define TOI_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE 0
+
+#define TOI_POOL_ALLOCATOR_MUTEX_LOCK
+#define TOI_POOL_ALLOCATOR_SPIN_LOCK
+
+#include "MemoryLibraryDefine.h"
+#include <cstddef>
+#include <stdint.h>
+#include <cassert>
+#include <iostream>
+#ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
+	#include <mutex>
+#endif
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	#include <atomic>
+#endif
 
 class ToiPoolAllocator {
 public:
@@ -22,12 +31,23 @@ public:
 
 	template<typename Type>
 	void PrintMemory() {
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	while (m_Lock.test_and_set(std::memory_order_acquire)){}
+#endif
+
+#ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
+	std::lock_guard<std::mutex> lock( m_Mutex );
+#endif
+
 		assert( sizeof(Type ) <= m_BlockSize );
 
 		for ( size_t i = 0; i < m_NrOfBlocks * m_BlockSize; i+= m_BlockSize ) {
 			Type* block = reinterpret_cast<Type*>( m_Memory + i );
 			std::cout << std::hex << *block << std::endl;
 		}
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	m_Lock.clear(std::memory_order_release); 
+#endif
 	}
 
 	template<typename Type, typename... Args>
@@ -51,4 +71,11 @@ private:
 	size_t m_BlockSize = 0;
 	size_t* m_FirstFree = nullptr;
 	size_t m_NrOfBlocks = 0;
+
+#ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
+	std::mutex m_Mutex;
+#endif
+#ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
+	std::atomic_flag m_Lock = ATOMIC_FLAG_INIT;
+#endif
 };
