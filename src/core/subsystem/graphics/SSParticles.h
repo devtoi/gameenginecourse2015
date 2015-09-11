@@ -6,10 +6,17 @@
 #include <memory/StackAllocator.h>
 struct Particle {
 	glm::vec4 Pos;
+	glm::vec4 VelocityTTL;
 };
-#define PARTICLE_BLOCK_COUNT 1000
+
+struct ParticleBlock {
+	Particle* Particles = nullptr;
+	float TTL = 0;
+	bool IsActive = false;
+};
+#define PARTICLE_BLOCK_COUNT 1
 #define PARTICLE_BLOCK_SIZE sizeof(Particle) * PARTICLE_BLOCK_COUNT
-#define MAX_PARTICLE_BLOCKS 10
+#define MAX_PARTICLE_BLOCKS 10000
 
 class SSParticles : public Subsystem {
 public:
@@ -29,8 +36,6 @@ public:
 
 	const static pString Name;
 private:
-	void SpawnParticles(int count);
-
 	static int ID;
 
 	gfx::ShaderProgram m_RenderProgram;
@@ -38,7 +43,6 @@ private:
 	unsigned int m_VAO = 0;
 	unsigned int m_ParticleCount;
 	unsigned int m_MaxParticleCount = 10000;
-	glm::mat4 m_Rotation;
-	Particle* m_Particles;
+	ParticleBlock m_ParticleBlocks[MAX_PARTICLE_BLOCKS];
 	ToiPoolAllocator* m_Allocator;
 };
