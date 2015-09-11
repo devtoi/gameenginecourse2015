@@ -57,3 +57,7 @@ Subsystem* SubsystemBank::CreateSubsystem( int subsystemID ) {
 	assert( subsystemID >= 0 && subsystemID < m_SubsystemTemplates.size() );
 	return m_SubsystemTemplates.at( subsystemID )->Clone();
 }
+
+size_t SubsystemBank::GetNrOfSubsystems() const {
+	return m_SubsystemTemplates.size();
+}

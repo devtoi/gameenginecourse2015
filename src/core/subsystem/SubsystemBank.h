@@ -12,6 +12,8 @@ public:
 	void Deinitialize();
 	Subsystem* CreateSubsystem( int subsystemID );
 
+	size_t GetNrOfSubsystems() const;
+
 private:
 	SubsystemBank() = default;
 	~SubsystemBank() = default;

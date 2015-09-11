@@ -40,7 +40,7 @@ bool Engine::Initialize() {
 	g_Input.Initialize();
 	g_TextInput.Initialize();
 
-	m_SubsystemCollection.InitializeGameMode( 31 );
+	m_SubsystemCollection.InitializeGameMode( ( 1 << g_SubsystemBank.GetNrOfSubsystems() - 1 ) - 1 );
 
 	return true;
 }
