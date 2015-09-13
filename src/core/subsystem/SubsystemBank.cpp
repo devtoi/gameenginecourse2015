@@ -14,13 +14,13 @@ SubsystemBank& SubsystemBank::GetInstance() {
 }
 
 void SubsystemBank::Initialize() {
-	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSDeranesPoolTest>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
 	CreateSubsystemTemplate<SSParticles>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSToiPoolTest>();
+	CreateSubsystemTemplate<SSWindow>();
 
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
@@ -34,12 +34,12 @@ void SubsystemBank::Initialize() {
 		m_SubsystemTemplates.at( id )->SetUpdateOrderPriority( prio );
 	};
 	// Defaulted
-	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
+	setUpdatePrio( SSParticles::GetStaticID(), 0);
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
-	setUpdatePrio(SSParticles::GetStaticID(), 0);
+	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
 	
