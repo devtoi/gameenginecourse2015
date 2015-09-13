@@ -65,7 +65,8 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 	m_SpawnTimer += deltaTime;
 	float test = BLOCK_SPAWN_TIME;
 	if (m_SpawnTimer > BLOCK_SPAWN_TIME) {
-		SpawnBlock();
+		for (int i = 0; i < BLOCK_SPAWN_AMOUNT; i++)
+			SpawnBlock();
 	}
 	//update vertex buffer
 	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
@@ -118,7 +119,7 @@ void SSParticles::SpawnBlock() {
 }
 
 void SSParticles::ApplyGravity(Particle& p) {
-	const double particleMass = 0.066726;
+	const double particleMass = 0.0036726;
 	const glm::vec4 middle = glm::vec4(0, 0, 0.5f, 1);
 
 	glm::vec4 pTom = middle - p.Pos;
