@@ -17,10 +17,12 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
 	m_Allocator = new ToiPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
-
-	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
+	//spawn a quarter of max particles
+	for (int i = 0; i < MAX_PARTICLE_BLOCKS / 4; i++) {
 		m_ParticleBlocks[i].Particles = (Particle*)m_Allocator->allocate();
 		m_ParticleBlocks[i].IsActive = true;
+		m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + (rand() / (float)RAND_MAX) * MIN_BLOCK_TTL;
+
 		for (int k = 0; k < PARTICLE_BLOCK_COUNT; k++) {
 			m_ParticleBlocks[i].Particles[k].Pos = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
 													(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
@@ -44,12 +46,28 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 				glm::vec4 temp = m_ParticleBlocks[i].Particles[k].VelocityTTL;
 				m_ParticleBlocks[i].Particles[k].Pos += glm::vec4(temp.x, temp.y, temp.z, 0) * 0.05f * deltaTime;
 
+				ApplyGravity(m_ParticleBlocks[i].Particles[k]);
 				if (glm::any(glm::greaterThan(glm::abs(m_ParticleBlocks[i].Particles[k].Pos), glm::vec4(1, 1, 1, 10)))) {
 					m_ParticleBlocks[i].Particles[k].VelocityTTL *= -1;
 				}
 			}
+			//kill particle blocks
+			m_ParticleBlocks[i].TTL -= deltaTime;
+			if (m_ParticleBlocks[i].TTL <= 0) {
+				m_ParticleBlocks[i].IsActive = false;
+				m_Allocator->deallocate(m_ParticleBlocks[i].Particles);
+				m_ParticleBlocks[i].Particles = nullptr;
+				//printf("Killed a block of particles\n");
+			}
 		}
 	}
+	//spawn more particles
+	m_SpawnTimer += deltaTime;
+	float test = BLOCK_SPAWN_TIME;
+	if (m_SpawnTimer > BLOCK_SPAWN_TIME) {
+		SpawnBlock();
+	}
+	//update vertex buffer
 	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
 		if (m_ParticleBlocks[i].IsActive) {
 			glBufferSubData(GL_ARRAY_BUFFER, i * PARTICLE_BLOCK_SIZE, PARTICLE_BLOCK_SIZE, m_ParticleBlocks[i].Particles);
@@ -61,7 +79,6 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 	m_RenderProgram.Apply();
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBindVertexArray(m_VAO);
-
 	glDrawArrays(GL_POINTS, 0, ParticleCount);
 }
 
@@ -75,4 +92,37 @@ Subsystem* SSParticles::CreateNew( ) const {
 
 int SSParticles::GetStaticID() {
 	return SSParticles::ID;
+}
+
+void SSParticles::SpawnBlock() {
+	//find non active block
+	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
+		if (!m_ParticleBlocks[i].IsActive) {
+			m_ParticleBlocks[i].IsActive = true;
+			m_ParticleBlocks[i].Particles = (Particle*)m_Allocator->allocate();
+			m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + (rand() / (float)RAND_MAX) * MIN_BLOCK_TTL;
+
+			for (int k = 0; k < PARTICLE_BLOCK_COUNT; k++) {
+				m_ParticleBlocks[i].Particles[k].Pos = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+					(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+					(rand() / (float)RAND_MAX), 1);
+				m_ParticleBlocks[i].Particles[k].VelocityTTL = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+					(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
+					(rand() / (float)RAND_MAX) * 2.0f - 1.0f, 1);
+			}
+			//printf("Spawned a block of particles\n");
+			break; //end outer for
+		}
+
+	}
+}
+
+void SSParticles::ApplyGravity(Particle& p) {
+	const double particleMass = 0.066726;
+	const glm::vec4 middle = glm::vec4(0, 0, 0.5f, 1);
+
+	glm::vec4 pTom = middle - p.Pos;
+	double dist = glm::length(pTom);
+	float f = particleMass / (dist * dist);
+	p.VelocityTTL += f * glm::normalize(pTom);
 }
