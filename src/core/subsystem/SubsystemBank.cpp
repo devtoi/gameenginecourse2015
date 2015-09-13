@@ -4,6 +4,7 @@
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
 #include "graphics/SSParticles.h"
+#include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
 
@@ -14,6 +15,7 @@ SubsystemBank& SubsystemBank::GetInstance() {
 
 void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSWindow>();
+	CreateSubsystemTemplate<SSDeranesPoolTest>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
 	CreateSubsystemTemplate<SSParticles>();
@@ -33,6 +35,7 @@ void SubsystemBank::Initialize() {
 	};
 	// Defaulted
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
+	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
