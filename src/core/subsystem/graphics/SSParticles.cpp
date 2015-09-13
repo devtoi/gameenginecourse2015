@@ -67,6 +67,7 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 	if (m_SpawnTimer > BLOCK_SPAWN_TIME) {
 		for (int i = 0; i < BLOCK_SPAWN_AMOUNT; i++)
 			SpawnBlock();
+		m_SpawnTimer = 0;
 	}
 	//update vertex buffer
 	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {

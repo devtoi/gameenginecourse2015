@@ -15,13 +15,13 @@ struct ParticleBlock {
 	bool IsActive = false;
 };
 #define MAX_PARTICLE_COUNT 1000000
-#define PARTICLE_BLOCK_COUNT 100
+#define PARTICLE_BLOCK_COUNT 10
 #define PARTICLE_BLOCK_SIZE sizeof(Particle) * PARTICLE_BLOCK_COUNT
 #define MAX_PARTICLE_BLOCKS MAX_PARTICLE_COUNT / PARTICLE_BLOCK_COUNT
-#define MIN_BLOCK_TTL 5.0f
+#define MIN_BLOCK_TTL 3.0f
 #define AVG_BLOCK_TTL MIN_BLOCK_TTL + MIN_BLOCK_TTL * 0.5f
-#define BLOCK_SPAWN_AMOUNT 1000 /PARTICLE_BLOCK_COUNT
-#define BLOCK_SPAWN_TIME 0.1f //practically every frame
+#define BLOCK_SPAWN_AMOUNT 5000 / PARTICLE_BLOCK_COUNT
+#define BLOCK_SPAWN_TIME 0.5f //practically every frame
 
 class SSParticles : public Subsystem {
 public:
