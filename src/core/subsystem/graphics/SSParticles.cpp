@@ -18,7 +18,7 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (unsigned char*) nullptr + sizeof(glm::vec4));
 
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
-	m_Allocator = new ToiPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+	m_Allocator = new PoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
 }
 
 void SSParticles::Shutdown( SubsystemCollection* const subsystemCollection ) {
