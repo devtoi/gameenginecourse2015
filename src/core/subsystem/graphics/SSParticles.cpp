@@ -1,6 +1,8 @@
 #include "SSParticles.h"
 #include <glm/gtx/transform.hpp>
 #include <time.h>
+#include <profiler/AutoProfiler.h>
+#include <input/InputContext.h>
 const pString SSParticles::Name = "Particles";
 int SSParticles::ID = -1;
 
@@ -17,21 +19,6 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
 	m_Allocator = new ToiPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
-	//spawn a quarter of max particles
-	for (int i = 0; i < MAX_PARTICLE_BLOCKS / 4; i++) {
-		m_ParticleBlocks[i].Particles = (Particle*)m_Allocator->allocate();
-		m_ParticleBlocks[i].IsActive = true;
-		m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + (rand() / (float)RAND_MAX) * MIN_BLOCK_TTL;
-
-		for (int k = 0; k < PARTICLE_BLOCK_COUNT; k++) {
-			m_ParticleBlocks[i].Particles[k].Pos = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-													(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-													(rand() / (float)RAND_MAX), 1);
-			m_ParticleBlocks[i].Particles[k].VelocityTTL = glm::vec4(	(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-													(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-													(rand() / (float)RAND_MAX) * 2.0f - 1.0f, 1);
-		}
-	}
 }
 
 void SSParticles::Shutdown( SubsystemCollection* const subsystemCollection ) {
@@ -55,7 +42,7 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 			m_ParticleBlocks[i].TTL -= deltaTime;
 			if (m_ParticleBlocks[i].TTL <= 0) {
 				m_ParticleBlocks[i].IsActive = false;
-				m_Allocator->deallocate(m_ParticleBlocks[i].Particles);
+				DeallocateParticles(m_ParticleBlocks[i].Particles);
 				m_ParticleBlocks[i].Particles = nullptr;
 				//printf("Killed a block of particles\n");
 			}
@@ -70,18 +57,28 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 		m_SpawnTimer = 0;
 	}
 	//update vertex buffer
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
 		if (m_ParticleBlocks[i].IsActive) {
 			glBufferSubData(GL_ARRAY_BUFFER, i * PARTICLE_BLOCK_SIZE, PARTICLE_BLOCK_SIZE, m_ParticleBlocks[i].Particles);
 			ParticleCount += PARTICLE_BLOCK_COUNT;
 		}
 	}
-
+	glBindVertexArray(m_VAO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	m_RenderProgram.Apply();
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBindVertexArray(m_VAO);
+	glPointSize(1.0f);
 	glDrawArrays(GL_POINTS, 0, ParticleCount);
+
+	//profiling
+	m_ProfileTimer += deltaTime;
+	if (m_ProfileTimer > 20) {
+		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
+		m_ProfileTimer = 0;
+	}
+	Profiler::ProfilerManager::GetInstance().ResetFrame();
 }
 
 void SSParticles::UpdateSimulationLayer( const float timeStep ) {
@@ -101,7 +98,7 @@ void SSParticles::SpawnBlock() {
 	for (int i = 0; i < MAX_PARTICLE_BLOCKS; i++) {
 		if (!m_ParticleBlocks[i].IsActive) {
 			m_ParticleBlocks[i].IsActive = true;
-			m_ParticleBlocks[i].Particles = (Particle*)m_Allocator->allocate();
+			m_ParticleBlocks[i].Particles = AllocateParticles();
 			m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + (rand() / (float)RAND_MAX) * MIN_BLOCK_TTL;
 
 			for (int k = 0; k < PARTICLE_BLOCK_COUNT; k++) {
@@ -127,4 +124,18 @@ void SSParticles::ApplyGravity(Particle& p) {
 	double dist = glm::length(pTom);
 	float f = particleMass / (dist * dist);
 	p.VelocityTTL += f * glm::normalize(pTom);
+}
+
+Particle* SSParticles::AllocateParticles() {
+	PROFILE(AutoProfiler memAllocProfiler("MemoryAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
+	return (Particle*)m_Allocator->allocate();
+	PROFILE(memAllocProfiler.Stop());
+}
+
+void SSParticles::DeallocateParticles(Particle* p) {
+	PROFILE(AutoProfiler memFreeProfiler("MemoryDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	//free(p);
+	m_Allocator->deallocate(p);
+	PROFILE(memFreeProfiler.Stop());
 }

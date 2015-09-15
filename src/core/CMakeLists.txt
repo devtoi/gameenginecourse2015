@@ -42,7 +42,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 # Make executable from main.cpp and sources listed above
 add_executable(${CMAKE_PROJECT_NAME} Main.cpp ${SOURCES})
 # Link libraries to the executable
-target_link_libraries(${CMAKE_PROJECT_NAME} Utility gfx Profiler Input Memory ${SDL2Libraries} ${standardLibraries})
+target_link_libraries(${CMAKE_PROJECT_NAME} Utility gfx Profiler Input Memory ${SDL2Libraries} ${standardLibraries} ${FMODLibrary})
 
 install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin/${OperatingSystemNameLowerCase}/${TargetArchitecture})
 install(DIRECTORY ${ProjectRoot}shader DESTINATION .)

@@ -113,6 +113,13 @@ find_library(SOIL2Library
 	NAMES soil2 SOIL2 libsoil2 soil2-debug
 	PATHS ${LibraryDirectoryAbsolute})
 
+# Find fmod
+find_path(FMODInclude fmod/fmod.h
+	PATHS ${IncludeDirectoryAbsolute})
+find_library(FMODLibrary
+	NAMES fmodex64_vc fmodexL64_vc
+	PATHS ${LibraryDirectoryAbsolute})
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	list(APPEND standardLibraries "c++")
 	list(APPEND standardLibraries "c++abi")
@@ -128,6 +135,7 @@ endif(WIN32)
 include_directories(
 	${SDL2Includes}
 	${GLEWInclude}
+	${FMODInclude}
 	${IncludeDirectoryRelative}
 	${ProjectRoot}/src/
 )

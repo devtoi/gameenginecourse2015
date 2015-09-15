@@ -4,6 +4,7 @@
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
 #include "graphics/SSParticles.h"
+#include "graphics/SSEqualizer.h"
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
@@ -21,6 +22,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSToiPoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
+	CreateSubsystemTemplate<SSEqualizer>();
 
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
@@ -40,7 +42,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
-
+	setUpdatePrio( SSEqualizer::GetStaticID(), 100); //after particles
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
 	
 	// Shutdown priorities
