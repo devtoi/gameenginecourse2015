@@ -3,7 +3,11 @@
 #include "../Subsystem.h"
 #include <gfx/ShaderProgram.h>
 #include <memory/ToiPoolAllocator.h>
+#include <memory/DeranesPoolAllocator.h>
 #include <memory/StackAllocator.h>
+
+typedef ToiPoolAllocator PoolAllocator;
+
 struct Particle {
 	glm::vec4 Pos;
 	glm::vec4 VelocityTTL;
@@ -52,7 +56,7 @@ private:
 	unsigned int		m_VBO = 0;
 	unsigned int		m_VAO = 0;
 	ParticleBlock		m_ParticleBlocks[MAX_PARTICLE_BLOCKS];
-	ToiPoolAllocator*	m_Allocator;
+	PoolAllocator*		m_Allocator;
 	float				m_SpawnTimer = 0;
 	float				m_ProfileTimer = 0;
 };
