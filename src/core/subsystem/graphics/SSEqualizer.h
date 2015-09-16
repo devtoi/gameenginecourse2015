@@ -39,4 +39,5 @@ private:
 	FMOD_SYSTEM*			m_SoundSystem;
 	FMOD_SOUND*				m_Song;
 	FMOD_CHANNEL*			m_Channel;
+	glm::vec4				m_Color;
 };
