@@ -117,7 +117,7 @@ find_library(SOIL2Library
 find_path(FMODInclude fmod/fmod.h
 	PATHS ${IncludeDirectoryAbsolute})
 find_library(FMODLibrary
-	NAMES fmodex64_vc fmodexL64_vc
+	NAMES fmodex64_vc fmodexL64_vc fmodex
 	PATHS ${LibraryDirectoryAbsolute})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
