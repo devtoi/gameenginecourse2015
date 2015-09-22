@@ -1,6 +1,6 @@
 #include "SSStackAllocatorBasicTest.h"
 #include <memory/Alloc.h>
-#include <memory/StackAllocator.h>
+#include <memory/DrinQStackAllocator.h>
 #include <input/InputContext.h>
 #include <thread> // TODOJM: Remove
 #include <functional> // TODOJM: Remove
@@ -20,11 +20,25 @@ void SSStackAllocatorBasicTest::Shutdown( SubsystemCollection* const ) {
 }
 
 void SSStackAllocatorBasicTest::UpdateUserLayer( const float ) {
-	StackAllocator::Marker marker = g_ThreadStack.GetMarker();
-	bool* derp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );
+	size_t marker = g_ThreadStack.GetMarker();
+	//bool* derp = permanentAlloc(bool, 1);
+	bool* derp = g_ThreadStack.AllocateT<bool>( 1 );
+
 	*derp = true;
-	bool* herp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );
-	*herp = false;
+	/*bool* herp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );
+	*herp = false;*/
+
+	//struct TempClass {
+	//	TempClass ( int i, int j ) {
+	//		data1 = i;
+	//		data2 = j;
+	//	}
+
+	//	int data1 = 0;
+	//	int data2 = 0;
+	//} ;
+
+	//bool* temp = permanentNew( bool, true);
 
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
 		uint8_t* buffer = g_ThreadStack.GetBuffer();
@@ -35,7 +49,7 @@ void SSStackAllocatorBasicTest::UpdateUserLayer( const float ) {
 	}
 
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_N ) ) {
-		std::cout << StackAllocator::GetNrOfStacks() << std::endl;
+		//std::cout << StackAllocator::GetNrOfStacks() << std::endl;
 	}
 
 	g_ThreadStack.Unwind( marker );
@@ -55,7 +69,7 @@ int SSStackAllocatorBasicTest::GetStaticID() {
 void SSStackAllocatorBasicTest::Test() {
 	int time = 1;
 	while ( time > 0 ) {
-		StackAllocator::Marker marker = g_ThreadStack.GetMarker();
+		size_t marker = g_ThreadStack.GetMarker();
 		bool* derp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );
 		*derp = true;
 		bool* herp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );

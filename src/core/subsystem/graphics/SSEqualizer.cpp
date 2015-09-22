@@ -9,7 +9,7 @@ void SSEqualizer::Startup( SubsystemCollection* const subsystemCollection ) {
 	FMOD_System_SetSoftwareFormat(m_SoundSystem, 48000, FMOD_SOUND_FORMAT_PCM16, 2, 0, FMOD_DSP_RESAMPLER_LINEAR);
 	FMOD_System_Init(m_SoundSystem, 32, FMOD_INIT_NORMAL, nullptr);
 	FMOD_System_CreateStream(m_SoundSystem, "../../../asset/music/Metroid_The_Crimson_Depths_OC_ReMix.mp3", FMOD_LOOP_NORMAL | FMOD_2D | FMOD_HARDWARE | FMOD_UNIQUE, nullptr, &m_Song);
-	FMOD_System_PlaySound(m_SoundSystem, FMOD_CHANNEL_FREE, m_Song, false, &m_Channel);
+	//FMOD_System_PlaySound(m_SoundSystem, FMOD_CHANNEL_FREE, m_Song, false, &m_Channel);
 
 	//set up GL
 	m_RenderProgram.LoadCompleteShaderProgramFromFile("../../../shader/ParticleRender.glsl", true);
