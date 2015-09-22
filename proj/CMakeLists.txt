@@ -150,6 +150,13 @@ set(CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY "<memory/Alloc.h>")
 add_definitions(-DUTILITY_ALLOCATION_HEADER=${CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY})
 set(USE_CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY true)
 
+FUNCTION(MOVEDLL target library)
+	if (MSVC)
+		add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${ProjectRoot}sharedlibs/windows/\$\(Configuration\)/${library}.dll" $<TARGET_FILE_DIR:${target}>)
+	endif(MSVC)
+ENDFUNCTION(MOVEDLL)
+
 # Add each separate library/executable
 add_subdirectory(../src/core ../build/src/core)
 add_subdirectory(../src/utility ../build/src/utility)
