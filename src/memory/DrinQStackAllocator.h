@@ -37,8 +37,16 @@ public:
 	//void Initialize( );
 	MEMORY_API void* Allocate( size_t dataSize, size_t alignment = DRINQ_STACKALLOCATOR_ALIGNMENT );
 
+	//template< typename T>
+	//T* AllocateT( size_t count, size_t alignment = DRINQ_STACKALLOCATOR_ALIGNMENT );
+
 	template< typename T>
-	T* AllocateT( size_t count, size_t alignment = DRINQ_STACKALLOCATOR_ALIGNMENT );
+	T* AllocateT( size_t count, size_t alignment = DRINQ_STACKALLOCATOR_ALIGNMENT ) {
+		T* data = (T*)Allocate( sizeof( T ), alignment );
+
+		m_Marker += count * sizeof( T );
+		return data;
+	}
 
 	MEMORY_API void Unwind( size_t marker );
 

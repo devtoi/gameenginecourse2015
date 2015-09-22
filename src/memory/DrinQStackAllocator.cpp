@@ -22,14 +22,14 @@ void* DrinQStackAllocator::Allocate( size_t size, size_t alignment ) {
 	return reinterpret_cast<void*>( alignedMemory );
 }
 
-template<typename T>
-T* DrinQStackAllocator::AllocateT( size_t count, size_t alignment ) {
-	
-	T* data = (T*);
-
-	FrameMarker += count * sizeof( T );
-	return data;
-}
+//template<typename T>
+//T* DrinQStackAllocator::AllocateT( size_t count, size_t alignment ) {
+//	
+//	T* data = (T*);
+//
+//	FrameMarker += count * sizeof( T );
+//	return data;
+//}
 
 
 

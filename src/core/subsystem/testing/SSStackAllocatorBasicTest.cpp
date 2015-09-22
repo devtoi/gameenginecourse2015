@@ -22,23 +22,23 @@ void SSStackAllocatorBasicTest::Shutdown( SubsystemCollection* const ) {
 void SSStackAllocatorBasicTest::UpdateUserLayer( const float ) {
 	size_t marker = g_ThreadStack.GetMarker();
 	//bool* derp = permanentAlloc(bool, 1);
-	bool* derp = g_ThreadStack.AllocateT<bool>( 1 );
+	//bool* derp = g_ThreadStack.AllocateT<bool>( 1 );
 
-	*derp = true;
+	//*derp = true;
 	/*bool* herp = (bool*)g_ThreadStack.Allocate( sizeof(bool) );
 	*herp = false;*/
 
-	//struct TempClass {
-	//	TempClass ( int i, int j ) {
-	//		data1 = i;
-	//		data2 = j;
-	//	}
+	struct TempClass {
+		TempClass ( int i, int j ) {
+			data1 = i;
+			data2 = j;
+		}
 
-	//	int data1 = 0;
-	//	int data2 = 0;
-	//} ;
+		int data1 = 0;
+		int data2 = 0;
+	} ;
 
-	//bool* temp = permanentNew( bool, true);
+	TempClass* temp = permanentNew( TempClass, INT_MAX, 2 );
 
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
 		uint8_t* buffer = g_ThreadStack.GetBuffer();
