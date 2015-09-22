@@ -2,7 +2,7 @@
 
 #include "../Subsystem.h"
 
-class ToiPoolAllocator;
+//class ToiPoolAllocator;
 
 class SSToiPoolTest : public Subsystem {
 public:
@@ -31,6 +31,4 @@ private:
 		bool Derp;
 		int Herp;
 	};
-
-	ToiPoolAllocator* m_ToiPoolAllocator = nullptr;
 };

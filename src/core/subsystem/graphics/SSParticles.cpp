@@ -23,6 +23,7 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 
 void SSParticles::Shutdown( SubsystemCollection* const subsystemCollection ) {
 	// Perform Cleanup here (Don't forget to set shutdown order priority!)
+	delete m_Allocator;
 }
 
 void SSParticles::UpdateUserLayer( const float deltaTime ) {
@@ -129,13 +130,15 @@ void SSParticles::ApplyGravity(Particle& p) {
 Particle* SSParticles::AllocateParticles() {
 	PROFILE(AutoProfiler memAllocProfiler("MemoryAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
-	return (Particle*)m_Allocator->allocate();
+	return (Particle*)poolAlloc( sizeof( Particle ) );
+	//return (Particle*)m_Allocator->allocate( );
 	PROFILE(memAllocProfiler.Stop());
 }
 
 void SSParticles::DeallocateParticles(Particle* p) {
 	PROFILE(AutoProfiler memFreeProfiler("MemoryDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//free(p);
-	m_Allocator->deallocate(p);
+	poolFree( sizeof(Particle), p );
+	//m_Allocator->deallocate( p );
 	PROFILE(memFreeProfiler.Stop());
 }
