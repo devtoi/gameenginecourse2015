@@ -10,6 +10,8 @@
 
 //#define TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
 #define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
+#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE std::this_thread::yield()
+//#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE 
 
 #include "MemoryLibraryDefine.h"
 #include <cstddef>
@@ -74,7 +76,7 @@ public:
 
 	void* allocate( ) {
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){std::this_thread::yield();}
+		while (m_Lock.test_and_set(std::memory_order_acquire)){ TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE; }
 #endif
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
@@ -97,7 +99,7 @@ public:
 
 	void deallocate( void* memory ) {
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){std::this_thread::yield();}
+		while (m_Lock.test_and_set(std::memory_order_acquire)){TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE;}
 #endif
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
@@ -123,7 +125,7 @@ public:
 	template<typename Type>
 	void PrintMemory() {
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){std::this_thread::yield();}
+		while (m_Lock.test_and_set(std::memory_order_acquire)){ TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE; }
 #endif
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
