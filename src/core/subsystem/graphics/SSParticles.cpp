@@ -130,7 +130,7 @@ void SSParticles::ApplyGravity(Particle& p) {
 Particle* SSParticles::AllocateParticles() {
 	PROFILE(AutoProfiler memAllocProfiler("MemoryAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
-	return (Particle*)poolAlloc( sizeof( Particle ) );
+	return (Particle*)poolAlloc( PARTICLE_BLOCK_SIZE );
 	//return (Particle*)m_Allocator->allocate( );
 	PROFILE(memAllocProfiler.Stop());
 }
@@ -138,7 +138,7 @@ Particle* SSParticles::AllocateParticles() {
 void SSParticles::DeallocateParticles(Particle* p) {
 	PROFILE(AutoProfiler memFreeProfiler("MemoryDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//free(p);
-	poolFree( sizeof(Particle), p );
+	poolFree( PARTICLE_BLOCK_SIZE, p );
 	//m_Allocator->deallocate( p );
 	PROFILE(memFreeProfiler.Stop());
 }
