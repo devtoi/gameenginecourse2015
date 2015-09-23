@@ -8,6 +8,7 @@
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
+#include "testing/SSPoolThreadingTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -23,6 +24,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSToiPoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSEqualizer>();
+	CreateSubsystemTemplate<SSPoolThreadingTest>();
 
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {

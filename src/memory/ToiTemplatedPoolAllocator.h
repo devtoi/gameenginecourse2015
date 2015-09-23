@@ -9,7 +9,7 @@
 #define TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
 
 //#define TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
+#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
 
 #include "MemoryLibraryDefine.h"
 #include <cstddef>
@@ -25,13 +25,22 @@
 #endif
 #include <thread>
 
-#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 25600
+#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 2560000
 #define TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE 512
 
-#define poolAlloc(Size) GetPoolAllocator<Size>().allocate()
-#define poolFree(Size, Ptr) GetPoolAllocator<Size>().deallocate(Ptr)
-#define poolNew(Type, ...) GetPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
-#define poolDelete(Ptr) GetPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
+//#define TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
+
+#ifdef TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
+	#define poolAlloc(Size) malloc(Size)
+	#define poolFree(Size, Ptr) free(Ptr)
+	#define poolNew(Type, ...) new Type(__VA_ARGS__)
+	#define poolDelete(Ptr) delete Ptr;
+#else
+	#define poolAlloc(Size) GetPoolAllocator<Size>().allocate()
+	#define poolFree(Size, Ptr) GetPoolAllocator<Size>().deallocate(Ptr)
+	#define poolNew(Type, ...) GetPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
+	#define poolDelete(Ptr) GetPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
+#endif
 
 template <size_t BlockSize, size_t NrOfBlocks>
 class ToiTemplatedPoolAllocator {
@@ -95,15 +104,15 @@ public:
 		std::lock_guard<std::mutex> lock( m_Mutex );
 #endif
 
-		size_t* firstFreeTemp = m_FirstFree;
+		//size_t* firstFreeTemp = m_FirstFree;
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
 		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, m_BlockSize );
 #endif
 
-		m_FirstFree = reinterpret_cast<size_t*>( memory );
 		size_t* toSet = reinterpret_cast<size_t*>( memory );
-		*toSet = reinterpret_cast<size_t>( firstFreeTemp );
+		*toSet = reinterpret_cast<size_t>( m_FirstFree );
+		m_FirstFree = reinterpret_cast<size_t*>( memory );
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
 		m_Lock.clear(std::memory_order_release); 
