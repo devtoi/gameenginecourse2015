@@ -180,6 +180,25 @@ rString ProfilerManager::GetFormattedMax( float factor, const rString& suffix )
 	return toReturn;
 }
 
+rString ProfilerManager::GetFormattedLatest( float factor, const rString& suffix )
+{
+	rString toReturn;
+
+	m_EntriesLock.lock( );
+	toReturn += ("----------Latest times in " + suffix + "----------\n");
+	for ( auto& categoryMap : m_ProfileEntries )
+	{
+		for ( auto& entry : categoryMap )
+		{
+			toReturn += ( "[C=GREEN]" + entry.first + ": [C=WHITE]" + rToString( entry.second.GetLatest( ) * factor ) + " " + suffix + '\n');
+		}
+	}
+	toReturn += "--------------------------------------\n";
+	m_EntriesLock.unlock( );
+
+	return toReturn;
+}
+
 void ProfilerManager::PrintAverages ( float factor, const rString& suffix )
 {
 	std::cout << GetFormattedAverages( factor, suffix );
@@ -188,6 +207,11 @@ void ProfilerManager::PrintAverages ( float factor, const rString& suffix )
 void ProfilerManager::PrintMax( float factor, const rString& suffix )
 {
 	std::cout << GetFormattedMax( factor, suffix );
+}
+
+void ProfilerManager::PrintLatest( float factor, const rString& suffix )
+{
+	std::cout << GetFormattedLatest( factor, suffix );
 }
 
 void ProfilerManager::PrintAveragesTicks()
@@ -290,6 +314,56 @@ rString ProfilerManager::GetFormattedMaxNanoSeconds( )
 	return GetFormattedMax( m_FrequencyInvNano, "ns" );
 }
 
+void ProfilerManager::PrintLatestTicks()
+{
+	PrintLatest ( 1.0f, "ticks" );
+}
+
+void ProfilerManager::PrintLatestSeconds()
+{
+	PrintLatest ( m_FrequencyInv, "sec" );
+}
+
+void ProfilerManager::PrintLatestMilliSeconds()
+{
+	PrintLatest ( m_FrequencyInvMs, "ms" );
+}
+
+void ProfilerManager::PrintLatestMicroSeconds()
+{
+	PrintLatest ( m_FrequencyInvMicro, "us" );
+}
+
+void ProfilerManager::PrintLatestNanoSeconds()
+{
+	PrintLatest ( m_FrequencyInvNano, "ns" );
+}
+
+rString ProfilerManager::GetFormattedLatestTicks( )
+{
+	return GetFormattedLatest( 1.0f, "ticks" );
+}
+
+rString ProfilerManager::GetFormattedLatestSeconds( )
+{
+	return GetFormattedLatest( m_FrequencyInv, "sec" );
+}
+
+rString ProfilerManager::GetFormattedLatestMilliSeconds( )
+{
+	return GetFormattedLatest( m_FrequencyInvMs, "ms" );
+}
+
+rString ProfilerManager::GetFormattedLatestMicroSeconds( )
+{
+	return GetFormattedLatest( m_FrequencyInvMicro, "us");
+}
+
+rString ProfilerManager::GetFormattedLatestNanoSeconds( )
+{
+	return GetFormattedLatest( m_FrequencyInvNano, "ns" );
+}
+
 float ProfilerManager::GetConversionFactorMilliSeconds( ) const
 {
 	return m_FrequencyInvMs;
@@ -315,4 +389,9 @@ const ProfileEntry* ProfilerManager::GetEntry( const rString& name ) const
 			return &entry->second;
 	}
 	return nullptr;
+}
+
+float ProfilerManager::GetEntryLatestMilliseconds( const rString& name ) const
+{
+	return GetEntry( name )->GetLatest() * GetConversionFactorMilliSeconds( );
 }

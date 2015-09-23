@@ -18,6 +18,7 @@ public:
 	PROFILER_API void 		AddSample	( uint64_t val );
 	PROFILER_API float 		GetAverage	( ) const;
 	PROFILER_API uint64_t 	GetMax		( ) const;
+	PROFILER_API uint64_t 	GetLatest	( ) const;
 	PROFILER_API void 		ResetMax	( );
 
 private:
