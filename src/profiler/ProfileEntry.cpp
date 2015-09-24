@@ -36,6 +36,11 @@ uint64_t ProfileEntry::GetMax() const
 	return m_MaxValue;
 }
 
+uint64_t ProfileEntry::GetLatest() const
+{
+    return m_Samples[(m_SampleToReplace - 1 + m_MaxNrOfSamples) % m_MaxNrOfSamples];
+}
+
 void ProfileEntry::ResetMax()
 {
 	m_MaxValue = 0;

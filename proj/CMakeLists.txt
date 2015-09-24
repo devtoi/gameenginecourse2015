@@ -117,7 +117,7 @@ find_library(SOIL2Library
 find_path(FMODInclude fmod/fmod.h
 	PATHS ${IncludeDirectoryAbsolute})
 find_library(FMODLibrary
-	NAMES fmodex64_vc fmodexL64_vc
+	NAMES fmodex64_vc fmodexL64_vc fmodex
 	PATHS ${LibraryDirectoryAbsolute})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -149,6 +149,13 @@ set(USE_CUSTOM_ALLOCATOR_HEADER_FOR_INPUT true)
 set(CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY "<memory/Alloc.h>")
 add_definitions(-DUTILITY_ALLOCATION_HEADER=${CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY})
 set(USE_CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY true)
+
+FUNCTION(MOVEDLL target library)
+	if (MSVC)
+		add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${ProjectRoot}sharedlibs/windows/\$\(Configuration\)/${library}.dll" $<TARGET_FILE_DIR:${target}>)
+	endif(MSVC)
+ENDFUNCTION(MOVEDLL)
 
 # Add each separate library/executable
 add_subdirectory(../src/core ../build/src/core)

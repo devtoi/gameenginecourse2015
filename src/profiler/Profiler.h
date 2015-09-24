@@ -36,10 +36,12 @@ public:
 	// Get formatted profiler strings for output
 	PROFILER_API rString		GetFormattedAverages( float factor, const rString& suffix );
 	PROFILER_API rString		GetFormattedMax( float factor, const rString& suffix );
+	PROFILER_API rString		GetFormattedLatest( float factor, const rString& suffix );
 
 	// Print profiler strings to cout
 	PROFILER_API void			PrintAverages( float factor, const rString& suffix );
 	PROFILER_API void			PrintMax( float factor, const rString& suffix );
+	PROFILER_API void			PrintLatest( float factor, const rString& suffix );
 
 	// Quick functions for averages
 	PROFILER_API void			PrintAveragesTicks();
@@ -64,6 +66,18 @@ public:
 	PROFILER_API rString		GetFormattedMaxMilliSeconds();
 	PROFILER_API rString		GetFormattedMaxMicroSeconds();
 	PROFILER_API rString		GetFormattedMaxNanoSeconds();
+	
+	// Quick functions for latest
+	PROFILER_API void			PrintLatestTicks();
+	PROFILER_API void			PrintLatestSeconds();
+	PROFILER_API void			PrintLatestMilliSeconds();
+	PROFILER_API void			PrintLatestMicroSeconds();
+	PROFILER_API void			PrintLatestNanoSeconds();
+	PROFILER_API rString		GetFormattedLatestTicks();
+	PROFILER_API rString		GetFormattedLatestSeconds();
+	PROFILER_API rString		GetFormattedLatestMilliSeconds();
+	PROFILER_API rString		GetFormattedLatestMicroSeconds();
+	PROFILER_API rString		GetFormattedLatestNanoSeconds();
 
 	PROFILER_API float 			GetConversionFactorMilliSeconds() const;
 
@@ -71,6 +85,7 @@ public:
 	PROFILER_API const rMap<rString, ProfileEntry>* GetMapForCategory( PROFILER_CATEGORY category ) const;
 	// Will loop through each category and return the first match to the name. In order of the enum,
 	PROFILER_API const ProfileEntry* GetEntry( const rString& name ) const;
+	PROFILER_API float GetEntryLatestMilliseconds( const rString& name ) const;
 
 private:
 	struct AccumulationEntry

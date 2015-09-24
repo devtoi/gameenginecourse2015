@@ -2,14 +2,12 @@
 
 #include "../Subsystem.h"
 
-//class ToiPoolAllocator;
-
-class SSToiPoolTest : public Subsystem {
+class SSPoolThreadingTest : public Subsystem {
 public:
-	SSToiPoolTest( int ID ) : Subsystem( Name, ID ) {
-		SSToiPoolTest::ID = ID;
+	SSPoolThreadingTest( int ID ) : Subsystem( Name, ID ) {
+		SSPoolThreadingTest::ID = ID;
 	}
-	~SSToiPoolTest() = default;
+	~SSPoolThreadingTest() = default;
 	
 	void 		Startup( SubsystemCollection* const subsystemCollection ) override;
 	void 		Shutdown( SubsystemCollection* const subsystemCollection ) override;
@@ -23,12 +21,4 @@ public:
 	const static pString Name;
 private:
 	static int ID;
-
-	struct TestStruct {
-		TestStruct( bool derp, int herp )
-			: Derp( derp ), Herp( herp ) {
-		}
-		bool Derp;
-		int Herp;
-	};
 };

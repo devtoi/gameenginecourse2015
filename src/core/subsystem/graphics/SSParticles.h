@@ -2,6 +2,7 @@
 
 #include "../Subsystem.h"
 #include <gfx/ShaderProgram.h>
+#include <memory/ToiTemplatedPoolAllocator.h>
 #include <memory/ToiPoolAllocator.h>
 #include <memory/DeranesPoolAllocator.h>
 #include <memory/StackAllocator.h>
@@ -20,7 +21,7 @@ struct ParticleBlock {
 };
 
 #define MAX_PARTICLE_COUNT 1000000
-#define PARTICLE_BLOCK_COUNT 256
+#define PARTICLE_BLOCK_COUNT 16
 #define PARTICLE_BLOCK_SIZE sizeof(Particle) * PARTICLE_BLOCK_COUNT
 #define MAX_PARTICLE_BLOCKS MAX_PARTICLE_COUNT / PARTICLE_BLOCK_COUNT
 #define MIN_BLOCK_TTL 3.0f

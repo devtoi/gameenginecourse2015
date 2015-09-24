@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 
 ToiPoolAllocator::ToiPoolAllocator( size_t blockSize, size_t nrOfBlocks )
 : m_BlockSize( blockSize ), m_NrOfBlocks( nrOfBlocks ) {
@@ -26,7 +27,7 @@ ToiPoolAllocator::~ToiPoolAllocator() {
 
 void* ToiPoolAllocator::allocate( ) {
 #ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
-	while (m_Lock.test_and_set(std::memory_order_acquire)){}
+	while (m_Lock.test_and_set(std::memory_order_acquire)){std::this_thread::yield();}
 #endif
 
 #ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
@@ -34,14 +35,12 @@ void* ToiPoolAllocator::allocate( ) {
 #endif
 
 	assert( m_FirstFree != nullptr );
-	size_t* nextnextFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 	size_t* toAllocate = m_FirstFree;
+	m_FirstFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 
 #ifdef TOI_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
 	memset( toAllocate, TOI_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, m_BlockSize );
 #endif
-
-	m_FirstFree = nextnextFree;
 
 #ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
 	m_Lock.clear(std::memory_order_release); 
@@ -51,7 +50,7 @@ void* ToiPoolAllocator::allocate( ) {
 
 void ToiPoolAllocator::deallocate( void* memory ) {
 #ifdef TOI_POOL_ALLOCATOR_SPIN_LOCK
-	while (m_Lock.test_and_set(std::memory_order_acquire)){}
+	while (m_Lock.test_and_set(std::memory_order_acquire)){std::this_thread::yield();}
 #endif
 
 #ifdef TOI_POOL_ALLOCATOR_MUTEX_LOCK
