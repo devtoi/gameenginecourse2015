@@ -94,11 +94,6 @@ public:
 	}
 
 	template< typename T>
-	void Deallocate( T* ptr ) {
-		
-	}
-
-	template< typename T>
 	void Destroy( T*& ptr ) {
 		ptr[0].~T();
 	}
