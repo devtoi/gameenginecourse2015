@@ -1,6 +1,6 @@
 #include "SSStackAllocatorBasicTest.h"
 #include <memory/Alloc.h>
-#include <memory/DrinQStackAllocator.h>
+#include <memory/DrinQFrameAllocator.h>
 #include <input/InputContext.h>
 #include <thread> // TODOJM: Remove
 #include <functional> // TODOJM: Remove

@@ -1,29 +1,6 @@
-#include "DrinQStackAllocator.h"
+#include "DrinQFrameAllocator.h"
 #include <malloc.h>
-#include <assert.h>
 #include <cstring>
-
-//#include <atomic>
-
-//void* DrinQFrameAllocator::Allocate( size_t size, size_t alignment ) {
-//
-//	size_t unalignedMemory = reinterpret_cast<size_t>( m_Memory + m_Marker );
-//	
-//	size_t mask = alignment - 1;
-//	uintptr_t misalignment = unalignedMemory & mask;
-//	ptrdiff_t adjustment = misalignment > 0 ? alignment - misalignment : 0;
-//	size_t allocationSize = size + adjustment;
-//	uintptr_t alignedMemory = unalignedMemory + adjustment;
-//
-//	//Out of memory
-//	assert( m_Marker + allocationSize < m_Size );
-//
-//	memset( m_Memory + m_Marker, FRAME_ALLOCATOR_PADDED, allocationSize );
-//
-//	m_Marker += allocationSize;
-//
-//	return reinterpret_cast<void*>( alignedMemory );
-//}
 
 void DrinQFrameAllocator::Unwind( size_t marker ) {
 	size_t dist = m_Marker - marker;
