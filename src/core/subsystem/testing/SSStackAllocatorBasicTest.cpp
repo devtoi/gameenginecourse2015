@@ -29,16 +29,23 @@ void SSStackAllocatorBasicTest::UpdateUserLayer( const float ) {
 	*herp = false;*/
 
 	struct TempClass {
+		TempClass() {
+		}
+
 		TempClass ( int i, int j ) {
 			data1 = i;
 			data2 = j;
 		}
 
-		int data1 = 0;
-		int data2 = 0;
+		int data1 = 1;
+		int data2 = 2;
 	} ;
 
-	TempClass* temp = permanentNew( TempClass, INT_MAX, 2 );
+	TempClass* temp = frameNewAligned( TempClass, 2, INT_MAX, 2 );
+
+	TempClass* tempArray = frameNewArray( TempClass, 4 );
+
+	//frameDelete( temp );
 
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
 		uint8_t* buffer = g_ThreadStack.GetBuffer();
@@ -52,7 +59,8 @@ void SSStackAllocatorBasicTest::UpdateUserLayer( const float ) {
 		//std::cout << StackAllocator::GetNrOfStacks() << std::endl;
 	}
 
-	g_ThreadStack.Unwind( marker );
+	g_ThreadStack.Reset();
+	//g_ThreadStack.Unwind( marker );
 }
 
 void SSStackAllocatorBasicTest::UpdateSimulationLayer( const float ) {
