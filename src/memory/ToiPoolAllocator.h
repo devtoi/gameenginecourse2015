@@ -7,7 +7,7 @@
 #define TOI_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE 0
 
 //#define TOI_POOL_ALLOCATOR_MUTEX_LOCK
-//#define TOI_POOL_ALLOCATOR_SPIN_LOCK
+#define TOI_POOL_ALLOCATOR_SPIN_LOCK
 
 #include "MemoryLibraryDefine.h"
 #include <cstddef>

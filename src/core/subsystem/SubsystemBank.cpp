@@ -8,6 +8,7 @@
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
+#include "testing/SSThreadTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -23,7 +24,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSToiPoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSEqualizer>();
-
+	CreateSubsystemTemplate<SSThreadTest>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetStartOrderPriority( prio );
@@ -42,6 +43,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
+	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
 	setUpdatePrio( SSEqualizer::GetStaticID(), 100); //after particles
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
 	
