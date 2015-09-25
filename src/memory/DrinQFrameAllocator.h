@@ -26,8 +26,8 @@
 #define frameNew( Type, ... )					reinterpret_cast<Type*>( new ( frameAlloc( sizeof(Type) ) ) Type( __VA_ARGS__ ) )
 #define frameNewAligned( Type, align, ... )		reinterpret_cast<Type*>( new ( frameAllocAligned( sizeof(Type), align ) ) Type( __VA_ARGS__ ) )
 
-#define frameNewArray( Type, count, ... )					g_ThreadStack.construct<Type>( count, FRAME_ALLOCATOR_ALIGNMENT, __VA_ARGS__  )
-#define frameNewArrayAligned( Type, count, align, ... )		g_ThreadStack.construct<Type>( count, align, __VA_ARGS__ )
+#define frameNewArray( Type, count, ... )					g_ThreadStack.construct<Type>( count, __VA_ARGS__  )
+//#define frameNewArrayAligned( Type, count, align, ... )		g_ThreadStack.construct<Type>( count, __VA_ARGS__ )
 #define frameDelete( ptr )									ptr.~Type()
 #define frameDeleteArray( ptr, count )						g_ThreadStack.Destroy( ptr, count )
 
@@ -70,12 +70,23 @@ public:
 	MEMORY_API void* allocate( size_t size, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT );
 
 	template<typename Type, typename... Args>
-	Type* construct( size_t count, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT, Args&&... args ) {
-		Type* data = static_cast<Type*>( allocate( count * sizeof( Type ), alignment ) );
+	Type* construct( size_t count, Args&&... args ) {
+
+		Type* data = static_cast<Type*>( allocate( count * sizeof( Type ), alignof( Type ) ) );
 		for( size_t i = 0; i < count; ++i ) {
 			new (&data[i]) Type(std::forward<Args>( args )...);
 		}
 		return data;
+	}
+
+	template< typename T>
+	void Destroy( T*& ptr, size_t count = 1 ) {
+
+		for ( size_t i = 0; i < count; ++i ) {
+			if ( ptr[i] ) {
+				ptr[i].~T();
+			}
+		}
 	}
 
 

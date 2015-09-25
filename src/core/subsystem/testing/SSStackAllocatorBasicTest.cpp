@@ -27,6 +27,8 @@ void SSStackAllocatorBasicTest::UpdateUserLayer(const float) {
 	bool* herp = (bool*)g_ThreadStack.allocate(sizeof(bool));
 	*herp = false;
 
+	int* tempInt = frameNewArray(int, 2, 55);
+
 	if (g_Input.KeyUpDown(SDL_SCANCODE_V)) {
 		uint8_t* buffer = g_ThreadStack.GetBuffer();
 		size_t bufferSize = g_ThreadStack.GetSize();
@@ -38,6 +40,8 @@ void SSStackAllocatorBasicTest::UpdateUserLayer(const float) {
 	if (g_Input.KeyUpDown(SDL_SCANCODE_N)) {
 		std::cout << DrinQFrameAllocator::GetNrOfStacks() << std::endl;
 	}
+
+	frameDeleteArray( tempInt, 2 );
 
 	g_ThreadStack.Unwind(marker);
 }
