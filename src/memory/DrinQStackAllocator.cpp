@@ -33,6 +33,25 @@ uint8_t* DrinQStackAllocator::GetBuffer() {
 	return m_Memory;
 }
 
-MEMORY_API size_t DrinQStackAllocator::GetSize() {
+size_t DrinQStackAllocator::GetSize() {
 	return m_Size;
+}
+
+void* DrinQStackAllocator::allocate( size_t size, size_t alignment ) {
+	m_Mutex.lock();
+	size_t unalignedMemory = reinterpret_cast<size_t>( m_Memory + m_Marker );
+
+	size_t mask = alignment - 1;
+	uintptr_t misalignment = unalignedMemory & mask;
+	ptrdiff_t adjustment = misalignment > 0 ? alignment - misalignment : 0;
+	size_t allocationSize = size + adjustment;
+	uintptr_t alignedMemory = unalignedMemory + adjustment;
+
+	//Out of memory
+	assert( m_Marker + allocationSize < m_Size );
+
+	memset( m_Memory + m_Marker, STACK_ALLOCATOR_PADDED, allocationSize );
+	m_Marker += allocationSize;
+	m_Mutex.unlock();
+	return reinterpret_cast<void*>( alignedMemory );
 }

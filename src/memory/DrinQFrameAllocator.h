@@ -2,14 +2,16 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <atomic>
+#include <cstddef>
 #include "MemoryLibraryDefine.h"
 
 #define FRAME_ALLOCATOR_SIZE 64
 #define FRAME_ALLOCATOR_ALIGNMENT 8
 
-#define FRAME_ALLOCATOR_INITIAL 128
-#define FRAME_ALLOCATOR_PADDED 127
-#define FRAME_ALLOCATOR_RESET 126
+#define FRAME_ALLOCATOR_INITIAL 122
+#define FRAME_ALLOCATOR_PADDED 121
+#define FRAME_ALLOCATOR_RESET 120
 
 
 //#define DISABLE_FRAME_ALLOCATOR
@@ -19,32 +21,32 @@
 #ifndef DISABLE_FRAME_ALLOCATOR
 
 //Per frame and thread allocation
-#define frameAlloc( Type, count )				reinterpret_cast<Type*>( g_ThreadStack.Allocate( count, sizeof( Type ), FRAME_ALLOCATOR_ALIGNMENT ) )
-#define frameAllocAligned( Type, count, align )	g_ThreadStack.Allocate( count, sizeof( Type ), align )
-#define frameNew( Type, ... )					reinterpret_cast<Type*>( new ( frameAlloc( Type, 1 ) ) Type( __VA_ARGS__ ) )
-#define frameNewAligned( Type, align, ... )		new ( frameAllocAligned( Type, 1, align ) ) Type( __VA_ARGS__ )
+#define frameAlloc( size )						g_ThreadStack.allocate( size, FRAME_ALLOCATOR_ALIGNMENT )
+#define frameAllocAligned( size, align )		g_ThreadStack.allocate( size, align )
+#define frameNew( Type, ... )					reinterpret_cast<Type*>( new ( frameAlloc( sizeof(Type) ) ) Type( __VA_ARGS__ ) )
+#define frameNewAligned( Type, align, ... )		reinterpret_cast<Type*>( new ( frameAllocAligned( sizeof(Type), align ) ) Type( __VA_ARGS__ ) )
 
-//#define frameNewArray( Type, count )			g_ThreadStack.Allocate( count, FRAME_ALLOCATOR_ALIGNMENT )
-
-#define frameNewArray( Type, count )			g_ThreadStack.Construct<Type>( count, FRAME_ALLOCATOR_ALIGNMENT )
-#define frameNewArrayAligned( Type, count )		g_ThreadStack.Construct<Type>( count, FRAME_ALLOCATOR_ALIGNMENT )
-#define frameDelete( ptr )						ptr.~Type()//  g_ThreadStack.Destroy( ptr )
-#define frameDeleteArray( ptr, count )			g_ThreadStack.Destroy( ptr, count )
+#define frameNewArray( Type, count, ... )					g_ThreadStack.construct<Type>( count, FRAME_ALLOCATOR_ALIGNMENT, __VA_ARGS__  )
+#define frameNewArrayAligned( Type, count, align, ... )		g_ThreadStack.construct<Type>( count, align, __VA_ARGS__ )
+#define frameDelete( ptr )									ptr.~Type()
+#define frameDeleteArray( ptr, count )						g_ThreadStack.Destroy( ptr, count )
 
 #else
 
-#define frameAlloc( Type, count )				(Type*) malloc( sizeof(Type) * (count) )
-#define frameAllocAligned( Type, count, align )	g_ThreadStack.AllocateT<Type>( count, align )
-#define frameNew( Type, ... )					new Type(__VA_ARGS__)
-#define frameNewAligned( Type, align, ... )		new Type(__VA_ARGS__)
-#define frameNewArray( Type, count )			new Type[(count)]
-#define frameNewArrayAligned( Type, count )		new Type[(count)]
-#define frameDelete( ptr )						delete ptr
-#define frameDeleteArray( ptr, count )			delete [] ptr
+#include <memory>
+
+
+#define frameAlloc( size )								malloc( size )
+#define frameAllocAligned( size, align )				malloc( size )
+#define frameNew( Type, ... )							new Type(__VA_ARGS__)
+#define frameNewAligned( Type, align, ... )				new Type(__VA_ARGS__)
+#define frameNewArray( Type, count, ... )				new Type[(count)]
+#define frameNewArrayAligned( Type, count, align )		new Type[(count)]
+#define frameDelete( ptr )								delete ptr
+#define frameDeleteArray( ptr, count )					delete [] ptr
 
 #endif
 
-//template< typename T>
 class DrinQFrameAllocator {
 public:
 
@@ -63,44 +65,23 @@ public:
 	MEMORY_API void Reset();
 
 	MEMORY_API static DrinQFrameAllocator& GetThreadStack();
+	MEMORY_API static int GetNrOfStacks();
 	
-	//template< typename T>
-	void* Allocate( size_t count, size_t size, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT ) {
+	MEMORY_API void* allocate( size_t size, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT );
 
-		size_t unalignedMemory = reinterpret_cast<size_t>( m_Memory + m_Marker );
-
-		size_t mask = alignment - 1;
-		uintptr_t misalignment = unalignedMemory & mask;
-		ptrdiff_t adjustment = misalignment > 0 ? alignment - misalignment : 0;
-		size_t allocationSize = count*size + adjustment;
-		uintptr_t alignedMemory = unalignedMemory + adjustment;
-
-		//Out of memory
-		assert( m_Marker + allocationSize < m_Size );
-
-		memset( m_Memory + m_Marker, FRAME_ALLOCATOR_PADDED, allocationSize );
-		m_Marker += allocationSize;
-
-		return reinterpret_cast<void*>( alignedMemory );
-	}
-
-	template< typename T>
-	T* Construct( size_t count, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT ) {
-		T* ptr = reinterpret_cast<T*>( Allocate( count, sizeof(T), alignment ) );
-
+	template<typename Type, typename... Args>
+	Type* construct( size_t count, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT, Args&&... args ) {
+		Type* data = static_cast<Type*>( allocate( count * sizeof( Type ), alignment ) );
 		for( size_t i = 0; i < count; ++i ) {
-			new (&ptr[i]) T();
+			new (&data[i]) Type(std::forward<Args>( args )...);
 		}
-
-		return ptr;
+		return data;
 	}
 
-	template< typename T>
-	void Destroy( T*& ptr ) {
-		ptr[0].~T();
-	}
+
 
 private:
+	static std::atomic_int m_NrOfCreatedStacks;
 	uint8_t* m_Memory = nullptr;
 	size_t m_Size;
 
