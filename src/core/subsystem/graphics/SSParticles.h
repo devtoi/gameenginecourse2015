@@ -4,7 +4,7 @@
 #include <gfx/ShaderProgram.h>
 #include <memory/ToiTemplatedPoolAllocator.h>
 #include <memory/ToiPoolAllocator.h>
-#include <memory/DeranesPoolAllocator.h>
+#include <memory/DeranesPoolAllocatorWithLock.h>
 #include <memory/StackAllocator.h>
 
 typedef ToiPoolAllocator PoolAllocator;
