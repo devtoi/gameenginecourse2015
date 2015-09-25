@@ -78,9 +78,9 @@ void SSStackAllocatorBasicTest::Test() {
 	int time = 1;
 	while ( time > 0 ) {
 		size_t marker = g_ThreadStack.GetMarker();
-		bool* derp = g_ThreadStack.Allocate<bool>( sizeof(bool) );
+		bool* derp = frameAlloc(bool, 1);// g_ThreadStack.Allocate(sizeof(bool));
 		*derp = true;
-		bool* herp = g_ThreadStack.Allocate<bool>( sizeof(bool) );
+		bool* herp = frameAlloc(bool, 1);//g_ThreadStack.Allocate<bool>( sizeof(bool) );
 		*herp = false;
 
 		g_ThreadStack.Unwind( marker );
