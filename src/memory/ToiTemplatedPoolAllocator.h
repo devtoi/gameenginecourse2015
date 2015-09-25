@@ -88,7 +88,7 @@ public:
 		m_FirstFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
-		memset( toAllocate, TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, m_BlockSize );
+		memset( toAllocate, TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, BlockSize );
 #endif
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
@@ -109,7 +109,7 @@ public:
 		//size_t* firstFreeTemp = m_FirstFree;
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
-		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, m_BlockSize );
+		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, BlockSize );
 #endif
 
 		size_t* toSet = reinterpret_cast<size_t*>( memory );
