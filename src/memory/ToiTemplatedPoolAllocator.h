@@ -31,12 +31,18 @@
 #define TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE 512
 
 //#define TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
+#define TOI_TEMPLATED_POOL_USE_THREAD_LOCAL
 
-#ifdef TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
+#if defined(TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR)
 	#define poolAlloc(Size) malloc(Size)
 	#define poolFree(Size, Ptr) free(Ptr)
 	#define poolNew(Type, ...) new Type(__VA_ARGS__)
 	#define poolDelete(Ptr) delete Ptr;
+#elif defined(TOI_TEMPLATED_POOL_USE_THREAD_LOCAL)
+	#define poolAlloc(Size) GetThreadPoolAllocator<Size>().allocate()
+	#define poolFree(Size, Ptr) GetThreadPoolAllocator<Size>().deallocate(Ptr)
+	#define poolNew(Type, ...) GetThreadPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
+	#define poolDelete(Ptr) GetThreadPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
 #else
 	#define poolAlloc(Size) GetPoolAllocator<Size>().allocate()
 	#define poolFree(Size, Ptr) GetPoolAllocator<Size>().deallocate(Ptr)
@@ -178,3 +184,8 @@ static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_B
 	return poolAllocator;
 }
 
+template<size_t BlockSize>
+static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetThreadPoolAllocator() {
+	static thread_local ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
+	return poolAllocator;
+}
