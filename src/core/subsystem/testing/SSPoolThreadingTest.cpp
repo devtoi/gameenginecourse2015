@@ -13,16 +13,21 @@ static const std::string l_ConcurrencyProfileName = "ConcurrencyAllocationTest";
 static const std::string l_ConcurrencySTDAllocProfileName = "ConcurrencySTDAllocationTest";
 static const std::string l_ConcurrencyWithAllocatorParameterProfileName = "ConcurrencyWithAllocatorParameterProfileName";
 
-void ConcurrencyAllocationTest ( ) {
+static std::chrono::high_resolution_clock::time_point l_ExecutionStarts[l_NrOfThreads];
+static std::chrono::high_resolution_clock::time_point l_ExecutionEnds[l_NrOfThreads];
+
+void ConcurrencyAllocationTest ( uint8_t threadID ) {
 	const int nrOfAllocations = TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 	const int allocationSize = l_AllocationSize;
 	size_t* allocations[nrOfAllocations]; // If it crashes here it might be because the array is to big
+	l_ExecutionStarts[threadID] = std::chrono::high_resolution_clock::now();
 	for ( int i = 0; i < nrOfAllocations; ++i ) {
 		allocations[i] = (size_t*)poolAlloc( allocationSize );
 	}
 	for ( int i = 0; i < nrOfAllocations; ++i ) {
 		poolFree( allocationSize, allocations[i] );
 	}
+	l_ExecutionEnds[threadID] = std::chrono::high_resolution_clock::now();
 }
 
 void ConcurrencyAllocationTestSTDAlloc ( ) {
@@ -54,7 +59,7 @@ void RunTests() {
 		std::thread threads[l_NrOfThreads];
 		PROFILE(AutoProfiler profile(l_ConcurrencyProfileName, Profiler::PROFILER_CATEGORY_STANDARD));
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
-			threads[i] = std::thread( ConcurrencyAllocationTest );
+			threads[i] = std::thread( ConcurrencyAllocationTest, i );
 		}
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
 			threads[i].join();
@@ -82,11 +87,24 @@ void RunTests() {
 	}
 }
 
-void SSPoolThreadingTest::Startup( SubsystemCollection* const ) {
-	RunTests();
+void PrintTestResult() {
 	std::cout << l_ConcurrencyProfileName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencyProfileName ) << "ms" << std::endl;
 	std::cout << l_ConcurrencyWithAllocatorParameterProfileName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencyWithAllocatorParameterProfileName ) << "ms" << std::endl;
 	std::cout << l_ConcurrencySTDAllocProfileName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencySTDAllocProfileName ) << "ms" << std::endl;
+	std::chrono::high_resolution_clock::time_point start;
+	std::chrono::high_resolution_clock::time_point end;
+	start = l_ExecutionStarts[0];
+	end = l_ExecutionEnds[0];
+	for ( uint8_t i = 1; i < l_NrOfThreads; ++i ) {
+		start = std::min( start, l_ExecutionStarts[i] );
+		end = std::min( end, l_ExecutionEnds[i] );
+	}
+	std::cout << std::chrono::duration<float, std::milli>( end - start ).count() << std::endl;
+}
+
+void SSPoolThreadingTest::Startup( SubsystemCollection* const ) {
+	RunTests();
+	PrintTestResult();
 }
 
 void SSPoolThreadingTest::Shutdown( SubsystemCollection* const subsystemCollection ) {
