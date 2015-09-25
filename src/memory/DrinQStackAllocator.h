@@ -33,10 +33,10 @@ public:
 	MEMORY_API void* allocate(size_t size, size_t alignment = STACK_ALLOCATOR_ALIGNMENT);
 
 	template<typename Type, typename... Args>
-	Type* construct(size_t count, size_t alignment = STACK_ALLOCATOR_ALIGNMENT, Args&&... args) {
-		Type* data = static_cast<Type*>(allocate(count * sizeof(Type), alignment));
-		for (size_t i = 0; i < count; ++i) {
-			new (&data[i]) Type(std::forward<Args>(args)...);
+	Type* construct( size_t count, Args&&... args ) {
+		Type* data = static_cast<Type*>( allocate( count * sizeof( Type ), alignof( Type ) ) );
+		for( size_t i = 0; i < count; ++i ) {
+			new (&data[i]) Type(std::forward<Args>( args )...);
 		}
 		return data;
 	}
