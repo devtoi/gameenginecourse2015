@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include "MemoryLibraryDefine.h"
 
 typedef uint16_t muint;

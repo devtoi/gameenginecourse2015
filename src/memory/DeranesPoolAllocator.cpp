@@ -1,7 +1,7 @@
 #include "DeranesPoolAllocator.h"
 
 #include <cassert>
-#include <iostream>	// TODOOE: Remove after HelloWorld test is removed.
+#include <stdlib.h>
 
 DeranesPoolAllocator::DeranesPoolAllocator( size_t blockSize, size_t nrOfBlocks ) {
 	size_t granularity	= sizeof( muint );

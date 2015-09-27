@@ -1,5 +1,6 @@
 #include "SSToiPoolTest.h"
 #include <memory/ToiTemplatedPoolAllocator.h>
+#include <memory/ToiTemplatedLockablePoolAllocator.h>
 #include <input/InputContext.h>
 
 const pString SSToiPoolTest::Name = "ToiPoolTest";

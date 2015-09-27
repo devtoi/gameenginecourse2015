@@ -6,12 +6,7 @@
 //#define TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
 #define TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE 0
 
-#define TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
-
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE std::this_thread::yield()
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE 
+//#define TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
 
 #include "MemoryLibraryDefine.h"
 #include <cstddef>
@@ -27,21 +22,21 @@
 #endif
 #include <thread>
 
-#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 2560000
+#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 256000
 #define TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE 512
 
 //#define TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
 
-#ifdef TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
-	#define poolAlloc(Size) malloc(Size)
-	#define poolFree(Size, Ptr) free(Ptr)
-	#define poolNew(Type, ...) new Type(__VA_ARGS__)
-	#define poolDelete(Ptr) delete Ptr;
+#if defined(TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR)
+	#define poolThreadAlloc(Size) malloc(Size)
+	#define poolThreadFree(Size, Ptr) free(Ptr)
+	#define poolThreadNew(Type, ...) new Type(__VA_ARGS__)
+	#define poolThreadDelete(Ptr) delete Ptr;
 #else
-	#define poolAlloc(Size) GetPoolAllocator<Size>().allocate()
-	#define poolFree(Size, Ptr) GetPoolAllocator<Size>().deallocate(Ptr)
-	#define poolNew(Type, ...) GetPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
-	#define poolDelete(Ptr) GetPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
+	#define poolThreadAlloc(Size) GetLockableThreadPoolAllocator<Size>().allocate()
+	#define poolThreadFree(Size, Ptr) GetLockableThreadPoolAllocator<Size>().deallocate(Ptr)
+	#define poolThreadNew(Type, ...) GetLockableThreadPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
+	#define poolThreadDelete(Ptr) GetLockableThreadPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
 #endif
 
 template <size_t BlockSize, size_t NrOfBlocks>
@@ -75,73 +70,37 @@ public:
 	}
 
 	void* allocate( ) {
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){ TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE; }
-#endif
-
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-		std::lock_guard<std::mutex> lock( m_Mutex );
-#endif
-
 		assert( m_FirstFree != nullptr );
 		size_t* toAllocate = m_FirstFree;
 		m_FirstFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
-		memset( toAllocate, TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, m_BlockSize );
+		memset( toAllocate, TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, BlockSize );
 #endif
 
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		m_Lock.clear(std::memory_order_release); 
-#endif
 		return toAllocate;
 	}
 
 	void deallocate( void* memory ) {
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE;}
-#endif
-
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-		std::lock_guard<std::mutex> lock( m_Mutex );
-#endif
-
-		//size_t* firstFreeTemp = m_FirstFree;
-
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
-		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, m_BlockSize );
+		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, BlockSize );
 #endif
 
 		size_t* toSet = reinterpret_cast<size_t*>( memory );
 		*toSet = reinterpret_cast<size_t>( m_FirstFree );
 		m_FirstFree = reinterpret_cast<size_t*>( memory );
-
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		m_Lock.clear(std::memory_order_release); 
-#endif
 	}
 
 
 	template<typename Type>
 	void PrintMemory() {
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		while (m_Lock.test_and_set(std::memory_order_acquire)){ TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK_YIELD_CODE; }
-#endif
+		assert( sizeof(Type ) <= BlockSize );
 
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-		std::lock_guard<std::mutex> lock( m_Mutex );
-#endif
-
-			assert( sizeof(Type ) <= BlockSize );
-
-			for ( size_t i = 0; i < NrOfBlocks * BlockSize; i+= BlockSize ) {
-				Type* block = reinterpret_cast<Type*>( m_Memory + i );
-				std::cout << std::hex << *block << std::endl;
-			}
+		for ( size_t i = 0; i < NrOfBlocks * BlockSize; i+= BlockSize ) {
+			Type* block = reinterpret_cast<Type*>( m_Memory + i );
+			std::cout << std::hex << *block << std::endl;
+		}
 		std::cout << std::resetiosflags( std::ios::hex ) << std::endl;;
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-		m_Lock.clear(std::memory_order_release); 
-#endif
 	}
 
 	template<typename Type, typename... Args>
@@ -164,17 +123,10 @@ private:
 	uint8_t* m_Memory = nullptr;
 	size_t* m_FirstFree = nullptr;
 
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-	std::mutex m_Mutex;
-#endif
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-	std::atomic_flag m_Lock = ATOMIC_FLAG_INIT;
-#endif
 };
 
 template<size_t BlockSize>
-static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetPoolAllocator() {
-	static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
+static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetLockableThreadPoolAllocator() {
+	static thread_local ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
 	return poolAllocator;
 }
-
