@@ -60,6 +60,7 @@ void SSToiPoolTest::SimpleAllocPoolSTD( size_t blockSize ) {
 			free( allocs[i] );
 		}
 	}
+	delete[] allocs;
 }
 
 void SSToiPoolTest::RunTests() {
