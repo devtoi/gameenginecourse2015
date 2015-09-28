@@ -24,6 +24,13 @@ public:
 private:
 	static int ID;
 
+	template <size_t BlockSize>
+	void SimpleAllocPoolShared();
+	template <size_t BlockSize>
+	void SimpleAllocPoolThreadLocal();
+	void SimpleAllocPoolSTD( size_t blockSize );
+	void RunTests();
+
 	struct TestStruct {
 		TestStruct( bool derp, int herp )
 			: Derp( derp ), Herp( herp ) {
