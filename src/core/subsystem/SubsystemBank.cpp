@@ -5,6 +5,7 @@
 #include "graphics/SSGraphicsInitialize.h"
 #include "graphics/SSParticles.h"
 #include "graphics/SSEqualizer.h"
+#include "profile/SSProfilerInOut.h"
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
@@ -25,6 +26,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSEqualizer>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
+	CreateSubsystemTemplate<SSProfilerInOut>();
 
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
@@ -43,9 +45,12 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSParticles::GetStaticID(), 0);
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
+	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
-	setUpdatePrio( SSEqualizer::GetStaticID(), 100); //after particles
-	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 ); // Before frame reset stuff 			| After all rendering
+
+	setUpdatePrio( SSEqualizer::GetStaticID(), 100); 	  // After particles
+	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
+	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
 	
 	// Shutdown priorities
 	auto setShutdownPrio = [this] ( int id, int prio ) {
