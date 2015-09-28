@@ -1,26 +1,15 @@
 #include "SSPoolThreadingTest.h"
 #include <thread>
-#include <memory/ToiTemplatedPoolAllocator.h>
-#include <memory/ToiTemplatedLockablePoolAllocator.h>
 #include <input/InputContext.h>
 #include <profiler/AutoProfiler.h>
 
 const pString SSPoolThreadingTest::Name = "PoolThreadingTest";
 int			  SSPoolThreadingTest::ID	= -1;
 
-static const int		 l_NrOfThreads					  = 4;
-static const int		 l_AllocationSize				  = 16;
-static const std::string l_ConcurrencySharedName		  = "Pool concurrency shared test";
-static const std::string l_ConcurrencyThreadLocalName	  = "Pool concurrency thread local";
-static const std::string l_ConcurrencySTDAllocName		  = "Pool concurrency standard test";
-static const std::string l_ConcurrencyParameterSharedName = "Pool concurrency shared as parameter";
-
-static std::chrono::high_resolution_clock::time_point l_ExecutionStarts[l_NrOfThreads];
-static std::chrono::high_resolution_clock::time_point l_ExecutionEnds[l_NrOfThreads];
 
 // Test concurrency performance for the shared pool allocator.
 // Allocates memory then frees it.
-void ConcurrencyShared( uint8_t threadID ) {
+void SSPoolThreadingTest::ConcurrencyShared( uint8_t threadID ) {
 	const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 	const int allocationSize  = l_AllocationSize;
 	size_t*	  allocations[nrOfAllocations]; // If it crashes here it might be because the array is to big
@@ -37,7 +26,7 @@ void ConcurrencyShared( uint8_t threadID ) {
 
 // Test concurrency performance for the shared pool allocator.
 // Allocates memory then frees it.
-void ConcurrencyThreadLocal( uint8_t threadID ) {
+void SSPoolThreadingTest::ConcurrencyThreadLocal( uint8_t threadID ) {
 	const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 	const int allocationSize  = l_AllocationSize;
 	size_t*	  allocations[nrOfAllocations]; // If it crashes here it might be because the array is to big
@@ -56,7 +45,7 @@ void ConcurrencyThreadLocal( uint8_t threadID ) {
 
 // Test concurrency performance for the standard allocator.
 // Allocates memory then frees it.
-void ConcurrencySTD() {
+void SSPoolThreadingTest::ConcurrencySTD() {
 	const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 	const int allocationSize  = l_AllocationSize;
 	size_t*	  allocations[nrOfAllocations]; // If it crashes here it might be because the array is to big
@@ -71,7 +60,7 @@ void ConcurrencySTD() {
 
 // Test concurrency performance for the shared pool allocator when send in as parameter.
 // Allocates memory then frees it.
-void ConcurrencySharedAsParameter( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator ) {
+void SSPoolThreadingTest::ConcurrencySharedAsParameter( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator ) {
 	const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 	size_t*	  allocations[nrOfAllocations];
 
@@ -83,13 +72,13 @@ void ConcurrencySharedAsParameter( ToiTemplatedLockablePoolAllocator<l_Allocatio
 	}
 }
 
-void RunTests() {
+void SSPoolThreadingTest::RunTests() {
 	poolFree( l_AllocationSize, poolAlloc( l_AllocationSize ) ); // Explicitly instantiate the allocator to not profile with allocator instatiation (One time cost)
 	{
 		std::thread threads[l_NrOfThreads];
 		PROFILE( AutoProfiler profile( l_ConcurrencySharedName, Profiler::PROFILER_CATEGORY_STANDARD ) );
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
-			threads[i] = std::thread( ConcurrencyShared, i );
+			threads[i] = std::thread( std::bind( &SSPoolThreadingTest::ConcurrencyShared, this, i ) );
 		}
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
 			threads[i].join();
@@ -99,7 +88,7 @@ void RunTests() {
 		std::thread threads[l_NrOfThreads];
 		PROFILE( AutoProfiler profile( l_ConcurrencyThreadLocalName, Profiler::PROFILER_CATEGORY_STANDARD ) );
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
-			threads[i] = std::thread( ConcurrencyThreadLocal, i );
+			threads[i] = std::thread( std::bind( &SSPoolThreadingTest::ConcurrencyThreadLocal, this, i ) );
 		}
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
 			threads[i].join();
@@ -109,7 +98,7 @@ void RunTests() {
 		std::thread threads[l_NrOfThreads];
 		PROFILE( AutoProfiler profile( l_ConcurrencySTDAllocName, Profiler::PROFILER_CATEGORY_STANDARD ) );
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
-			threads[i] = std::thread( ConcurrencySTD );
+			threads[i] = std::thread( std::bind( &SSPoolThreadingTest::ConcurrencySTD, this ) );
 		}
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
 			threads[i].join();
@@ -119,7 +108,7 @@ void RunTests() {
 		std::thread threads[l_NrOfThreads];
 		PROFILE( AutoProfiler profile( l_ConcurrencyParameterSharedName, Profiler::PROFILER_CATEGORY_STANDARD ) );
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
-			threads[i] = std::thread( ConcurrencySharedAsParameter, &GetLockablePoolAllocator<l_AllocationSize>() );
+			threads[i] = std::thread( std::bind( &SSPoolThreadingTest::ConcurrencySharedAsParameter, this, &GetSharedPoolAllocator<l_AllocationSize>() ) );
 		}
 		for ( int i = 0; i < l_NrOfThreads; ++i ) {
 			threads[i].join();
@@ -127,7 +116,7 @@ void RunTests() {
 	}
 }
 
-void PrintTestResult() {
+void SSPoolThreadingTest::PrintTestResult() {
 	std::cout << l_ConcurrencySharedName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencySharedName ) << "ms" << std::endl;
 	std::cout << l_ConcurrencyThreadLocalName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencyThreadLocalName ) << "ms" << std::endl;
 	std::cout << l_ConcurrencySTDAllocName << ": " << g_Profiler.GetEntryLatestMilliseconds( l_ConcurrencySTDAllocName ) << "ms" << std::endl;

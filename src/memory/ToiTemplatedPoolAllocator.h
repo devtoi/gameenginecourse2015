@@ -14,12 +14,6 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_MUTEX_LOCK
-	#include <mutex>
-#endif
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SPIN_LOCK
-	#include <atomic>
-#endif
 #include <thread>
 
 #define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 256000
@@ -33,10 +27,10 @@
 	#define poolThreadNew(Type, ...) new Type(__VA_ARGS__)
 	#define poolThreadDelete(Ptr) delete Ptr;
 #else
-	#define poolThreadAlloc(Size) GetLockableThreadPoolAllocator<Size>().allocate()
-	#define poolThreadFree(Size, Ptr) GetLockableThreadPoolAllocator<Size>().deallocate(Ptr)
-	#define poolThreadNew(Type, ...) GetLockableThreadPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
-	#define poolThreadDelete(Ptr) GetLockableThreadPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
+	#define poolThreadAlloc(Size) GetThreadPoolAllocator<Size>().allocate()
+	#define poolThreadFree(Size, Ptr) GetThreadPoolAllocator<Size>().deallocate(Ptr)
+	#define poolThreadNew(Type, ...) GetThreadPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
+	#define poolThreadDelete(Ptr) GetThreadPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
 #endif
 
 template <size_t BlockSize, size_t NrOfBlocks>
@@ -126,7 +120,7 @@ private:
 };
 
 template<size_t BlockSize>
-static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetLockableThreadPoolAllocator() {
+static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetThreadPoolAllocator() {
 	static thread_local ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
 	return poolAllocator;
 }

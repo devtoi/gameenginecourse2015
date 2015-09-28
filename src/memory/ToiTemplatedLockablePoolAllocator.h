@@ -38,10 +38,10 @@
 	#define poolNew(Type, ...) new Type(__VA_ARGS__)
 	#define poolDelete(Ptr) delete Ptr;
 #else
-	#define poolAlloc(Size) GetLockablePoolAllocator<Size>().allocate()
-	#define poolFree(Size, Ptr) GetLockablePoolAllocator<Size>().deallocate(Ptr)
-	#define poolNew(Type, ...) GetLockablePoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
-	#define poolDelete(Ptr) GetLockablePoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
+	#define poolAlloc(Size) GetSharedPoolAllocator<Size>().allocate()
+	#define poolFree(Size, Ptr) GetSharedPoolAllocator<Size>().deallocate(Ptr)
+	#define poolNew(Type, ...) GetSharedPoolAllocator<sizeof(Type)>().construct<Type>(__VA_ARGS__)
+	#define poolDelete(Ptr) GetSharedPoolAllocator<sizeof(*Ptr)>().destroy(Ptr)
 #endif
 
 template <size_t BlockSize, size_t NrOfBlocks>
@@ -173,7 +173,7 @@ private:
 };
 
 template<size_t BlockSize>
-static ToiTemplatedLockablePoolAllocator<BlockSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetLockablePoolAllocator() {
+static ToiTemplatedLockablePoolAllocator<BlockSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetSharedPoolAllocator() {
 	static ToiTemplatedLockablePoolAllocator<BlockSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
 	return poolAllocator;
 }
