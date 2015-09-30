@@ -1,5 +1,5 @@
 #include "SSEqualizer.h"
-
+#include <profiler/AutoProfiler.h>
 const pString SSEqualizer::Name = "Equalizer";
 int SSEqualizer::ID = -1;
 
@@ -32,18 +32,27 @@ void SSEqualizer::Shutdown( SubsystemCollection* const subsystemCollection ) {
 	FMOD_Sound_Release(m_Song);
 	FMOD_System_Close(m_SoundSystem);
 	FMOD_System_Release(m_SoundSystem);
+	if (m_Allocator) delete m_Allocator;
 }
 
 void SSEqualizer::UpdateUserLayer( const float deltaTime ) {
 	// Perform non-simulation update logic here (Don't forget to set update order priority!)
 	FMOD_System_Update(m_SoundSystem);
 	//Get spectrum data
+	PROFILE(AutoProfiler memAllocProfiler("VisualizerAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+#ifdef USE_STACK_ALLOC
 	float* leftSpectrum = (float*)m_Allocator->Allocate(sizeof(float) * SPECTRUM_SIZE);
 	float* rightSpectrum = (float*)m_Allocator->Allocate(sizeof(float) * SPECTRUM_SIZE);
-	
+	Particle2* particles = (Particle2*)m_Allocator->Allocate(sizeof(Particle2) * SPECTRUM_SIZE);
+#else
+	float* leftSpectrum = (float*)malloc(sizeof(float) * SPECTRUM_SIZE);
+	float* rightSpectrum = (float*)malloc(sizeof(float) * SPECTRUM_SIZE);
+	Particle2* particles = (Particle2*)malloc(sizeof(Particle2) * SPECTRUM_SIZE);
+#endif
+	PROFILE(memAllocProfiler.Stop());
+
 	FMOD_Channel_GetSpectrum(m_Channel, leftSpectrum, SPECTRUM_SIZE, 0, FMOD_DSP_FFT_WINDOW_TRIANGLE);
 	FMOD_Channel_GetSpectrum(m_Channel, rightSpectrum, SPECTRUM_SIZE, 1, FMOD_DSP_FFT_WINDOW_TRIANGLE);
-	Particle2* particles = (Particle2*)m_Allocator->Allocate(sizeof(Particle2) * SPECTRUM_SIZE);
 	int res = 8;
 	float maxH;
 	for (int i = 0; i < SPECTRUM_SIZE / res; ++i) {
@@ -64,7 +73,19 @@ void SSEqualizer::UpdateUserLayer( const float deltaTime ) {
 	glBindVertexArray(m_VAO);
 	glDrawArrays(GL_LINE_STRIP, 0, SPECTRUM_SIZE);
 
+	PROFILE(AutoProfiler memDellocProfiler("VisualizerDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+#ifdef USE_STACK_ALLOC
 	m_Allocator->Unwind(m_Marker);
+#else
+	free(leftSpectrum);
+	free(rightSpectrum);
+	free(particles);
+#endif
+	PROFILE(memDellocProfiler.Stop());
+	int i = 0;
+	PROFILE(AutoProfiler ProfilerProfile("ProfilerProfile", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	i = 1;
+	PROFILE(ProfilerProfile.Stop());
 }
 
 void SSEqualizer::UpdateSimulationLayer( const float timeStep ) {

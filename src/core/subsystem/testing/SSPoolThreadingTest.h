@@ -34,14 +34,15 @@ private:
 	const std::string l_ConcurrencySTDAllocName		   = "Pool concurrency standard test";
 	const std::string l_ConcurrencyParameterSharedName = "Pool concurrency shared as parameter";
 
-	std::chrono::high_resolution_clock::time_point l_ExecutionStarts[l_NrOfThreads];
-	std::chrono::high_resolution_clock::time_point l_ExecutionEnds[l_NrOfThreads];
+	uint64_t l_ExecutionStarts[l_NrOfThreads];
+	uint64_t l_ExecutionEnds[l_NrOfThreads];
 
 	void ConcurrencyShared ( uint8_t threadID );
 	void ConcurrencyThreadLocal ( uint8_t threadID );
-	void ConcurrencySTD ();
-	void ConcurrencySharedAsParameter ( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator );
+	void ConcurrencySTD ( uint8_t threadID );
+	void ConcurrencySharedAsParameter ( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator, uint8_t threadID );
 	void RunTests ();
 	void PrintTestResult ();
+	void AddProfileTime( const std::string& profileName );
 };
 

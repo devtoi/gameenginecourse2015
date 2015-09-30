@@ -4,37 +4,41 @@ const pString SSThreadTest::Name = "ThreadTest";
 int SSThreadTest::ID = -1;
 
 void SSThreadTest::Startup( SubsystemCollection* const subsystemCollection ) {
-	m_Patterns[1] = THREAD1_PATTERN;
-	m_Patterns[2] = THREAD2_PATTERN;
-	m_Patterns[3] = THREAD3_PATTERN;
-	m_Patterns[4] = THREAD4_PATTERN;
+	m_Patterns[0] = THREAD1_PATTERN;
+	m_Patterns[1] = THREAD2_PATTERN;
+	m_Patterns[2] = THREAD3_PATTERN;
+	m_Patterns[3] = THREAD4_PATTERN;
 	std::chrono::steady_clock::time_point start, end;
-	//m_Allocator = new StackAllocator(32ULL * 1024 * 1024 * 8);
-	for (int k = 1; k <= 8; k *= 2) {
+	m_Allocator = new StackAllocator(64 * MEBI);
+	int* memory[4];
+	memory[0] = (int*)m_Allocator->Allocate(8 * MEBI);
+	memory[1] = (int*)m_Allocator->Allocate(8 * MEBI);
+	memory[2] = (int*)m_Allocator->Allocate(8 * MEBI);
+	memory[3] = (int*)m_Allocator->Allocate(8 * MEBI);
+	counter = 0;
+	for (int k = 1; k <= 4; k *= 2) {
 		start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < k; i++) {
-			m_Threads[i] = std::thread(WriteTest, i);
+			m_Threads[i] = std::thread(WriteTest, m_Patterns[i], memory[i], k);
 		}
 		for (int i = 0; i < k; i++) {
 			m_Threads[i].join();
 		}
 		end = std::chrono::high_resolution_clock::now();
 		long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		std::cout << "thread test with "<< k <<" threads took " << duration << "ms\n";
+		std::cout << "thread test with " << k << " threads took " << duration << "ms\n";
+		counter = 0;
 	}
-
 }
 
 void SSThreadTest::Shutdown( SubsystemCollection* const subsystemCollection ) {
-	// Perform Cleanup here (Don't forget to set shutdown order priority!)
+	if(m_Allocator) delete m_Allocator;
 }
 
 void SSThreadTest::UpdateUserLayer( const float deltaTime ) {
-	// Perform non-simulation update logic here (Don't forget to set update order priority!)
 }
 
 void SSThreadTest::UpdateSimulationLayer( const float timeStep ) {
-	// Perform simulation update logic here (Don't forget to set update order priority!)
 }
 
 Subsystem* SSThreadTest::CreateNew( ) const {
@@ -45,21 +49,16 @@ int SSThreadTest::GetStaticID() {
 	return SSThreadTest::ID;
 }
 
-static void WriteTest(int id){
-	StackAllocator& allocator = StackAllocator::GetThreadStack();
-	size_t start = allocator.GetMarker();
-	const unsigned int framesToRun = 64;
-	const unsigned int iterationsPerFrame = 100000;
-	for (unsigned int i = 0; i < framesToRun; ++i)
-	{
-		for (unsigned int j = 0; j < iterationsPerFrame; ++j)
-		{
-			unsigned char* memoryPointer = (unsigned char*)allocator.Allocate(100);
-		}
-		allocator.Unwind(start);
+static void WriteTest(int pattern, int* memory, int numthreads) {
+	int it = 8 * MEBI / sizeof(int);
+	for (int i = 0; i < it; ++i) {
+		memory[i] = pattern;
 	}
-}
-
-static void ReadTest(int id){
-
+	counter++;
+	while (counter != numthreads);
+	for (int i = 0; i < it; ++i) {
+		if (memory[i] != pattern)
+			printf("Thread test failed\n");
+			break;
+	}
 }

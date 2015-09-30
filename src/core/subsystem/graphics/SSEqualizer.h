@@ -6,6 +6,7 @@
 #include <fmod/fmod.h>
 
 #define SPECTRUM_SIZE 4096
+#define USE_STACK_ALLOC
 
 struct Particle2 {
 	glm::vec4 Pos;

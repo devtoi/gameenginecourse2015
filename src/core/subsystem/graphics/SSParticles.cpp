@@ -3,6 +3,7 @@
 #include <time.h>
 #include <profiler/AutoProfiler.h>
 #include <input/InputContext.h>
+#include <utility/Randomizer.h>
 const pString SSParticles::Name = "Particles";
 int SSParticles::ID = -1;
 
@@ -20,6 +21,7 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
 	int size = MAX_PARTICLE_BLOCKS;
 	m_Allocator = new PoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+	g_Randomizer.Seed(935058620);
 }
 
 void SSParticles::Shutdown( SubsystemCollection* const subsystemCollection ) {
@@ -101,26 +103,24 @@ void SSParticles::SpawnBlock() {
 		if (!m_ParticleBlocks[i].IsActive) {
 			m_ParticleBlocks[i].IsActive = true;
 			m_ParticleBlocks[i].Particles = AllocateParticles();
-			m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + (rand() / (float)RAND_MAX) * MIN_BLOCK_TTL;
+			m_ParticleBlocks[i].TTL = MIN_BLOCK_TTL + GetRandomNumber() * MIN_BLOCK_TTL;
 
 			for (int k = 0; k < PARTICLE_BLOCK_COUNT; k++) {
-				m_ParticleBlocks[i].Particles[k].Pos = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-					(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-					(rand() / (float)RAND_MAX), 1);
-				m_ParticleBlocks[i].Particles[k].VelocityTTL = glm::vec4((rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-					(rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-					(rand() / (float)RAND_MAX) * 2.0f - 1.0f, 1);
+				m_ParticleBlocks[i].Particles[k].Pos = glm::vec4(GetRandomNumber() * 2.0f - 1.0f,
+					GetRandomNumber() * 2.0f - 1.0f,
+					GetRandomNumber(), 1);
+				m_ParticleBlocks[i].Particles[k].VelocityTTL = glm::vec4(GetRandomNumber() * 2.0f - 1.0f,
+					GetRandomNumber() * 2.0f - 1.0f,
+					GetRandomNumber() * 2.0f - 1.0f, 1);
 			}
-			//printf("Spawned a block of particles\n");
 			break; //end outer for
 		}
-
 	}
 }
 
 void SSParticles::ApplyGravity(Particle& p) {
 	const double particleMass = 0.0036726;
-	const glm::vec4 middle = glm::vec4(0, 0, 0.5f, 1);
+	const glm::vec4 middle = glm::vec4(0, 0, 1.0f, 1);
 
 	glm::vec4 pTom = middle - p.Pos;
 	double dist = glm::length(pTom);
@@ -129,7 +129,7 @@ void SSParticles::ApplyGravity(Particle& p) {
 }
 
 Particle* SSParticles::AllocateParticles() {
-	PROFILE(AutoProfiler memAllocProfiler("MemoryAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	PROFILE(AutoProfiler memAllocProfiler("ParticleAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
 	return (Particle*)poolAlloc( PARTICLE_BLOCK_SIZE );
 	//return (Particle*)m_Allocator->allocate( );
@@ -137,9 +137,13 @@ Particle* SSParticles::AllocateParticles() {
 }
 
 void SSParticles::DeallocateParticles(Particle* p) {
-	PROFILE(AutoProfiler memFreeProfiler("MemoryDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	PROFILE(AutoProfiler memFreeProfiler("ParticleDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//free(p);
 	poolFree( PARTICLE_BLOCK_SIZE, p );
 	//m_Allocator->deallocate( p );
 	PROFILE(memFreeProfiler.Stop());
+}
+
+float SSParticles::GetRandomNumber() {
+	return g_Randomizer.SimRand() / (float)UINT64_MAX;
 }

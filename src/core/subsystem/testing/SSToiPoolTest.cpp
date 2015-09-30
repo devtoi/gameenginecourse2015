@@ -98,7 +98,6 @@ void SSToiPoolTest::Shutdown( SubsystemCollection* const ) {
 void SSToiPoolTest::UpdateUserLayer( const float ) {
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_C ) ) {
 		RunTests();
-		g_Profiler.PrintAveragesMilliSeconds();
 	}
 }
 
