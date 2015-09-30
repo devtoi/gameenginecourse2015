@@ -21,4 +21,6 @@ public:
 	const static pString Name;
 private:
 	static int ID;
+
+	void SaveProfilerTimes();
 };
