@@ -11,13 +11,16 @@
 #define STACK_ALLOCATOR_PADDED 127
 #define STACK_ALLOCATOR_RESET 126
 
+//#define RESET_MEMORY
+//#define THREAD_SAFE
+
 class DrinQStackAllocator {
 public:
 
 	MEMORY_API DrinQStackAllocator( );
 
 	MEMORY_API DrinQStackAllocator( size_t size );
-				~DrinQStackAllocator();
+	MEMORY_API ~DrinQStackAllocator();
 	MEMORY_API size_t GetMarker();
 
 	MEMORY_API uint8_t* GetBuffer();
@@ -25,12 +28,8 @@ public:
 	MEMORY_API size_t GetSize();
 
 	MEMORY_API void Unwind( size_t marker );
-
-	//MEMORY_API void Reset();
-
-	//MEMORY_API static DrinQStackAllocator& GetThreadStack();
 	
-	MEMORY_API void* allocate(size_t size, size_t alignment = STACK_ALLOCATOR_ALIGNMENT);
+	MEMORY_API void* Allocate(size_t size, size_t alignment = STACK_ALLOCATOR_ALIGNMENT);
 
 	template<typename Type, typename... Args>
 	Type* construct( size_t count, Args&&... args ) {

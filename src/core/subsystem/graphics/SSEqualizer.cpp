@@ -23,7 +23,7 @@ void SSEqualizer::Startup( SubsystemCollection* const subsystemCollection ) {
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Particle2), (unsigned char*) nullptr + sizeof(glm::vec4));
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Particle2) * SPECTRUM_SIZE, nullptr, GL_DYNAMIC_DRAW);
 	//set up allocator
-	m_Allocator = new StackAllocator(sizeof(Particle2) * SPECTRUM_SIZE * 3); //get a bit more than needed but oh well
+	m_Allocator = new StackAllocatorImpl(sizeof(Particle2) * SPECTRUM_SIZE * 3); //get a bit more than needed but oh well
 	m_Marker = m_Allocator->GetMarker();
 }
 
