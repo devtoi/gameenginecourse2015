@@ -9,7 +9,7 @@ void SSThreadTest::Startup( SubsystemCollection* const subsystemCollection ) {
 	m_Patterns[2] = THREAD3_PATTERN;
 	m_Patterns[3] = THREAD4_PATTERN;
 	std::chrono::steady_clock::time_point start, end;
-	m_Allocator = new StackAllocator(64 * MEBI);
+	m_Allocator = new ToiStackAllocator(64 * MEBI);
 	int* memory[4];
 	memory[0] = (int*)m_Allocator->Allocate(8 * MEBI);
 	memory[1] = (int*)m_Allocator->Allocate(8 * MEBI);

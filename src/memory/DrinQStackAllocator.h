@@ -4,12 +4,12 @@
 #include <mutex>
 #include "MemoryLibraryDefine.h"
 
-#define STACK_ALLOCATOR_SIZE 64
-#define STACK_ALLOCATOR_ALIGNMENT 8
+#define DRINQ_STACK_ALLOCATOR_SIZE 64
+#define DRINQ_STACK_ALLOCATOR_ALIGNMENT 8
 
-#define STACK_ALLOCATOR_INITIAL 128
-#define STACK_ALLOCATOR_PADDED 127
-#define STACK_ALLOCATOR_RESET 126
+#define DRINQ_STACK_ALLOCATOR_INITIAL 128
+#define DRINQ_STACK_ALLOCATOR_PADDED 127
+#define DRINQ_STACK_ALLOCATOR_RESET 126
 
 //#define RESET_MEMORY
 //#define THREAD_SAFE
@@ -29,7 +29,7 @@ public:
 
 	MEMORY_API void Unwind( size_t marker );
 	
-	MEMORY_API void* Allocate(size_t size, size_t alignment = STACK_ALLOCATOR_ALIGNMENT);
+	MEMORY_API void* Allocate(size_t size, size_t alignment = DRINQ_STACK_ALLOCATOR_ALIGNMENT);
 
 	template<typename Type, typename... Args>
 	Type* construct( size_t count, Args&&... args ) {

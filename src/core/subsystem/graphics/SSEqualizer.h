@@ -3,10 +3,10 @@
 #include "../Subsystem.h"
 #include <gfx/ShaderProgram.h>
 #include <fmod/fmod.h>
-//#include <memory/StackAllocator.h>
-//typedef StackAllocator StackAllocatorImpl;
-#include <memory/DrinQStackAllocator.h>
-typedef DrinQStackAllocator StackAllocatorImpl;
+#include <memory/ToiStackAllocator.h>
+typedef  ToiStackAllocator StackAllocator;
+//#include <memory/DrinQStackAllocator.h>
+//typedef DrinQStackAllocator StackAllocator;
 
 #define SPECTRUM_SIZE 4096
 #define USE_STACK_ALLOC
@@ -38,7 +38,7 @@ private:
 	gfx::ShaderProgram		m_RenderProgram;
 	unsigned int			m_VBO = 0;
 	unsigned int			m_VAO = 0;
-	StackAllocatorImpl*		m_Allocator;
+	StackAllocator*			m_Allocator;
 	size_t					m_Marker;
 	FMOD_SYSTEM*			m_SoundSystem;
 	FMOD_SOUND*				m_Song;

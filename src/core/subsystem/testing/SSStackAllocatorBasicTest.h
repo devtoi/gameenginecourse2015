@@ -3,8 +3,6 @@
 #include "../Subsystem.h"
 #include <thread>
 
-class StackAllocator;
-
 class SSStackAllocatorBasicTest : public Subsystem {
 public:
 	SSStackAllocatorBasicTest( int ID ) : Subsystem( Name, ID ) {

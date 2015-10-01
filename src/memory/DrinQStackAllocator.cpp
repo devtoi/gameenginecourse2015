@@ -9,7 +9,7 @@ void DrinQStackAllocator::Unwind( size_t marker ) {
 
 #ifdef RESET_MEMORY
 	size_t dist = m_Marker - marker;
-	memset( m_Memory + marker, STACK_ALLOCATOR_RESET, m_Marker - marker );
+	memset( m_Memory + marker, DRINQ_STACK_ALLOCATOR_RESET, m_Marker - marker );
 #endif
 
 	m_Marker = marker;
@@ -21,13 +21,13 @@ void DrinQStackAllocator::Unwind( size_t marker ) {
 }
 
 DrinQStackAllocator::DrinQStackAllocator( ) {
-	DrinQStackAllocator( STACK_ALLOCATOR_SIZE );
+	DrinQStackAllocator( DRINQ_STACK_ALLOCATOR_SIZE );
 }
 
 DrinQStackAllocator::DrinQStackAllocator( size_t size ) {
 	m_Memory = (uint8_t*)malloc( size );
 #ifdef RESET_MEMORY
-	memset(  m_Memory, STACK_ALLOCATOR_INITIAL, size );
+	memset(  m_Memory, DRINQ_STACK_ALLOCATOR_INITIAL, size );
 #endif
 	m_Size = size;
 	m_Marker = 0;
@@ -65,7 +65,7 @@ void* DrinQStackAllocator::Allocate( size_t size, size_t alignment ) {
 	//Out of memory
 	assert( m_Marker + allocationSize < m_Size );
 #ifdef RESET_MEMORY
-	memset( m_Memory + m_Marker, STACK_ALLOCATOR_PADDED, allocationSize );
+	memset( m_Memory + m_Marker, DRINQ_STACK_ALLOCATOR_PADDED, allocationSize );
 #endif
 	m_Marker += allocationSize;
 

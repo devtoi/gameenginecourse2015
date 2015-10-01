@@ -6,7 +6,7 @@
 #include <memory/ToiTemplatedLockablePoolAllocator.h>
 #include <memory/ToiPoolAllocator.h>
 #include <memory/DeranesPoolAllocatorWithLock.h>
-#include <memory/StackAllocator.h>
+#include <memory/ToiStackAllocator.h>
 
 typedef ToiPoolAllocator PoolAllocator;
 

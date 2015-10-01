@@ -1,6 +1,6 @@
 #pragma once
 #include <thread>
-#include <memory/StackAllocator.h>
+#include <memory/ToiStackAllocator.h>
 #include "../Subsystem.h"
 
 #define THREAD1_PATTERN 0x0F0F
@@ -29,7 +29,7 @@ public:
 	const static pString Name;
 private:
 	static int ID;
-	StackAllocator* m_Allocator;
+	ToiStackAllocator* m_Allocator;
 
 	std::thread m_Threads[8];
 	unsigned int m_Patterns[4];
