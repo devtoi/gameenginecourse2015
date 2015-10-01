@@ -44,34 +44,35 @@ void RegisterLogger() {
 	} loggerRegisters[] =
 	{
 		// Name					Parent
-		{ "Graphics",		  ""				 },
-		{ "GraphicsEngine",	  "Graphics"		 },
-		{ "Window",			  "Graphics"		 },
-		{ "Shader",			  "Graphics"		 },
-		{ "ShaderProgram",	  "Graphics"		 },
-		{ "ShaderBank",		  "Graphics"		 },
+		{ "Graphics",		  ""							},
+		{ "GraphicsEngine",	  "Graphics"					},
+		{ "Window",			  "Graphics"					},
+		{ "Shader",			  "Graphics"					},
+		{ "ShaderProgram",	  "Graphics"					},
+		{ "ShaderBank",		  "Graphics"					},
 
-		{ "SubsystemManager", ""				 },
+		{ "SubsystemManager", ""							},
 
-		{ "Subsystem",		  ""				 },
-		{ "SSWindow",		  "Subsystem"		 },
-		{ "SSGraphics",		  "Subsystem"		 },
+		{ "Subsystem",		  ""							},
+		{ "SSWindow",		  "Subsystem"					},
+		{ "SSGraphics",		  "Subsystem"					},
+		{ "ProfileInOut",	  "Subsystem"					},
 
-		{ "SDLEventManager",  ""				 },
+		{ "SDLEventManager",  ""							},
 
-		{ "Engine",  	      ""				 },
+		{ "Engine",			  ""							},
 
-		{ "Input",			  ""				 },
-		{ "KeyBindings",	  "Input"			 },
-		{ "GamepadState",	  "Input"			 },
+		{ "Input",			  ""							},
+		{ "KeyBindings",	  "Input"						},
+		{ "GamepadState",	  "Input"						},
 
-		{ "Utility",		  ""				 },
-		{ "Config",			  "Utility"			 },
-		{ "CallbackConfig",	  "Utility"			 },
-		{ "ConfigManager",	  "Utility"			 },
+		{ "Utility",		  ""							},
+		{ "Config",			  "Utility"						},
+		{ "CallbackConfig",	  "Utility"						},
+		{ "ConfigManager",	  "Utility"						},
 
-		{ "Dataoriented", 	  "" 				 },
-		{ "CollectionHelper", "Dataoriented"	 },
+		{ "Dataoriented",	  ""							},
+		{ "CollectionHelper", "Dataoriented"				},
 	};
 
 	for ( auto& entry : loggerRegisters ) {
