@@ -37,7 +37,7 @@ void SSToiPoolTest::SimpleAllocPoolThreadLocal() {
 	}
 
 	{
-		PROFILE( AutoProfiler profile( "SimpleDeallocPoolShared" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+		PROFILE( AutoProfiler profile( "SimpleDeallocPoolThreadLocal" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 		for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 			poolThreadFree( BlockSize, allocs[i] );
 		}

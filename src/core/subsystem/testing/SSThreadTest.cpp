@@ -49,7 +49,7 @@ int SSThreadTest::GetStaticID() {
 	return SSThreadTest::ID;
 }
 
-static void WriteTest(int pattern, int* memory, int numthreads) {
+void WriteTest(int pattern, int* memory, int numthreads) {
 	int it = 8 * MEBI / sizeof(int);
 	for (int i = 0; i < it; ++i) {
 		memory[i] = pattern;
