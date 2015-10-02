@@ -33,7 +33,7 @@ public:
 
 	template<typename Type, typename... Args>
 	Type* construct( size_t count, Args&&... args ) {
-		Type* data = static_cast<Type*>( allocate( count * sizeof( Type ), alignof( Type ) ) );
+		Type* data = static_cast<Type*>( Allocate( count * sizeof( Type ), alignof( Type ) ) );
 		for( size_t i = 0; i < count; ++i ) {
 			new (&data[i]) Type(std::forward<Args>( args )...);
 		}
