@@ -30,7 +30,7 @@ void SSPoolThreadingTest::AddProfileTime( const std::string& profileName ) {
 	end	  = l_ExecutionEnds[0];
 	for ( uint8_t i = 1; i < m_NrOfThreads; ++i ) {
 		start = std::min( start, l_ExecutionStarts[i] );
-		end	  = std::min( end, l_ExecutionEnds[i] );
+		end	  = std::max( end, l_ExecutionEnds[i] );
 	}
 	Profiler::ProfilerManager::GetInstance().StartEntry ( profileName + "," + rToString( m_NrOfThreads ) );
 	Profiler::ProfilerManager::GetInstance().EndEntry ( end - start, "", Profiler::PROFILER_CATEGORY_STANDARD );

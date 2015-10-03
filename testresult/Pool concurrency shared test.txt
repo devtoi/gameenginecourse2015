@@ -1,32 +1,80 @@
-12,1,61.875
-12,2,67.4218
-12,4,98.8839
-12,8,113.014
-128,1,91.6501
-128,2,82.654
-128,4,92.3227
-128,8,104.888
-16,1,63.532
-16,2,71.4651
-16,4,85.5495
-16,8,107.076
-24,1,63.9122
-24,2,72.8686
-24,4,60.119
-24,8,75.0647
-256,1,95.5668
-256,2,80.43
-256,4,116.455
-256,8,128.942
-32,1,69.8421
-32,2,70.4824
-32,4,63.0872
-32,8,74.5565
-64,1,85.834
-64,2,81.4877
-64,4,72.439
-64,8,78.2706
-8,1,44.8749
-8,2,53.2007
-8,4,74.6517
-8,8,86.8653
+12,1,60.7678
+12,2,71.153
+12,4,93.5152
+12,8,129.769
+128,1,90.7324
+128,2,93.3134
+128,4,119.416
+128,8,138.969
+16,1,65.3509
+16,2,72.4962
+16,4,91.0772
+16,8,126.26
+192,1,96.7096
+192,2,98.7619
+192,4,129.85
+192,8,171.977
+24,1,70.1495
+24,2,74.9699
+24,4,91.1547
+24,8,117.86
+256,1,97.9505
+256,2,100.91
+256,4,122.684
+256,8,169.432
+32,1,73.7112
+32,2,81.145
+32,4,102.144
+32,8,125.584
+64,1,87.4499
+64,2,91.0519
+64,4,107.224
+64,8,145.417
+8,1,51.7848
+8,2,63.5522
+8,4,99.8545
+8,8,130.751
+96,1,89.435
+96,2,93.6448
+96,4,124.544
+96,8,148.827
+Pool concurrency shared test,12,1,61.5624
+Pool concurrency shared test,12,2,73.4663
+Pool concurrency shared test,12,4,96.9192
+Pool concurrency shared test,12,8,132.307
+Pool concurrency shared test,128,1,91.4647
+Pool concurrency shared test,128,2,90.2469
+Pool concurrency shared test,128,4,115.114
+Pool concurrency shared test,128,8,137.783
+Pool concurrency shared test,16,1,60.4359
+Pool concurrency shared test,16,2,68.5286
+Pool concurrency shared test,16,4,86.5199
+Pool concurrency shared test,16,8,119.85
+Pool concurrency shared test,192,1,94.9034
+Pool concurrency shared test,192,2,99.4681
+Pool concurrency shared test,192,4,131.337
+Pool concurrency shared test,192,8,157.077
+Pool concurrency shared test,24,1,68.143
+Pool concurrency shared test,24,2,74.0443
+Pool concurrency shared test,24,4,92.7638
+Pool concurrency shared test,24,8,121.327
+Pool concurrency shared test,256,1,94.7926
+Pool concurrency shared test,256,2,97.1928
+Pool concurrency shared test,256,4,126.177
+Pool concurrency shared test,256,8,160.127
+Pool concurrency shared test,32,1,75.2634
+Pool concurrency shared test,32,2,81.106
+Pool concurrency shared test,32,4,99.0022
+Pool concurrency shared test,32,8,125.607
+Pool concurrency shared test,64,1,82.4452
+Pool concurrency shared test,64,2,88.0465
+Pool concurrency shared test,64,4,106.858
+Pool concurrency shared test,64,8,140.212
+Pool concurrency shared test,8,1,47.0707
+Pool concurrency shared test,8,2,59.2732
+Pool concurrency shared test,8,4,88.825
+Pool concurrency shared test,8,8,128.772
+Pool concurrency shared test,96,1,89.4187
+Pool concurrency shared test,96,2,93.2805
+Pool concurrency shared test,96,4,129.412
+Pool concurrency shared test,96,8,157.103

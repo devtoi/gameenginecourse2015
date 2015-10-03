@@ -50,7 +50,7 @@ private:
 		for ( int i = 0; i < m_NrOfThreads; ++i ) {
 			threads[i].join();
 		}
-		AddProfileTime( l_ConcurrencySharedName + rToString( allocationSize) );
+		AddProfileTime( l_ConcurrencySharedName + "," + rToString( allocationSize) );
 	}
 
 	template<int allocationSize>
@@ -63,7 +63,7 @@ private:
 		for ( int i = 0; i < m_NrOfThreads; ++i ) {
 			threads[i].join();
 		}
-		AddProfileTime( l_ConcurrencyThreadLocalName + rToString( allocationSize) );
+		AddProfileTime( l_ConcurrencyThreadLocalName + "," + rToString( allocationSize) );
 	}
 
 	template<int allocationSize>
@@ -76,7 +76,7 @@ private:
 		for ( int i = 0; i < m_NrOfThreads; ++i ) {
 			threads[i].join();
 		}
-		AddProfileTime( l_ConcurrencySTDAllocName + rToString( allocationSize) );
+		AddProfileTime( l_ConcurrencySTDAllocName + "," + rToString( allocationSize) );
 	}
 
 	// Test concurrency performance for the shared pool allocator.

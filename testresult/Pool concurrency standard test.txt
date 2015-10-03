@@ -1,32 +1,80 @@
-12,1,48.9681
-12,2,24.3096
-12,4,12.2103
-12,8,8.48087
-128,1,117.598
-128,2,55.8268
-128,4,30.7927
-128,8,23.8197
-16,1,49.101
-16,2,23.9637
-16,4,13.2565
-16,8,7.34858
-24,1,51.7708
-24,2,25.3713
-24,4,12.2948
-24,8,8.16141
-256,1,172.14
-256,2,138.849
-256,4,58.5865
-256,8,36.8278
-32,1,56.4501
-32,2,24.2242
-32,4,13.8602
-32,8,8.69944
-64,1,71.5439
-64,2,29.0195
-64,4,17.3674
-64,8,13.8873
-8,1,53.4352
-8,2,23.8341
-8,4,13.1396
-8,8,7.42725
+12,1,50.0302
+12,2,26.5077
+12,4,19.2266
+12,8,16.3801
+128,1,112.876
+128,2,63.1178
+128,4,35.7465
+128,8,33.2825
+16,1,51.308
+16,2,25.9282
+16,4,20.0671
+16,8,17.7622
+192,1,146.545
+192,2,101.115
+192,4,52.8859
+192,8,42.9379
+24,1,50.1357
+24,2,26.5337
+24,4,18.4084
+24,8,16.858
+256,1,164.049
+256,2,136.567
+256,4,67.2993
+256,8,47.1072
+32,1,54.9324
+32,2,26.744
+32,4,19.8285
+32,8,21.3365
+64,1,74.6335
+64,2,32.5258
+64,4,24.9025
+64,8,27.9667
+8,1,51.3663
+8,2,27.5479
+8,4,19.0777
+8,8,17.2973
+96,1,82.3533
+96,2,37.225
+96,4,31.3056
+96,8,33.5755
+Pool concurrency standard test,12,1,49.69
+Pool concurrency standard test,12,2,25.5372
+Pool concurrency standard test,12,4,16.411
+Pool concurrency standard test,12,8,15.5583
+Pool concurrency standard test,128,1,113.522
+Pool concurrency standard test,128,2,60.9374
+Pool concurrency standard test,128,4,37.3032
+Pool concurrency standard test,128,8,33.7103
+Pool concurrency standard test,16,1,49.9217
+Pool concurrency standard test,16,2,26.5726
+Pool concurrency standard test,16,4,16.9454
+Pool concurrency standard test,16,8,15.8778
+Pool concurrency standard test,192,1,144.49
+Pool concurrency standard test,192,2,99.2987
+Pool concurrency standard test,192,4,52.2138
+Pool concurrency standard test,192,8,42.8412
+Pool concurrency standard test,24,1,50.842
+Pool concurrency standard test,24,2,24.6069
+Pool concurrency standard test,24,4,20.3352
+Pool concurrency standard test,24,8,16.7877
+Pool concurrency standard test,256,1,162.143
+Pool concurrency standard test,256,2,140.097
+Pool concurrency standard test,256,4,69.34
+Pool concurrency standard test,256,8,45.9233
+Pool concurrency standard test,32,1,53.7062
+Pool concurrency standard test,32,2,25.0415
+Pool concurrency standard test,32,4,19.9754
+Pool concurrency standard test,32,8,19.258
+Pool concurrency standard test,64,1,72.0056
+Pool concurrency standard test,64,2,31.2948
+Pool concurrency standard test,64,4,27.05
+Pool concurrency standard test,64,8,27.2565
+Pool concurrency standard test,8,1,52.1039
+Pool concurrency standard test,8,2,24.5146
+Pool concurrency standard test,8,4,19.2634
+Pool concurrency standard test,8,8,17.3561
+Pool concurrency standard test,96,1,82.9156
+Pool concurrency standard test,96,2,33.2878
+Pool concurrency standard test,96,4,28.8143
+Pool concurrency standard test,96,8,33.1779
