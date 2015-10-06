@@ -33,14 +33,14 @@ private:
 	void SimpleAllocPoolShared() {
 		size_t** allocs = new size_t*[TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS];
 		{
-			PROFILE( AutoProfiler profile( "SimpleAllocPoolShared" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleAllocPoolShared," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				allocs[i] = ( size_t* )poolAlloc( BlockSize );
 			}
 		}
 
 		{
-			PROFILE( AutoProfiler profile( "SimpleDeallocPoolShared" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleDeallocPoolShared," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				poolFree( BlockSize, allocs[i] );
 			}
@@ -52,14 +52,14 @@ private:
 		poolThreadFree( BlockSize, poolThreadAlloc( BlockSize ) );
 		size_t** allocs = new size_t*[TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS];
 		{
-			PROFILE( AutoProfiler profile( "SimpleAllocPoolThreadLocal" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleAllocPoolThreadLocal," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				allocs[i] = ( size_t* )poolThreadAlloc( BlockSize );
 			}
 		}
 
 		{
-			PROFILE( AutoProfiler profile( "SimpleDeallocPoolThreadLocal" + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleDeallocPoolThreadLocal," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				poolThreadFree( BlockSize, allocs[i] );
 			}
@@ -70,14 +70,14 @@ private:
 	void SimpleAllocPoolSTD( size_t blockSize ) {
 		size_t** allocs = new size_t*[TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS];
 		{
-			PROFILE( AutoProfiler profile( "SimpleSTDalloc" + rToString( blockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleSTDalloc," + rToString( blockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				allocs[i] = ( size_t* )operator new( blockSize );
 			}
 		}
 
 		{
-			PROFILE( AutoProfiler profile( "SimpleSTDdealloc" + rToString( blockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			PROFILE( AutoProfiler profile( "SimpleSTDdealloc," + rToString( blockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				free( allocs[i] );
 			}

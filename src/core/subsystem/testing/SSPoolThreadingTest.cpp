@@ -87,8 +87,8 @@ void SSPoolThreadingTest::Shutdown( SubsystemCollection* const ) {
 }
 
 void SSPoolThreadingTest::UpdateUserLayer( const float ) {
-	if ( g_Input.KeyUpDown( SDL_SCANCODE_C ) ) {
-		for ( size_t i = 0; i < 10; ++i ) {
+	if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
+		for ( size_t i = 0; i < 50; ++i ) {
 			m_NrOfThreads = 1;
 			RunTests();
 			m_NrOfThreads = 2;

@@ -43,8 +43,13 @@ public:
 		std::cout << "Creating templated pool allocator for blocksize " << BlockSize << std::endl;
 #endif
 
-		m_Memory = static_cast<uint8_t*>( operator new( BlockSize * NrOfBlocks ) );
+		m_ActualAllocation = static_cast<uint8_t*>( operator new( BlockSize * NrOfBlocks + BlockSize ) );
 
+		// Align allocation to block size
+		size_t mask = reinterpret_cast<size_t>( m_ActualAllocation ) & ( BlockSize - 1 );
+		m_Memory = reinterpret_cast<uint8_t*>( reinterpret_cast<size_t>( m_ActualAllocation ) + ( mask > 0 ? BlockSize - mask : 0 ) );
+
+		// Fill blocks
 		for ( size_t i = 0; i < NrOfBlocks * BlockSize; i+= BlockSize ) {
 			size_t* nextFree = reinterpret_cast<size_t*>( m_Memory + i );
 			*nextFree = reinterpret_cast<size_t>( m_Memory + i + BlockSize );
@@ -60,7 +65,7 @@ public:
 #ifdef TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
 		std::cout << "Destroying templated pool allocator for blocksize " << BlockSize << std::endl;
 #endif
-		free( m_Memory );
+		free( m_ActualAllocation );
 	}
 
 	void* allocate( ) {
@@ -115,6 +120,7 @@ public:
 
 private:
 	uint8_t* m_Memory = nullptr;
+	uint8_t* m_ActualAllocation = nullptr;
 	size_t* m_FirstFree = nullptr;
 
 };
