@@ -8,7 +8,7 @@ int				SSDeranesPoolTest::ID	= -1;
 void SSDeranesPoolTest::Startup( SubsystemCollection* const subsystemCollection ) {
 	std::cout << "SSDeranesPoolTest says: Hello World!" << std::endl;
 
-	DeranesPoolAllocator allocator( 8, 64 );
+	DeranesPoolAllocator allocator( 4, 256, 4 );
 
 	void* derp = allocator.allocate();
 	void* herp = allocator.allocate();

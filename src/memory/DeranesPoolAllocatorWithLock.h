@@ -16,7 +16,7 @@
 
 class DeranesPoolAllocatorWithLock {
 public:
-	MEMORY_API explicit			DeranesPoolAllocatorWithLock	( size_t blockSize, size_t nrOfBlocks );
+	MEMORY_API explicit			DeranesPoolAllocatorWithLock	( size_t blockSize, size_t nrOfBlocks, size_t alignment = sizeof(void*) );
 	MEMORY_API					~DeranesPoolAllocatorWithLock	();
 	MEMORY_API void*			allocate						();
 	MEMORY_API void				deallocate						( void* memory );

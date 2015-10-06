@@ -9,7 +9,7 @@
 	#define DERANES_POOL_ALLOCATOR_UNLOCK	m_Lock.clear( std::memory_order_release );
 #endif
 
-DeranesPoolAllocatorWithLock::DeranesPoolAllocatorWithLock(size_t blockSize, size_t nrOfBlocks) : m_Allocator( blockSize, nrOfBlocks ) {
+DeranesPoolAllocatorWithLock::DeranesPoolAllocatorWithLock( size_t blockSize, size_t nrOfBlocks, size_t alignment ) : m_Allocator( blockSize, nrOfBlocks, alignment ) {
 
 }
 
@@ -23,7 +23,7 @@ void* DeranesPoolAllocatorWithLock::allocate() {
 	DERANES_POOL_ALLOCATOR_UNLOCK
 }
 
-void DeranesPoolAllocatorWithLock::deallocate( void * memory ) {
+void DeranesPoolAllocatorWithLock::deallocate( void* memory ) {
 	DERANES_POOL_ALLOCATOR_LOCK
 	m_Allocator.deallocate( memory );
 	DERANES_POOL_ALLOCATOR_UNLOCK
