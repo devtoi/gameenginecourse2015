@@ -47,6 +47,11 @@ void SSPoolThreadingTest::RunTests( ) {
 	RunConcurrencyShared<128>();
 	RunConcurrencyShared<192>();
 	RunConcurrencyShared<256>();
+	RunConcurrencyShared<512>();
+	RunConcurrencyShared<768>();
+	RunConcurrencyShared<1024>();
+	RunConcurrencyShared<2048>();
+	RunConcurrencyShared<4096>();
 	RunConcurrencyThreadLocal<8>();
 	RunConcurrencyThreadLocal<12>();
 	RunConcurrencyThreadLocal<16>();
@@ -57,6 +62,11 @@ void SSPoolThreadingTest::RunTests( ) {
 	RunConcurrencyThreadLocal<128>();
 	RunConcurrencyThreadLocal<192>();
 	RunConcurrencyThreadLocal<256>();
+	RunConcurrencyThreadLocal<512>();
+	RunConcurrencyThreadLocal<768>();
+	RunConcurrencyThreadLocal<1024>();
+	RunConcurrencyThreadLocal<2048>();
+	RunConcurrencyThreadLocal<4096>();
 	RunConcurrencySTD<8>();
 	RunConcurrencySTD<12>();
 	RunConcurrencySTD<16>();
@@ -67,6 +77,11 @@ void SSPoolThreadingTest::RunTests( ) {
 	RunConcurrencySTD<128>();
 	RunConcurrencySTD<192>();
 	RunConcurrencySTD<256>();
+	RunConcurrencySTD<512>();
+	RunConcurrencySTD<768>();
+	RunConcurrencySTD<1024>();
+	RunConcurrencySTD<2048>();
+	RunConcurrencySTD<4096>();
 //{
 //	std::thread threads[l_NrOfThreads];
 //	for ( int i = 0; i < l_NrOfThreads; ++i ) {
@@ -96,6 +111,10 @@ void SSPoolThreadingTest::UpdateUserLayer( const float ) {
 			m_NrOfThreads = 4;
 			RunTests();
 			m_NrOfThreads = 8;
+			RunTests();
+			m_NrOfThreads = 16;
+			RunTests();
+			m_NrOfThreads = 32;
 			RunTests();
 		}
 	}

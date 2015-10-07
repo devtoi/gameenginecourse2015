@@ -16,6 +16,10 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolShared<128>();
 	SimpleAllocPoolShared<256>();
 	SimpleAllocPoolShared<512>();
+	SimpleAllocPoolShared<768>();
+	SimpleAllocPoolShared<1024>();
+	SimpleAllocPoolShared<2048>();
+	SimpleAllocPoolShared<4096>();
 	SimpleAllocPoolThreadLocal<8>();
 	SimpleAllocPoolThreadLocal<12>();
 	SimpleAllocPoolThreadLocal<14>();
@@ -27,6 +31,10 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolThreadLocal<128>();
 	SimpleAllocPoolThreadLocal<256>();
 	SimpleAllocPoolThreadLocal<512>();
+	SimpleAllocPoolThreadLocal<768>();
+	SimpleAllocPoolThreadLocal<1024>();
+	SimpleAllocPoolThreadLocal<2048>();
+	SimpleAllocPoolThreadLocal<4096>();
 	SimpleAllocPoolIndexBased<2>();
 	SimpleAllocPoolIndexBased<4>();
 	SimpleAllocPoolIndexBased<8>();
@@ -40,6 +48,10 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolIndexBased<128>();
 	SimpleAllocPoolIndexBased<256>();
 	SimpleAllocPoolIndexBased<512>();
+	SimpleAllocPoolIndexBased<768>();
+	SimpleAllocPoolIndexBased<1024>();
+	SimpleAllocPoolIndexBased<2048>();
+	SimpleAllocPoolIndexBased<4096>();
 	SimpleAllocPoolSTD( 1 );
 	SimpleAllocPoolSTD( 2 );
 	SimpleAllocPoolSTD( 4 );
@@ -54,6 +66,10 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolSTD( 128 );
 	SimpleAllocPoolSTD( 256 );
 	SimpleAllocPoolSTD( 512 );
+	SimpleAllocPoolSTD( 768 );
+	SimpleAllocPoolSTD( 1024 );
+	SimpleAllocPoolSTD( 2048 );
+	SimpleAllocPoolSTD( 4096 );
 }
 
 void SSToiPoolTest::Startup( SubsystemCollection* const ) {
@@ -68,7 +84,7 @@ void SSToiPoolTest::UpdateUserLayer( const float ) {
 		RunTests();
 	}
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_T ) ) {
-		for ( size_t i = 0; i < 10; ++i ) {
+		for ( size_t i = 0; i < 50; ++i ) {
 			RunTests();
 		}
 		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();

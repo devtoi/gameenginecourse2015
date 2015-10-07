@@ -28,7 +28,7 @@ public:
 private:
 	static int ID;
 
-	static const int  l_MaxNrOfThreads	   = 16;
+	static const int  l_MaxNrOfThreads	   = 32;
 	const std::string l_ConcurrencySharedName		   = "Pool concurrency shared test";
 	const std::string l_ConcurrencyThreadLocalName	   = "Pool concurrency thread local";
 	const std::string l_ConcurrencySTDAllocName		   = "Pool concurrency standard test";

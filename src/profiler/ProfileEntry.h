@@ -22,7 +22,7 @@ public:
 	PROFILER_API void 		ResetMax	( );
 
 private:
-	unsigned int 			m_MaxNrOfSamples 		= 10;
+	unsigned int 			m_MaxNrOfSamples 		= 100;
 	unsigned int			m_SampleToReplace 		= 0;
 	unsigned int			m_CurrentNrOfSamples	= 0;
 	uint64_t				m_MaxValue 				= 0;
