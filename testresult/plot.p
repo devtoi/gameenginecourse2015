@@ -8,17 +8,20 @@ set ytic auto                          # set ytics automatically
 set xlabel "Blocksize"
 set ylabel "Time(ms)"
 
+set logscale x 2
 set title "Simple allocation"
 set output "SimpleAlloc.png" 
 plot    "./SimpleSTDalloc.txt" using 1:2 title 'Standard' with lines smooth unique, \
-        "./SimpleAllocPoolShared.txt" using 1:2 title 'Shared Pool' with lines smooth unique, \
-        "./SimpleAllocPoolThreadLocal.txt" using 1:2 title 'Thread local Pool' with lines smooth unique
+        "./SimpleAllocPoolShared.txt" using 1:2 title 'Shared pool' with lines smooth unique, \
+        "./SimpleAllocPoolThreadLocal.txt" using 1:2 title 'Thread local pool' with lines smooth unique, \
+        "./SimpleAllocPoolIndexBased.txt" using 1:2 title 'Thread local index based pool' with lines smooth unique
 
 set title "Simple deallocation"
 set output "SimpleDealloc.png" 
 plot    "./SimpleSTDdealloc.txt" using 1:2 title 'Standard' with lines smooth unique, \
-        "./SimpleDeallocPoolShared.txt" using 1:2 title 'Shared Pool' with lines smooth unique, \
-        "./SimpleDeallocPoolThreadLocal.txt" using 1:2 title 'Thread local Pool' with lines smooth unique
+        "./SimpleDeallocPoolShared.txt" using 1:2 title 'Shared pool' with lines smooth unique, \
+        "./SimpleDeallocPoolThreadLocal.txt" using 1:2 title 'Thread local pool' with lines smooth unique, \
+        "./SimpleDeallocPoolIndexBased.txt" using 1:2 title 'Thread local index based pool' with lines smooth unique
 
 
 set output "Concurrency.png" 
