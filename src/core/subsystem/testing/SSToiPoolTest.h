@@ -2,6 +2,7 @@
 
 #include <memory/ToiTemplatedPoolAllocator.h>
 #include <memory/ToiTemplatedLockablePoolAllocator.h>
+#include <memory/DeranesPoolAllocator.h>
 #include <profiler/AutoProfiler.h>
 #include "../Subsystem.h"
 
@@ -62,6 +63,26 @@ private:
 			PROFILE( AutoProfiler profile( "SimpleDeallocPoolThreadLocal," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
 				poolThreadFree( BlockSize, allocs[i] );
+			}
+		}
+		delete[] allocs;
+	}
+
+	template <size_t BlockSize>
+	void SimpleAllocPoolIndexBased() {
+		size_t** allocs = new size_t*[TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS];
+		DeranesPoolAllocator indexedPoolAllocator( BlockSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS, 1 );
+		{
+			PROFILE( AutoProfiler profile( "SimpleAllocPoolIndexBased," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
+				allocs[i] = ( size_t* )indexedPoolAllocator.allocate();
+			}
+		}
+
+		{
+			PROFILE( AutoProfiler profile( "SimpleDeallocPoolIndexBased," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
+			for ( int i = 0; i < TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS; ++i ) {
+				indexedPoolAllocator.deallocate( allocs[i] );
 			}
 		}
 		delete[] allocs;

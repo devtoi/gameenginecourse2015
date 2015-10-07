@@ -3,14 +3,14 @@
 #include "graphics/SSWindow.h"
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
-#include "graphics/SSParticles.h"
-#include "graphics/SSEqualizer.h"
+//#include "graphics/SSParticles.h"
+//#include "graphics/SSEqualizer.h"
 #include "profile/SSProfilerInOut.h"
-#include "testing/SSDeranesPoolTest.h"
-#include "testing/SSStackAllocatorBasicTest.h"
+//#include "testing/SSDeranesPoolTest.h"
+//#include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSToiPoolTest.h"
-#include "testing/SSThreadTest.h"
-#include "testing/SSPoolThreadingTest.h"
+//#include "testing/SSThreadTest.h"
+//#include "testing/SSPoolThreadingTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -18,16 +18,16 @@ SubsystemBank& SubsystemBank::GetInstance() {
 }
 
 void SubsystemBank::Initialize() {
-	CreateSubsystemTemplate<SSDeranesPoolTest>();
+	//CreateSubsystemTemplate<SSDeranesPoolTest>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
-	CreateSubsystemTemplate<SSParticles>();
-	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
+	//CreateSubsystemTemplate<SSParticles>();
+	//CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSToiPoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
-	CreateSubsystemTemplate<SSEqualizer>();
-	CreateSubsystemTemplate<SSThreadTest>();
-	CreateSubsystemTemplate<SSPoolThreadingTest>();
+	//CreateSubsystemTemplate<SSEqualizer>();
+	//CreateSubsystemTemplate<SSThreadTest>();
+	//CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
@@ -41,16 +41,16 @@ void SubsystemBank::Initialize() {
 		m_SubsystemTemplates.at( id )->SetUpdateOrderPriority( prio );
 	};
 	// Defaulted
-	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
+	//setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
-	setUpdatePrio( SSParticles::GetStaticID(), 0);
+	//setUpdatePrio( SSParticles::GetStaticID(), 0);
 	
-	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
+	//setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
-	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
+	//setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
-	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
-	setUpdatePrio(SSEqualizer::GetStaticID(), 10);		  // After Particles					|
+	//setUpdatePrio( SSThreadTest::GetStaticID(), 0);
+	//setUpdatePrio(SSEqualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
 	

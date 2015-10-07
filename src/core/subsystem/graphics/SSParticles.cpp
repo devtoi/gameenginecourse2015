@@ -1,7 +1,7 @@
 #include "SSParticles.h"
 #include <glm/gtx/transform.hpp>
 #include <time.h>
-#include <profiler/AutoProfiler.h>
+//#include <profiler/AutoProfiler.h>
 #include <input/InputContext.h>
 #include <utility/Randomizer.h>
 const pString SSParticles::Name = "Particles";
@@ -77,12 +77,12 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 	glDrawArrays(GL_POINTS, 0, ParticleCount);
 
 	//profiling
-	m_ProfileTimer += deltaTime;
-	if (m_ProfileTimer > 20) {
-		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
-		m_ProfileTimer = 0;
-	}
-	Profiler::ProfilerManager::GetInstance().ResetFrame();
+	//m_ProfileTimer += deltaTime;
+	//if (m_ProfileTimer > 20) {
+	//	Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
+	//	m_ProfileTimer = 0;
+	//}
+	//Profiler::ProfilerManager::GetInstance().ResetFrame();
 }
 
 void SSParticles::UpdateSimulationLayer( const float timeStep ) {
@@ -129,19 +129,19 @@ void SSParticles::ApplyGravity(Particle& p) {
 }
 
 Particle* SSParticles::AllocateParticles() {
-	PROFILE(AutoProfiler memAllocProfiler("ParticleAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	//PROFILE(AutoProfiler memAllocProfiler("ParticleAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
 	return (Particle*)poolAlloc( PARTICLE_BLOCK_SIZE );
 	//return (Particle*)m_Allocator->allocate( );
-	PROFILE(memAllocProfiler.Stop());
+	//PROFILE(memAllocProfiler.Stop());
 }
 
 void SSParticles::DeallocateParticles(Particle* p) {
-	PROFILE(AutoProfiler memFreeProfiler("ParticleDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
+	//PROFILE(AutoProfiler memFreeProfiler("ParticleDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
 	//free(p);
 	poolFree( PARTICLE_BLOCK_SIZE, p );
 	//m_Allocator->deallocate( p );
-	PROFILE(memFreeProfiler.Stop());
+	//PROFILE(memFreeProfiler.Stop());
 }
 
 float SSParticles::GetRandomNumber() {

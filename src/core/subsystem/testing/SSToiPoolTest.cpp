@@ -27,6 +27,22 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolThreadLocal<128>();
 	SimpleAllocPoolThreadLocal<256>();
 	SimpleAllocPoolThreadLocal<512>();
+	SimpleAllocPoolIndexBased<2>();
+	SimpleAllocPoolIndexBased<4>();
+	SimpleAllocPoolIndexBased<8>();
+	SimpleAllocPoolIndexBased<12>();
+	SimpleAllocPoolIndexBased<14>();
+	SimpleAllocPoolIndexBased<16>();
+	SimpleAllocPoolIndexBased<24>();
+	SimpleAllocPoolIndexBased<32>();
+	SimpleAllocPoolIndexBased<48>();
+	SimpleAllocPoolIndexBased<64>();
+	SimpleAllocPoolIndexBased<128>();
+	SimpleAllocPoolIndexBased<256>();
+	SimpleAllocPoolIndexBased<512>();
+	SimpleAllocPoolSTD( 1 );
+	SimpleAllocPoolSTD( 2 );
+	SimpleAllocPoolSTD( 4 );
 	SimpleAllocPoolSTD( 8 );
 	SimpleAllocPoolSTD( 12 );
 	SimpleAllocPoolSTD( 14 );
@@ -55,6 +71,7 @@ void SSToiPoolTest::UpdateUserLayer( const float ) {
 		for ( size_t i = 0; i < 50; ++i ) {
 			RunTests();
 		}
+		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
 	}
 }
 
