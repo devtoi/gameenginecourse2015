@@ -71,12 +71,12 @@ private:
 	float							m_ProfileTimer = 0;
 
 #if ALLOCATOR == TEMPLATE_POOL_ALLOC
-	ToiTemplatedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>*		m_Allocator;
+	ThreadLocalPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>*		m_Allocator;
 #elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
-	ToiTemplatedLockablePoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS> m_Allocator;
+	SharedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS> m_Allocator;
 #elif ALLOCATOR == TOI_POOL_ALLOC
 	ToiPoolAllocator* m_Allocator;
 #elif ALLOCATOR == DERANES_POOL_ALLOC 
-	DeranesPoolAllocator* m_Allocator;
+	IndexBasedPoolAllocator* m_Allocator;
 #endif
 };

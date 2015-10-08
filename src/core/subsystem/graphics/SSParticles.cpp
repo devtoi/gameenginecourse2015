@@ -21,13 +21,13 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
 	int size = MAX_PARTICLE_BLOCKS;
 #if ALLOCATOR == TEMPLATE_POOL_ALLOC
-	m_Allocator = new ToiTemplatedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
+	m_Allocator = new ThreadLocalPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
 #elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
-	m_Allocator = new ToiTemplatedLockablePoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
+	m_Allocator = new SharedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
 #elif ALLOCATOR == TOI_POOL_ALLOC
 	m_Allocator = new ToiPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
 #elif ALLOCATOR == DERANES_POOL_ALLOC 
-	m_Allocator = new DeranesPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+	m_Allocator = new IndexBasedPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
 #endif
 	g_Randomizer.Seed(935058620);
 }
