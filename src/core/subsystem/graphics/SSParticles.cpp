@@ -20,13 +20,21 @@ void SSParticles::Startup( SubsystemCollection* const subsystemCollection ) {
 
 	glBufferData(GL_ARRAY_BUFFER, PARTICLE_BLOCK_SIZE * MAX_PARTICLE_BLOCKS, nullptr, GL_DYNAMIC_DRAW);
 	int size = MAX_PARTICLE_BLOCKS;
-	m_Allocator = new PoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+#if ALLOCATOR == TEMPLATE_POOL_ALLOC
+	m_Allocator = new ToiTemplatedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
+#elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
+	m_Allocator = new ToiTemplatedLockablePoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>();
+#elif ALLOCATOR == TOI_POOL_ALLOC
+	m_Allocator = new ToiPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+#elif ALLOCATOR == DERANES_POOL_ALLOC 
+	m_Allocator = new DeranesPoolAllocator(PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS);
+#endif
 	g_Randomizer.Seed(935058620);
 }
 
 void SSParticles::Shutdown( SubsystemCollection* const subsystemCollection ) {
 	// Perform Cleanup here (Don't forget to set shutdown order priority!)
-	delete m_Allocator;
+	//delete m_Allocator;
 }
 
 void SSParticles::UpdateUserLayer( const float deltaTime ) {
@@ -78,7 +86,7 @@ void SSParticles::UpdateUserLayer( const float deltaTime ) {
 
 	//profiling
 	m_ProfileTimer += deltaTime;
-	if (m_ProfileTimer > 20) {
+	if (m_ProfileTimer > 5) {
 		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
 		m_ProfileTimer = 0;
 	}
@@ -130,17 +138,37 @@ void SSParticles::ApplyGravity(Particle& p) {
 
 Particle* SSParticles::AllocateParticles() {
 	PROFILE(AutoProfiler memAllocProfiler("ParticleAllocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
-	//return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
-	return (Particle*)poolAlloc( PARTICLE_BLOCK_SIZE );
-	//return (Particle*)m_Allocator->allocate( );
+	//
+	//return (Particle*)poolAlloc( PARTICLE_BLOCK_SIZE );
+	
+#if ALLOCATOR == TEMPLATE_POOL_ALLOC
+	return (Particle*)m_Allocator->allocate();
+#elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
+	return (Particle*)m_Allocator->allocate();
+#elif ALLOCATOR == TOI_POOL_ALLOC
+	return (Particle*)m_Allocator->allocate();
+#elif ALLOCATOR == DERANES_POOL_ALLOC 
+	return (Particle*)m_Allocator->allocate();
+#elif ALLOCATOR == MALLOC_ALLOC
+	return (Particle*)malloc(PARTICLE_BLOCK_SIZE);
+#endif
+
 	PROFILE(memAllocProfiler.Stop());
 }
 
 void SSParticles::DeallocateParticles(Particle* p) {
 	PROFILE(AutoProfiler memFreeProfiler("ParticleDeallocation", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
-	//free(p);
-	poolFree( PARTICLE_BLOCK_SIZE, p );
-	//m_Allocator->deallocate( p );
+#if ALLOCATOR == TEMPLATE_POOL_ALLOC
+	m_Allocator->deallocate(p);
+#elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
+	m_Allocator->deallocate(p);
+#elif ALLOCATOR == TOI_POOL_ALLOC
+	m_Allocator->deallocate(p);
+#elif ALLOCATOR == DERANES_POOL_ALLOC 
+	m_Allocator->deallocate(p);
+#elif ALLOCATOR == MALLOC_ALLOC
+	free(p);
+#endif
 	PROFILE(memFreeProfiler.Stop());
 }
 

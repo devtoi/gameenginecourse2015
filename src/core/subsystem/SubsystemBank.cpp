@@ -11,6 +11,7 @@
 #include "testing/SSToiPoolTest.h"
 #include "testing/SSThreadTest.h"
 #include "testing/SSPoolThreadingTest.h"
+#include "testing/SSStackTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -29,6 +30,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSThreadTest>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
+	CreateSubsystemTemplate<SSStackTest>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetStartOrderPriority( prio );
@@ -44,13 +46,13 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
 	setUpdatePrio( SSParticles::GetStaticID(), 0);
-	
+	setUpdatePrio( SSStackTest::GetStaticID(), 0);
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
-	setUpdatePrio(SSEqualizer::GetStaticID(), 10);		  // After Particles					|
+	setUpdatePrio( SSEqualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
 	

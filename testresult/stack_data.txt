@@ -1,0 +1,8 @@
+0 malloc 2549.545166 
+1 free 2234.848633 
+2 "stack alloc" 151.381561 
+3 "stack dealloc" 0.000229
+4 malloc 636.953796 
+5 free 537.738831
+6 "stack alloc" 37.219929
+7 "stack dealloc" 0.000311
