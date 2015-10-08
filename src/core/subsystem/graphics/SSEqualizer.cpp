@@ -82,10 +82,6 @@ void SSEqualizer::UpdateUserLayer( const float deltaTime ) {
 	free(particles);
 #endif
 	PROFILE(memDellocProfiler.Stop());
-	int i = 0;
-	PROFILE(AutoProfiler ProfilerProfile("ProfilerProfile", Profiler::PROFILER_CATEGORY_STANDARD, true, true));
-	i = 1;
-	PROFILE(ProfilerProfile.Stop());
 }
 
 void SSEqualizer::UpdateSimulationLayer( const float timeStep ) {

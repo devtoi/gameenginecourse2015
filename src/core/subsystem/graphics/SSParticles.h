@@ -22,13 +22,20 @@ struct ParticleBlock {
 };
 
 #define MAX_PARTICLE_COUNT 1000000
-#define PARTICLE_BLOCK_COUNT 1
+#define PARTICLE_BLOCK_COUNT 64
 #define PARTICLE_BLOCK_SIZE sizeof(Particle) * PARTICLE_BLOCK_COUNT
 #define MAX_PARTICLE_BLOCKS MAX_PARTICLE_COUNT / PARTICLE_BLOCK_COUNT
 #define MIN_BLOCK_TTL 10.0f
 #define AVG_BLOCK_TTL MIN_BLOCK_TTL + MIN_BLOCK_TTL * 0.5f
-#define BLOCK_SPAWN_AMOUNT 1000
+#define BLOCK_SPAWN_AMOUNT 1024 / PARTICLE_BLOCK_COUNT
 #define BLOCK_SPAWN_TIME 0.2f
+
+#define TEMPLATE_POOL_ALLOC 0
+#define TEMPLATE_LOCK_POOL_ALLOC 1
+#define TOI_POOL_ALLOC 2
+#define DERANES_POOL_ALLOC 3
+#define MALLOC_ALLOC 4
+#define ALLOCATOR TEMPLATE_POOL_ALLOC
 
 class SSParticles : public Subsystem {
 public:
@@ -56,10 +63,20 @@ private:
 	static int ID;
 
 	gfx::ShaderProgram m_RenderProgram;
-	unsigned int		m_VBO = 0;
-	unsigned int		m_VAO = 0;
-	ParticleBlock		m_ParticleBlocks[MAX_PARTICLE_BLOCKS];
-	PoolAllocator*		m_Allocator;
-	float				m_SpawnTimer = 0;
-	float				m_ProfileTimer = 0;
+	unsigned int					m_VBO = 0;
+	unsigned int					m_VAO = 0;
+	ParticleBlock					m_ParticleBlocks[MAX_PARTICLE_BLOCKS];
+	
+	float							m_SpawnTimer = 0;
+	float							m_ProfileTimer = 0;
+
+#if ALLOCATOR == TEMPLATE_POOL_ALLOC
+	ToiTemplatedPoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS>*		m_Allocator;
+#elif ALLOCATOR == TEMPLATE_LOCK_POOL_ALLOC
+	ToiTemplatedLockablePoolAllocator<PARTICLE_BLOCK_SIZE, MAX_PARTICLE_BLOCKS> m_Allocator;
+#elif ALLOCATOR == TOI_POOL_ALLOC
+	ToiPoolAllocator* m_Allocator;
+#elif ALLOCATOR == DERANES_POOL_ALLOC 
+	DeranesPoolAllocator* m_Allocator;
+#endif
 };
