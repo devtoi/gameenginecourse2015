@@ -5,10 +5,10 @@
 #include <functional>
 #include "MemoryLibraryDefine.h"
 
-class DeranesPoolAllocator {
+class IndexBasedPoolAllocator {
 public:
-	MEMORY_API explicit			DeranesPoolAllocator		( size_t blockSize, size_t nrOfBlocks, size_t alignment = sizeof(void*) );
-	MEMORY_API					~DeranesPoolAllocator		();
+	MEMORY_API explicit			IndexBasedPoolAllocator		( size_t blockSize, size_t nrOfBlocks, size_t alignment = sizeof(void*) );
+	MEMORY_API					~IndexBasedPoolAllocator		();
 	MEMORY_API void*			allocate					();
 	MEMORY_API void				deallocate					( void* memory );
 

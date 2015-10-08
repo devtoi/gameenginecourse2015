@@ -7,8 +7,8 @@ int			  SSPoolThreadingTest::ID	= -1;
 
 // Test concurrency performance for the shared pool allocator when send in as parameter.
 // Allocates memory then frees it.
-//void SSPoolThreadingTest::ConcurrencySharedAsParameter( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator, uint8_t threadID ) {
-//	const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
+//void SSPoolThreadingTest::ConcurrencySharedAsParameter( SharedPoolAllocator<l_AllocationSize, SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator, uint8_t threadID ) {
+//	const int nrOfAllocations = SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS / l_NrOfThreads;
 //	size_t** allocations = new size_t*[nrOfAllocations];
 //
 //	l_ExecutionStarts[threadID] = SDL_GetPerformanceCounter();

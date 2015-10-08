@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory/ToiTemplatedPoolAllocator.h>
-#include <memory/ToiTemplatedLockablePoolAllocator.h>
-#include <memory/DeranesPoolAllocator.h>
+#include <memory/ThreadLocalPoolAllocator.h>
+#include <memory/SharedPoolAllocator.h>
+#include <memory/IndexBasedPoolAllocator.h>
 #include <profiler/AutoProfiler.h>
 #include "../Subsystem.h"
 
@@ -10,12 +10,12 @@
 
 #define TOI_POOL_TEST_BLOCK_COUNT	65536
 
-class SSToiPoolTest : public Subsystem {
+class SSSimplePoolTest : public Subsystem {
 public:
-	SSToiPoolTest( int ID ) : Subsystem( Name, ID ) {
-		SSToiPoolTest::ID = ID;
+	SSSimplePoolTest( int ID ) : Subsystem( Name, ID ) {
+		SSSimplePoolTest::ID = ID;
 	}
-	~SSToiPoolTest() = default;
+	~SSSimplePoolTest() = default;
 	
 	void 		Startup( SubsystemCollection* const subsystemCollection ) override;
 	void 		Shutdown( SubsystemCollection* const subsystemCollection ) override;
@@ -73,18 +73,18 @@ private:
 	template <size_t BlockSize>
 	void SimpleAllocPoolIndexBased() {
 		size_t** allocs = new size_t*[TOI_POOL_TEST_BLOCK_COUNT];
-		DeranesPoolAllocator indexedPoolAllocator( BlockSize, TOI_POOL_TEST_BLOCK_COUNT, 1 );
+		IndexBasedPoolAllocator IndexBasedPoolAllocator( BlockSize, TOI_POOL_TEST_BLOCK_COUNT, 1 );
 		{
 			PROFILE( AutoProfiler profile( "SimpleAllocPoolIndexBased," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_POOL_TEST_BLOCK_COUNT; ++i ) {
-				allocs[i] = ( size_t* )indexedPoolAllocator.allocate();
+				allocs[i] = ( size_t* )IndexBasedPoolAllocator.allocate();
 			}
 		}
 
 		{
 			PROFILE( AutoProfiler profile( "SimpleDeallocPoolIndexBased," + rToString( BlockSize ), Profiler::PROFILER_CATEGORY_STANDARD ) );
 			for ( int i = 0; i < TOI_POOL_TEST_BLOCK_COUNT; ++i ) {
-				indexedPoolAllocator.deallocate( allocs[i] );
+				IndexBasedPoolAllocator.deallocate( allocs[i] );
 			}
 		}
 		delete[] allocs;

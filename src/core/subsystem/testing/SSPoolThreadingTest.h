@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Subsystem.h"
-#include <memory/ToiTemplatedPoolAllocator.h>
-#include <memory/ToiTemplatedLockablePoolAllocator.h>
+#include <memory/ThreadLocalPoolAllocator.h>
+#include <memory/SharedPoolAllocator.h>
 #include <profiler/AutoProfiler.h>
 
 class SSPoolThreadingTest :
@@ -83,7 +83,7 @@ private:
 	// Allocates memory then frees it.
 	template<int allocationSize>
 	void ConcurrencyShared( uint8_t threadID ) {
-		const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
+		const int nrOfAllocations = SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
 		size_t** allocations = new size_t*[nrOfAllocations];
 
 		l_ExecutionStarts[threadID] = SDL_GetPerformanceCounter();
@@ -101,7 +101,7 @@ private:
 	// Allocates memory then frees it.
 	template<int allocationSize>
 	void ConcurrencyThreadLocal( uint8_t threadID ) {
-		const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
+		const int nrOfAllocations = SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
 		size_t** allocations = new size_t*[nrOfAllocations];
 
 		poolThreadFree( allocationSize, poolThreadAlloc( allocationSize ) ); // Explicitly instantiate the allocator to not profile with allocator instatiation (One time cost)
@@ -121,7 +121,7 @@ private:
 	// Allocates memory then frees it.
 	template<int allocationSize>
 	void ConcurrencySTD( uint8_t threadID ) {
-		const int nrOfAllocations = TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
+		const int nrOfAllocations = SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS / m_NrOfThreads;
 		size_t** allocations = new size_t*[nrOfAllocations];
 
 		l_ExecutionStarts[threadID] = SDL_GetPerformanceCounter();
@@ -135,7 +135,7 @@ private:
 		delete[] allocations;
 	}
 
-	//void ConcurrencySharedAsParameter ( ToiTemplatedLockablePoolAllocator<l_AllocationSize, TOI_TEMPLATED_LOCKABLE_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator, uint8_t threadID );
+	//void ConcurrencySharedAsParameter ( SharedPoolAllocator<l_AllocationSize, SHARED_POOL_ALLOCATOR_NR_OF_BLOCKS>* allocator, uint8_t threadID );
 	void RunTests ();
 	void PrintTestResult ();
 	void AddProfileTime( const std::string& profileName );

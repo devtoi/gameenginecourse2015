@@ -8,7 +8,7 @@
 #include "profile/SSProfilerInOut.h"
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
-#include "testing/SSToiPoolTest.h"
+#include "testing/SSSimplePoolTest.h"
 #include "testing/SSThreadTest.h"
 #include "testing/SSPoolThreadingTest.h"
 
@@ -23,7 +23,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSGraphicsInitialize>();
 	CreateSubsystemTemplate<SSParticles>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
-	CreateSubsystemTemplate<SSToiPoolTest>();
+	CreateSubsystemTemplate<SSSimplePoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
 	CreateSubsystemTemplate<SSEqualizer>();
 	CreateSubsystemTemplate<SSThreadTest>();
@@ -46,7 +46,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSParticles::GetStaticID(), 0);
 	
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
-	setUpdatePrio( SSToiPoolTest::GetStaticID(), 0 );
+	setUpdatePrio( SSSimplePoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);

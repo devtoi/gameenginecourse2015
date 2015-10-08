@@ -1,6 +1,6 @@
 #include "SSDeranesPoolTest.h"
 
-#include <memory/DeranesPoolAllocator.h>
+#include <memory/IndexBasedPoolAllocator.h>
 
 const pString	SSDeranesPoolTest::Name	= "DeranesPoolTest";
 int				SSDeranesPoolTest::ID	= -1;
@@ -8,7 +8,7 @@ int				SSDeranesPoolTest::ID	= -1;
 void SSDeranesPoolTest::Startup( SubsystemCollection* const subsystemCollection ) {
 	std::cout << "SSDeranesPoolTest says: Hello World!" << std::endl;
 
-	DeranesPoolAllocator allocator( 4, 256, 4 );
+	IndexBasedPoolAllocator allocator( 4, 256, 4 );
 
 	void* derp = allocator.allocate();
 	void* herp = allocator.allocate();

@@ -1,10 +1,10 @@
-#include "SSToiPoolTest.h"
+#include "SSSimplePoolTest.h"
 #include <input/InputContext.h>
 
-const pString SSToiPoolTest::Name = "ToiPoolTest";
-int			  SSToiPoolTest::ID	  = -1;
+const pString SSSimplePoolTest::Name = "SimplePoolTest";
+int			  SSSimplePoolTest::ID	  = -1;
 
-void SSToiPoolTest::RunTests() {
+void SSSimplePoolTest::RunTests() {
 	SimpleAllocPoolShared<8>();
 	SimpleAllocPoolShared<12>();
 	SimpleAllocPoolShared<14>();
@@ -72,14 +72,14 @@ void SSToiPoolTest::RunTests() {
 	SimpleAllocPoolSTD( 4096 );
 }
 
-void SSToiPoolTest::Startup( SubsystemCollection* const ) {
+void SSSimplePoolTest::Startup( SubsystemCollection* const ) {
 }
 
-void SSToiPoolTest::Shutdown( SubsystemCollection* const ) {
+void SSSimplePoolTest::Shutdown( SubsystemCollection* const ) {
 	// delete m_ToiPoolAllocator;
 }
 
-void SSToiPoolTest::UpdateUserLayer( const float ) {
+void SSSimplePoolTest::UpdateUserLayer( const float ) {
 	if ( g_Input.KeyUpDown( SDL_SCANCODE_C ) ) {
 		RunTests();
 	}
@@ -91,12 +91,12 @@ void SSToiPoolTest::UpdateUserLayer( const float ) {
 	}
 }
 
-void SSToiPoolTest::UpdateSimulationLayer( const float ) { }
+void SSSimplePoolTest::UpdateSimulationLayer( const float ) { }
 
-Subsystem* SSToiPoolTest::CreateNew() const {
-	return pNew( SSToiPoolTest, SSToiPoolTest::ID );
+Subsystem* SSSimplePoolTest::CreateNew() const {
+	return pNew( SSSimplePoolTest, SSSimplePoolTest::ID );
 }
 
-int SSToiPoolTest::GetStaticID() {
-	return SSToiPoolTest::ID;
+int SSSimplePoolTest::GetStaticID() {
+	return SSSimplePoolTest::ID;
 }

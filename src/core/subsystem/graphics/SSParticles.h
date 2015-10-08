@@ -2,8 +2,8 @@
 
 #include "../Subsystem.h"
 #include <gfx/ShaderProgram.h>
-#include <memory/ToiTemplatedPoolAllocator.h>
-#include <memory/ToiTemplatedLockablePoolAllocator.h>
+#include <memory/ThreadLocalPoolAllocator.h>
+#include <memory/SharedPoolAllocator.h>
 #include <memory/ToiPoolAllocator.h>
 #include <memory/DeranesPoolAllocatorWithLock.h>
 #include <memory/ToiStackAllocator.h>

@@ -1,12 +1,12 @@
 #pragma once
 
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
-#define TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE 0
+//#define THREAD_LOCAL_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
+#define THREAD_LOCAL_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE 0
 
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
-#define TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE 0
+//#define THREAD_LOCAL_POOL_ALLOCATOR_SET_FREED_MEMORY
+#define THREAD_LOCAL_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE 0
 
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
+//#define THREAD_LOCAL_POOL_ALLOCATOR_COUT_INFO
 
 #include "MemoryLibraryDefine.h"
 #include <cstddef>
@@ -16,10 +16,10 @@
 #include <iomanip>
 #include <thread>
 
-#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 1048576
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS 65536
-//#define TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE 512
-#define TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE 4096
+#define THREAD_LOCAL_POOL_ALLOCATOR_NR_OF_BLOCKS 1048576
+//#define THREAD_LOCAL_POOL_ALLOCATOR_NR_OF_BLOCKS 65536
+//#define THREAD_LOCAL_POOL_ALLOCATOR_MAX_BLOCK_SIZE 512
+#define THREAD_LOCAL_POOL_ALLOCATOR_MAX_BLOCK_SIZE 4096
 
 //#define TOI_TEMPLATED_POOL_USE_STANDARD_ALLOCATOR
 
@@ -36,12 +36,12 @@
 #endif
 
 template <size_t BlockSize, size_t NrOfBlocks>
-class ToiTemplatedPoolAllocator {
+class ThreadLocalPoolAllocator {
 public:
-	ToiTemplatedPoolAllocator( ) {
+	ThreadLocalPoolAllocator( ) {
 		assert( BlockSize >= sizeof(void*) );
-        assert( BlockSize <= TOI_TEMPLATED_POOL_ALLOCATOR_MAX_BLOCK_SIZE );
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
+        assert( BlockSize <= THREAD_LOCAL_POOL_ALLOCATOR_MAX_BLOCK_SIZE );
+#ifdef THREAD_LOCAL_POOL_ALLOCATOR_COUT_INFO
 		std::cout << "Creating templated pool allocator for blocksize " << BlockSize << std::endl;
 #endif
 
@@ -63,8 +63,8 @@ public:
 		m_FirstFree = reinterpret_cast<size_t*>( m_Memory );
 	}
 
-	~ToiTemplatedPoolAllocator() {
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_COUT_INFO
+	~ThreadLocalPoolAllocator() {
+#ifdef THREAD_LOCAL_POOL_ALLOCATOR_COUT_INFO
 		std::cout << "Destroying templated pool allocator for blocksize " << BlockSize << std::endl;
 #endif
 		free( m_ActualAllocation );
@@ -75,16 +75,16 @@ public:
 		size_t* toAllocate = m_FirstFree;
 		m_FirstFree = reinterpret_cast<size_t*>( *reinterpret_cast<size_t*>( m_FirstFree ) );
 
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
-		memset( toAllocate, TOI_TEMPLATED_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, BlockSize );
+#ifdef THREAD_LOCAL_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY
+		memset( toAllocate, THREAD_LOCAL_POOL_ALLOCATOR_SET_ALLOCATED_MEMORY_VALUE, BlockSize );
 #endif
 
 		return toAllocate;
 	}
 
 	void deallocate( void* memory ) {
-#ifdef TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY
-		memset( memory, TOI_TEMPLATED_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, BlockSize );
+#ifdef THREAD_LOCAL_POOL_ALLOCATOR_SET_FREED_MEMORY
+		memset( memory, THREAD_LOCAL_POOL_ALLOCATOR_SET_FREED_MEMORY_VALUE, BlockSize );
 #endif
 
 		size_t* toSet = reinterpret_cast<size_t*>( memory );
@@ -128,7 +128,7 @@ private:
 };
 
 template<size_t BlockSize>
-static ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetThreadPoolAllocator() {
-	static thread_local ToiTemplatedPoolAllocator<BlockSize, TOI_TEMPLATED_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
+static ThreadLocalPoolAllocator<BlockSize, THREAD_LOCAL_POOL_ALLOCATOR_NR_OF_BLOCKS>& GetThreadPoolAllocator() {
+	static thread_local ThreadLocalPoolAllocator<BlockSize, THREAD_LOCAL_POOL_ALLOCATOR_NR_OF_BLOCKS> poolAllocator;
 	return poolAllocator;
 }

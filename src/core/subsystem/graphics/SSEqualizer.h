@@ -3,10 +3,10 @@
 #include "../Subsystem.h"
 #include <gfx/ShaderProgram.h>
 #include <fmod/fmod.h>
-#include <memory/ToiStackAllocator.h>
-typedef  ToiStackAllocator StackAllocator;
-//#include <memory/DrinQStackAllocator.h>
-//typedef DrinQStackAllocator StackAllocator;
+//#include <memory/ToiStackAllocator.h>
+//typedef  ToiStackAllocator StackAllocator;
+#include <memory/DrinQStackAllocator.h>
+typedef DrinQStackAllocator StackAllocator;
 
 #define SPECTRUM_SIZE 4096
 #define USE_STACK_ALLOC

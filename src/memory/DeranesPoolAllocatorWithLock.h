@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DeranesPoolAllocator.h"
+#include "IndexBasedPoolAllocator.h"
 
 #define DERANES_POOL_ALLOCATOR_LOCK_TYPE_MUTEX		0
 #define DERANES_POOL_ALLOCATOR_LOCK_TYPE_SPINLOCK	1
@@ -22,6 +22,6 @@ public:
 	MEMORY_API void				deallocate						( void* memory );
 
 private:
-	DeranesPoolAllocator		m_Allocator;
+	IndexBasedPoolAllocator		m_Allocator;
 	DERANES_POOL_ALLOCATOR_LOCK_MEMBER
 };

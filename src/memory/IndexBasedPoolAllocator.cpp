@@ -1,4 +1,4 @@
-#include "DeranesPoolAllocator.h"
+#include "IndexBasedPoolAllocator.h"
 
 #include <cassert>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ size_t ReadUint64( void* readLocation ) {
 	return static_cast<size_t>( *static_cast<uint64_t*>( readLocation ) );
 }
 
-DeranesPoolAllocator::DeranesPoolAllocator( size_t blockSize, size_t nrOfBlocks, size_t alignment ) {
+IndexBasedPoolAllocator::IndexBasedPoolAllocator( size_t blockSize, size_t nrOfBlocks, size_t alignment ) {
 	assert( nrOfBlocks > 0 );
 	assert( alignment > 0 );
 
@@ -69,14 +69,14 @@ DeranesPoolAllocator::DeranesPoolAllocator( size_t blockSize, size_t nrOfBlocks,
 	}
 }
 
-DeranesPoolAllocator::~DeranesPoolAllocator() {
+IndexBasedPoolAllocator::~IndexBasedPoolAllocator() {
 	if ( m_MemoryChunk ) {
 		free( m_MemoryChunk );
 		m_MemoryChunk = nullptr;
 	}
 }
 
-void* DeranesPoolAllocator::allocate() {
+void* IndexBasedPoolAllocator::allocate() {
 	assert( m_NrOfFreeBlocks > 0 );
 
 	if ( m_NrOfFreeBlocks <= 0 ) {
@@ -90,7 +90,7 @@ void* DeranesPoolAllocator::allocate() {
 	return freeBlock;
 }
 
-void DeranesPoolAllocator::deallocate( void* memory ) {
+void IndexBasedPoolAllocator::deallocate( void* memory ) {
 	assert( memory >= m_MemoryChunk && memory <= m_MemoryChunk + m_BlockSizeInBytes * m_NrOfBlocks );
 	assert( m_NrOfFreeBlocks < m_NrOfBlocks );
 	// TODOOE: Assert address is aligned.
