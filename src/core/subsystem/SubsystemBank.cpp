@@ -4,7 +4,7 @@
 #include "graphics/SSGraphicsSwap.h"
 #include "graphics/SSGraphicsInitialize.h"
 #include "graphics/SSParticles.h"
-#include "graphics/SSEqualizer.h"
+#include "graphics/SSVisualizer.h"
 #include "profile/SSProfilerInOut.h"
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
@@ -26,7 +26,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSSimplePoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
-	CreateSubsystemTemplate<SSEqualizer>();
+	CreateSubsystemTemplate<SSVisualizer>();
 	CreateSubsystemTemplate<SSThreadTest>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
@@ -52,7 +52,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
-	setUpdatePrio( SSEqualizer::GetStaticID(), 10);		  // After Particles					|
+	setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
 	

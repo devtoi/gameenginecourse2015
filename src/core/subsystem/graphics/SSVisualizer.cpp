@@ -1,9 +1,9 @@
-#include "SSEqualizer.h"
+#include "SSVisualizer.h"
 #include <profiler/AutoProfiler.h>
-const pString SSEqualizer::Name = "Equalizer";
-int SSEqualizer::ID = -1;
+const pString SSVisualizer::Name = "Equalizer";
+int SSVisualizer::ID = -1;
 
-void SSEqualizer::Startup( SubsystemCollection* const subsystemCollection ) {
+void SSVisualizer::Startup( SubsystemCollection* const subsystemCollection ) {
 	//set up FMOD
 	FMOD_System_Create(&m_SoundSystem);
 	FMOD_System_SetSoftwareFormat(m_SoundSystem, 48000, FMOD_SOUND_FORMAT_PCM16, 2, 0, FMOD_DSP_RESAMPLER_LINEAR);
@@ -27,7 +27,7 @@ void SSEqualizer::Startup( SubsystemCollection* const subsystemCollection ) {
 	m_Marker = m_Allocator->GetMarker();
 }
 
-void SSEqualizer::Shutdown( SubsystemCollection* const subsystemCollection ) {
+void SSVisualizer::Shutdown( SubsystemCollection* const subsystemCollection ) {
 	// Perform Cleanup here (Don't forget to set shutdown order priority!)
 	FMOD_Sound_Release(m_Song);
 	FMOD_System_Close(m_SoundSystem);
@@ -35,7 +35,7 @@ void SSEqualizer::Shutdown( SubsystemCollection* const subsystemCollection ) {
 	if (m_Allocator) delete m_Allocator;
 }
 
-void SSEqualizer::UpdateUserLayer( const float deltaTime ) {
+void SSVisualizer::UpdateUserLayer( const float deltaTime ) {
 	// Perform non-simulation update logic here (Don't forget to set update order priority!)
 	FMOD_System_Update(m_SoundSystem);
 	//Get spectrum data
@@ -84,14 +84,14 @@ void SSEqualizer::UpdateUserLayer( const float deltaTime ) {
 	PROFILE(memDellocProfiler.Stop());
 }
 
-void SSEqualizer::UpdateSimulationLayer( const float timeStep ) {
+void SSVisualizer::UpdateSimulationLayer( const float timeStep ) {
 	// Perform simulation update logic here (Don't forget to set update order priority!)
 }
 
-Subsystem* SSEqualizer::CreateNew( ) const {
-	return pNew( SSEqualizer, SSEqualizer::ID );
+Subsystem* SSVisualizer::CreateNew( ) const {
+	return pNew( SSVisualizer, SSVisualizer::ID );
 }
 
-int SSEqualizer::GetStaticID() {
-	return SSEqualizer::ID;
+int SSVisualizer::GetStaticID() {
+	return SSVisualizer::ID;
 }

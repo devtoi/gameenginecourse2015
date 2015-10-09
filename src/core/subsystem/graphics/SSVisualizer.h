@@ -16,12 +16,12 @@ struct Particle2 {
 	glm::vec4 Color;
 };
 
-class SSEqualizer : public Subsystem {
+class SSVisualizer : public Subsystem {
 public:
-	SSEqualizer( int ID ) : Subsystem( Name, ID ) {
-		SSEqualizer::ID = ID;
+	SSVisualizer( int ID ) : Subsystem( Name, ID ) {
+		SSVisualizer::ID = ID;
 	}
-	~SSEqualizer() = default;
+	~SSVisualizer() = default;
 	
 	void 		Startup( SubsystemCollection* const subsystemCollection ) override;
 	void 		Shutdown( SubsystemCollection* const subsystemCollection ) override;
