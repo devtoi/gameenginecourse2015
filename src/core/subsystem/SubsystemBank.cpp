@@ -12,6 +12,7 @@
 #include "testing/SSThreadTest.h"
 #include "testing/SSPoolThreadingTest.h"
 #include "testing/SSStackTest.h"
+#include "testing/SSResourcingTest.h"
 
 SubsystemBank& SubsystemBank::GetInstance() {
 	static SubsystemBank subsystemBank;
@@ -31,6 +32,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
 	CreateSubsystemTemplate<SSStackTest>();
+	CreateSubsystemTemplate<SSResourcingTest>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetStartOrderPriority( prio );
@@ -52,6 +54,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
+	setUpdatePrio( SSResourcingTest::GetStaticID(), 0);
 	setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
