@@ -13,10 +13,12 @@
 #define FRAME_ALLOCATOR_PADDED 121
 #define FRAME_ALLOCATOR_RESET 120
 
+#define RESET_FRAME_MEMORY
+
 
 //#define DISABLE_FRAME_ALLOCATOR
 
-#define g_ThreadStack DrinQFrameAllocator::GetThreadStack()
+#define g_ThreadStack FrameAllocator::GetThreadStack()
 
 #ifndef DISABLE_FRAME_ALLOCATOR
 
@@ -47,13 +49,13 @@
 
 #endif
 
-class DrinQFrameAllocator {
+class FrameAllocator {
 public:
 
-	MEMORY_API DrinQFrameAllocator( );
+	MEMORY_API FrameAllocator( );
 
-	MEMORY_API DrinQFrameAllocator( size_t size );
-				~DrinQFrameAllocator();
+	MEMORY_API FrameAllocator( size_t size );
+				~FrameAllocator();
 	MEMORY_API size_t GetMarker();
 
 	MEMORY_API uint8_t* GetBuffer();
@@ -64,7 +66,7 @@ public:
 
 	MEMORY_API void Reset();
 
-	MEMORY_API static DrinQFrameAllocator& GetThreadStack();
+	MEMORY_API static FrameAllocator& GetThreadStack();
 	MEMORY_API static int GetNrOfStacks();
 	
 	MEMORY_API void* allocate( size_t size, size_t alignment = FRAME_ALLOCATOR_ALIGNMENT );

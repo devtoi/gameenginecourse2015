@@ -1,60 +1,65 @@
-#include "DrinQFrameAllocator.h"
+#include "FrameAllocator.h"
 #include <malloc.h>
 #include <cstring>
 
-std::atomic_int DrinQFrameAllocator::m_NrOfCreatedStacks(0);
+std::atomic_int FrameAllocator::m_NrOfCreatedStacks(0);
 
-void DrinQFrameAllocator::Unwind( size_t marker ) {
+void FrameAllocator::Unwind( size_t marker ) {
 	size_t dist = m_Marker - marker;
+#ifdef RESET_FRAME_MEMORY
 	memset( m_Memory + marker, FRAME_ALLOCATOR_RESET, m_Marker - marker );
+#endif
 	m_Marker = marker;
 }
 
-void DrinQFrameAllocator::Reset() {
+void FrameAllocator::Reset() {
+#ifdef RESET_FRAME_MEMORY
 	memset( m_Memory, FRAME_ALLOCATOR_RESET, m_Marker );
+#endif
 	m_Marker = 0;
 }
 
-DrinQFrameAllocator::DrinQFrameAllocator( ) {
-	DrinQFrameAllocator( FRAME_ALLOCATOR_SIZE );
+FrameAllocator::FrameAllocator( ) {
+	FrameAllocator( FRAME_ALLOCATOR_SIZE );
 }
 
 
-DrinQFrameAllocator::DrinQFrameAllocator( size_t size ) {
+FrameAllocator::FrameAllocator( size_t size ) {
 	m_Memory = (uint8_t*)malloc( size );
-
+#ifdef RESET_FRAME_MEMORY
 	memset(  m_Memory, FRAME_ALLOCATOR_INITIAL, size );
+#endif
 	m_Size = size;
 	m_NrOfCreatedStacks += 1;
 }
 
-DrinQFrameAllocator::~DrinQFrameAllocator( ) {
+FrameAllocator::~FrameAllocator( ) {
 	free( m_Memory );
 	m_NrOfCreatedStacks -= 1;
 }
 
-size_t DrinQFrameAllocator::GetMarker() {
+size_t FrameAllocator::GetMarker() {
 	return m_Marker;
 }
 
-uint8_t* DrinQFrameAllocator::GetBuffer() {
+uint8_t* FrameAllocator::GetBuffer() {
 	return m_Memory;
 }
 
-size_t DrinQFrameAllocator::GetSize() {
+size_t FrameAllocator::GetSize() {
 	return m_Size;
 }
 
-DrinQFrameAllocator& DrinQFrameAllocator::GetThreadStack() {
-	static thread_local DrinQFrameAllocator stackAllocator( FRAME_ALLOCATOR_SIZE );
+FrameAllocator& FrameAllocator::GetThreadStack() {
+	static thread_local FrameAllocator stackAllocator( FRAME_ALLOCATOR_SIZE );
 	return stackAllocator;
 }
 
-int DrinQFrameAllocator::GetNrOfStacks() {
+int FrameAllocator::GetNrOfStacks() {
 	return m_NrOfCreatedStacks;
 }
 
-void* DrinQFrameAllocator::allocate( size_t size, size_t alignment ) {
+void* FrameAllocator::allocate( size_t size, size_t alignment ) {
 	size_t unalignedMemory = reinterpret_cast<size_t>( m_Memory + m_Marker );
 
 	size_t mask = alignment - 1;
@@ -66,7 +71,10 @@ void* DrinQFrameAllocator::allocate( size_t size, size_t alignment ) {
 	//Out of memory
 	assert( m_Marker + allocationSize < m_Size );
 
+#ifdef RESET_FRAME_MEMORY
 	memset( m_Memory + m_Marker, FRAME_ALLOCATOR_PADDED, allocationSize );
+#endif
+
 	m_Marker += allocationSize;
 
 	return reinterpret_cast<void*>( alignedMemory );
