@@ -1,5 +1,6 @@
 #include "SSStackTest.h"
 #include <profiler/AutoProfiler.h>
+
 const pString SSStackTest::Name = "StackTest";
 int SSStackTest::ID = -1;
 

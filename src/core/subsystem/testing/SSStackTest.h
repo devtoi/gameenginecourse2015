@@ -3,6 +3,8 @@
 #include <memory/ToiStackAllocator.h>
 #include "../Subsystem.h"
 
+#define USE_STACK_ALLOC
+
 #define TEST_SIZE 8192 * 512
 #define ALLOCATOR_SIZE sizeof(float) + sizeof(bool) + sizeof(TestData) * TEST_SIZE
 
