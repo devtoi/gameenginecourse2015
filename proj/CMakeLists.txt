@@ -150,6 +150,11 @@ set(CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY "<memory/Alloc.h>")
 add_definitions(-DUTILITY_ALLOCATION_HEADER=${CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY})
 set(USE_CUSTOM_ALLOCATOR_HEADER_FOR_UTILITY true)
 
+# Resourcing defines
+set(CUSTOM_ALLOCATOR_HEADER_FOR_RESOURCING "<memory/Alloc.h>")
+add_definitions(-DRESOURCING_ALLOCATION_HEADER=${CUSTOM_ALLOCATOR_HEADER_FOR_RESOURCING})
+set(USE_CUSTOM_ALLOCATOR_HEADER_FOR_RESOURCING true)
+
 FUNCTION(MOVEDLL target library)
 	if (MSVC)
 		add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -160,6 +165,7 @@ ENDFUNCTION(MOVEDLL)
 # Add each separate library/executable
 add_subdirectory(../src/core ../build/src/core)
 add_subdirectory(../src/utility ../build/src/utility)
+add_subdirectory(../src/resourcing ../build/src/resourcing)
 add_subdirectory(../src/profiler ../build/src/profiler)
 add_subdirectory(../src/memory ../build/src/memory)
 add_subdirectory(../src/input ../build/src/input)
