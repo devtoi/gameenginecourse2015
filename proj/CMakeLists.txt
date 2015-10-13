@@ -120,6 +120,20 @@ find_library(FMODLibrary
 	NAMES fmodex64_vc fmodexL64_vc fmodex
 	PATHS ${LibraryDirectoryAbsolute})
 
+# Find zziplib
+find_path(ZZIPInclude zzip/zzip.h
+	PATHS ${IncludeDirectoryAbsolute})
+find_library(ZZIPLibrary
+	NAMES zzip
+	PATHS ${LibraryDirectoryAbsolute})
+	
+# Find zlib
+find_path(ZLIBInclude zlib.h
+	PATHS ${IncludeDirectoryAbsolute})
+find_library(ZLIBLibrary
+	NAMES zlibwapi
+	PATHS ${LibraryDirectoryAbsolute})
+	
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	list(APPEND standardLibraries "c++")
 	list(APPEND standardLibraries "c++abi")
@@ -136,6 +150,8 @@ include_directories(
 	${SDL2Includes}
 	${GLEWInclude}
 	${FMODInclude}
+	${ZZIPInclude}
+	${ZLIBInclude}
 	${IncludeDirectoryRelative}
 	${ProjectRoot}/src/
 )
