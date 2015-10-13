@@ -47,6 +47,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} Utility gfx Profiler Input Memory Re
 MOVEDLL(${CMAKE_PROJECT_NAME} SDL2)
 MOVEDLL(${CMAKE_PROJECT_NAME} glew32)
 MOVEDLL(${CMAKE_PROJECT_NAME} fmodex64)
+MOVEDLL(${CMAKE_PROJECT_NAME} zlibwapi)
 
 install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin/${OperatingSystemNameLowerCase}/${TargetArchitecture})
 install(DIRECTORY ${ProjectRoot}shader DESTINATION .)
