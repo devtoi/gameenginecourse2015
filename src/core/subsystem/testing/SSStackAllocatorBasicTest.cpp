@@ -1,7 +1,7 @@
 #include "SSStackAllocatorBasicTest.h"
 #include <memory/Alloc.h>
 //#include <memory/StackAllocator.h>
-#include <memory/DrinQFrameAllocator.h>
+#include <memory/FrameAllocator.h>
 #include <input/InputContext.h>
 #include <thread> // TODOJM: Remove
 #include <functional> // TODOJM: Remove
@@ -38,7 +38,7 @@ void SSStackAllocatorBasicTest::UpdateUserLayer(const float) {
 	}
 
 	if (g_Input.KeyUpDown(SDL_SCANCODE_N)) {
-		std::cout << DrinQFrameAllocator::GetNrOfStacks() << std::endl;
+		std::cout << FrameAllocator::GetNrOfStacks() << std::endl;
 	}
 
 	frameDeleteArray( tempInt, 2 );
