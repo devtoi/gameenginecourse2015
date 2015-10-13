@@ -7,6 +7,8 @@ file(GLOB_RECURSE ResourcingSources
 	"Resource.cpp"
 	"ResourceLoader.h"
 	"ResourceLoader.cpp"
+	"*.h"
+	"*.cpp"
 )
 
 set(RESOURCING_MEMORY_LIB)
@@ -21,7 +23,7 @@ endif(USE_CUSTOM_ALLOCATOR_HEADER_FOR_RESOURCING)
 add_definitions(-DRESOURCING_DLL_EXPORT)
 # Create library for utilities
 add_library(Resourcing SHARED ${ResourcingSources})
-target_link_libraries(Resourcing ${RESOURCING_MEMORY_LIB} ${standardLibraries} ${openglLibraries})
+target_link_libraries(Resourcing Utility ${RESOURCING_MEMORY_LIB} ${standardLibraries} ${openglLibraries} ${ZZIPLibrary} ${ZLIBLibrary})
 
 install(
 	TARGETS Resourcing DESTINATION lib
