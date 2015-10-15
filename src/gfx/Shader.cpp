@@ -1,6 +1,5 @@
 #include "Shader.h"
 #include <string>
-#include <utility/Logger.h>
 #include <fstream>
 gfx::Shader::Shader() {
 }
@@ -16,8 +15,8 @@ bool gfx::Shader::CreateFromFile( const std::string& Filename, GLenum ShaderType
 	fin.open ( Filename.c_str() );
 	if ( !fin.is_open() ) {
 		if ( print ) {
-			//printf("Error opening shader file %s\n",Filename.c_str());
-			Logger::Log("Error opening shader file " + Filename, "Shader", LogSeverity::ERROR_MSG);
+			printf("Error opening shader file %s\n",Filename.c_str());
+			//Logger::Log("Error opening shader file " + Filename, "Shader", LogSeverity::ERROR_MSG);
 
 		}
 		return false;
@@ -49,7 +48,7 @@ bool gfx::Shader::CreateFromFile( const std::string& Filename, GLenum ShaderType
 	m_Handle = glCreateShader ( ShaderType );
 	if ( m_Handle == 0 ) {
 		if ( print ) {
-			Logger::Log( "Error creating shader", "Shader", LogSeverity::ERROR_MSG );
+			//Logger::Log( "Error creating shader", "Shader", LogSeverity::ERROR_MSG );
 		}
 	}
 	const char* text = shadertext.c_str();
@@ -60,7 +59,7 @@ bool gfx::Shader::CreateFromFile( const std::string& Filename, GLenum ShaderType
 	glGetShaderiv ( m_Handle, GL_COMPILE_STATUS, &result );
 	if ( result == GL_FALSE ) {
 		if ( print ) {
-			Logger::Log( "ERROR, compiling shader " + Filename, "Shader", LogSeverity::ERROR_MSG );
+			//Logger::Log( "ERROR, compiling shader " + Filename, "Shader", LogSeverity::ERROR_MSG );
 		}
 		int length = 0;
 		glGetShaderiv ( m_Handle, GL_INFO_LOG_LENGTH, &length );
@@ -71,14 +70,14 @@ bool gfx::Shader::CreateFromFile( const std::string& Filename, GLenum ShaderType
 
 			glGetShaderInfoLog ( m_Handle, length, &written, errorLog );
 			if ( print ) {
-				Logger::Log( "Error log: " + std::string( errorLog ), "Shader", LogSeverity::ERROR_MSG );
+				//Logger::Log( "Error log: " + std::string( errorLog ), "Shader", LogSeverity::ERROR_MSG );
 			}
 			delete [] errorLog;
 		}
 		return false;
 	} else {
 		if ( print ) {
-			Logger::Log( "Compiled Shader " + Filename, "Shader", LogSeverity::DEBUG_MSG );
+			//Logger::Log( "Compiled Shader " + Filename, "Shader", LogSeverity::DEBUG_MSG );
 		}
 	}
 	return true;
@@ -89,7 +88,7 @@ bool gfx::Shader::CreateFromString( std::string ShaderCode, GLenum ShaderType, c
 	m_Handle = glCreateShader ( ShaderType );
 	if ( m_Handle == 0 ) {
 		if ( print ) {
-			Logger::Log( "Error creating shader", "Shader", LogSeverity::ERROR_MSG );
+			//Logger::Log( "Error creating shader", "Shader", LogSeverity::ERROR_MSG );
 		}
 	}
 	const char* text = ShaderCode.c_str();
@@ -100,7 +99,7 @@ bool gfx::Shader::CreateFromString( std::string ShaderCode, GLenum ShaderType, c
 	glGetShaderiv ( m_Handle, GL_COMPILE_STATUS, &result );
 	if ( result == GL_FALSE ) {
 		if ( print ) {
-			Logger::Log("Error compiling shader", "Shader", LogSeverity::ERROR_MSG);
+			//Logger::Log("Error compiling shader", "Shader", LogSeverity::ERROR_MSG);
 		}
 		int length = 0;
 		glGetShaderiv ( m_Handle, GL_INFO_LOG_LENGTH, &length );
@@ -111,7 +110,7 @@ bool gfx::Shader::CreateFromString( std::string ShaderCode, GLenum ShaderType, c
 			glGetShaderInfoLog ( m_Handle, length, &written, errorLog );
 			if ( print ) {
 				//printf( "Error log:\n %s\n", errorLog );
-				Logger::Log("Error log :" + std::string(errorLog), "Shader", LogSeverity::ERROR_MSG);
+				//Logger::Log("Error log :" + std::string(errorLog), "Shader", LogSeverity::ERROR_MSG);
 				//dump shader to file
 				std::ofstream fout("../../../shader/ErrorShader.txt");
 				fout << ShaderCode;
@@ -137,7 +136,7 @@ bool gfx::Shader::CreateFromString( std::string ShaderCode, GLenum ShaderType, c
 			else if( ShaderType == GL_COMPUTE_SHADER )
 				type = "compute";
 
-			Logger::Log( "Compiled " + type + " Shader " + filename , "Shader", LogSeverity::DEBUG_MSG );
+			//Logger::Log( "Compiled " + type + " Shader " + filename , "Shader", LogSeverity::DEBUG_MSG );
 		}
 	}
 	return true;

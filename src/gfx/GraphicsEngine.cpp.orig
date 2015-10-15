@@ -1,0 +1,242 @@
+#include "GraphicsEngine.h"
+#include <SDL2/SDL.h>
+#include <utility/Logger.h>
+#include <GL/glew.h>
+#include <glm/gtx/transform.hpp>
+#include "Window.h"
+#include "Camera.h"
+#include "RenderQueue.h"
+#include "ModelBank.h"
+#include "ShaderBank.h"
+#include "MaterialBank.h"
+#include "Material.h"
+#include "GBuffer.h"
+#include "LightEngine.h"
+#include "TerrainManager.h"
+#include "BufferManager.h"
+#include "SkyProgram.h"
+
+#include <profiler/AutoProfiler.h>
+#include <profiler/AutoGPUProfiler.h>
+#include <profiler/GPUProfiler.h>
+
+using namespace gfx;
+
+GraphicsEngine::GraphicsEngine() {
+
+}
+
+GraphicsEngine::~GraphicsEngine( ) {
+	if ( m_Initialized ) {
+		SDL_QuitSubSystem( SDL_INIT_VIDEO );
+		m_Initialized = false;
+		SDL_GL_DeleteContext( m_Context );
+	}
+}
+
+GraphicsEngine& GraphicsEngine::GetInstance() {
+	static GraphicsEngine instance;
+	return instance;
+}
+
+void GraphicsEngine::Initialize( Window* window ) {
+	m_Window = window;
+	if ( m_Initialized ) {
+		SDL_QuitSubSystem( SDL_INIT_VIDEO );
+		m_Initialized = false;
+		SDL_GL_DeleteContext( m_Context );
+	}
+	if ( SDL_InitSubSystem( SDL_INIT_VIDEO ) != 0 ) {
+		Logger::Log( "Failed to initialize SDL video subsystem", "GraphicsEngine", LogSeverity::ERROR_MSG );
+		return;
+	} else {
+		m_Initialized = true;
+		m_Context = SDL_GL_CreateContext( window->GetWindow( ) );
+		if ( m_Context == nullptr ) {
+			Logger::Log( "Failed to create OpenGL context", "GraphicsEngine", LogSeverity::ERROR_MSG );
+			return;
+		}
+	}
+	glewInit( );
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+	glEnable( GL_TEXTURE_2D );
+	glEnable( GL_STENCIL_TEST );
+	glStencilFunc( GL_ALWAYS, 1, 0xFF );
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	if (m_GraphicsSettings.vsync) {
+		SDL_GL_SetSwapInterval(1);
+	} else {
+		SDL_GL_SetSwapInterval(0);
+	}
+	m_GraphicsSettings.Width = m_Window->GetWindowSettings().Width;
+	m_GraphicsSettings.Height = m_Window->GetWindowSettings().Height;
+
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+
+	m_RenderQueue = pNew( RenderQueue );
+	m_RenderQueue->CreateBuffer();
+	//Shaders
+	m_BasicShader = g_ShaderBank.LoadShaderProgram("../../../shader/SimpleDraw.glsl");
+	m_PreFilterIblCompute = g_ShaderBank.LoadShaderProgram("../../../shader/iblprefilter.glsl");
+	m_DeferedLightShader = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedLight.glsl");
+	m_DeferedGeometryShader = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedGeometry.glsl");
+	m_DeferedPostFXShader = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedPostFX.glsl");
+	//Gbuffers
+	m_GBuffer = new GBuffer();
+	m_GBuffer->Initialize(m_GraphicsSettings.Width, m_GraphicsSettings.Height);
+	//textures
+	m_SkyCubeTex = new Texture();
+	m_SkyCubeTex->Init("../../../binasset/cubemap/sky2_filter.dds", TEXTURE_CUBE);
+	m_IrrCubeTex = new Texture();
+	m_IrrCubeTex->Init("../../../binasset/cubemap/sky2_irr.dds", TEXTURE_CUBE);
+	//integrate ibl
+	m_IntegratedIBL = 0;
+	glGenTextures(1, &m_IntegratedIBL);
+	glBindTexture(GL_TEXTURE_2D, m_IntegratedIBL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16, 1024, 1024, 0, GL_RG, GL_FLOAT, nullptr);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_PreFilterIblCompute);
+	prog->Apply();
+	glBindImageTexture(0, m_IntegratedIBL, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RG16);
+	GLuint x = 1024 / 16;
+	glDispatchCompute(x, x, 1);
+	glUseProgram(0);
+	//LightEngine
+	g_LightEngine.Initialize();
+	g_LightEngine.BindBuffer(m_DeferedLightShader);
+
+	g_BufferManager.BindBufferToProgram("ShaderInputs", g_ShaderBank.GetProgramFromHandle(m_DeferedGeometryShader), 0);
+	//Skybox
+	m_SkyProgram = new SkyProgram();
+	m_SkyProgram->Init();
+	m_SkyProgram->SetSkyTexture("../../../binasset/cubemap/sky2.dds");
+}
+
+void GraphicsEngine::Swap( ) {
+	SDL_GL_SwapWindow( m_Window->GetWindow( ) );
+}
+
+void GraphicsEngine::Draw() {
+	PROFILE(AutoProfiler pDrawGeo("Draw Geometry"))
+	DrawGeometry();
+	PROFILE(pDrawGeo.Stop())
+	DrawLight();
+	DrawPostFX();
+
+	g_LightEngine.ClearDirectionalLights();
+	g_LightEngine.ClearPointLights();
+}
+
+void GraphicsEngine::DrawGeometry() {
+	m_GBuffer->ApplyGeometryStage();
+	m_GBuffer->ClearScreen();
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glEnable( GL_STENCIL_TEST );
+	for (auto& view : m_RenderQueue->GetViews()){
+		glViewport(view.viewport.x, view.viewport.y, view.viewport.width, view.viewport.height);
+		//Render Sky
+		m_SkyProgram->Render(view.camera);
+		//Render Terrains
+		g_TerrainManager.RenderTerrains(m_RenderQueue, view.camera);
+		//update buffers
+		m_RenderQueue->UpdateBuffer();
+		g_ModelBank.ApplyBuffers();
+		//set per frame variables
+		ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_DeferedGeometryShader);
+		prog->Apply();
+		prog->SetUniformMat4("g_ViewProj", view.camera.ProjView);
+		unsigned int bufferOffset = 0;
+		unsigned int instanceCount = 0;
+
+		//for each model to be rendered
+		for (auto& mo : m_RenderQueue->GetModelQueue()) {
+			const Model& model = g_ModelBank.FetchModel(mo.Model);
+			instanceCount = mo.InstanceCount;
+			prog->SetUniformUInt("g_BufferOffset", bufferOffset);
+			//for each mesh
+			for (auto& mesh : model.Meshes) {
+				//set textures
+				Material* mat = g_MaterialBank.GetMaterial(model.MaterialOffset + mesh.Material);
+				Texture* albedoTex = g_MaterialBank.GetTexture(mat->GetAlbedoTexture());
+				Texture* normalTex = g_MaterialBank.GetTexture(mat->GetNormalTexture());
+				Texture* roughnessTex = g_MaterialBank.GetTexture(mat->GetRoughnessTexture());
+				Texture* metalTex = g_MaterialBank.GetTexture(mat->GetMetalTexture());
+				prog->SetUniformTextureHandle("g_DiffuseTex", albedoTex->GetHandle(), 0);
+				prog->SetUniformTextureHandle("g_NormalTex", normalTex->GetHandle(), 1);
+				prog->SetUniformTextureHandle("g_RoughnessTex", roughnessTex->GetHandle(), 2);
+				prog->SetUniformTextureHandle("g_MetallicTex", metalTex->GetHandle(), 3);
+
+				glDrawElementsInstanced(GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
+					(GLvoid*)(0 + ((model.IndexHandle + mesh.IndexBufferOffset) * sizeof(unsigned int))), instanceCount);
+			}
+			bufferOffset += instanceCount;
+		}
+
+	}
+
+	glViewport(0, 0, m_GraphicsSettings.Width, m_GraphicsSettings.Height);
+}
+
+void GraphicsEngine::DrawLight() {
+	m_GBuffer->ApplyLightingStage();
+	g_LightEngine.BuildBuffer();
+
+	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_DeferedLightShader);
+	prog->Apply();
+	const int WORK_GROUP_SIZE = 16;
+	for (auto& view : m_RenderQueue->GetViews()){
+		GLuint WorkGroupSizeX = GLuint((view.viewport.width + WORK_GROUP_SIZE - 1) / float(WORK_GROUP_SIZE));
+		GLuint WorkGroupSizeY = GLuint((view.viewport.height + WORK_GROUP_SIZE - 1) / float(WORK_GROUP_SIZE));
+
+		prog->SetUniformVec2("gScreenSize", glm::vec2(m_GraphicsSettings.Width, m_GraphicsSettings.Height));
+		prog->SetUniformUInt("numDLights", g_LightEngine.GetDirLightCount());
+		prog->SetUniformUInt("gTotalLightCount", g_LightEngine.GetPointLightCount());
+		prog->SetUniformMat4("gProj", view.camera.Proj);
+		prog->SetUniformMat4("gView", view.camera.View);
+		glm::mat4 invViewProj = glm::inverse(view.camera.ProjView);
+		prog->SetUniformMat4("gInvProjView", invViewProj);
+		prog->SetUniformVec3("gCamPos", view.camera.Position);
+		prog->SetUniformVec2("gScreenOffset", glm::vec2(view.viewport.x, view.viewport.y));
+		prog->SetUniformVec2("gViewportSize", glm::vec2(view.viewport.width, view.viewport.height));
+
+		prog->SetUniformTextureHandle("gAlbedoBuffer", m_GBuffer->GetTexture(GBUFFER_TEX::ALBEDO24), 0);
+		prog->SetUniformTextureHandle("gNormalBuffer", m_GBuffer->GetTexture(GBUFFER_TEX::NORMAL16), 1);
+		prog->SetUniformTextureHandle("gRoughMetalBuffer", m_GBuffer->GetTexture(GBUFFER_TEX::ROUGHNESS8_METAL8), 2);
+		prog->SetUniformTextureHandle("gDepthBuffer", m_GBuffer->GetTexture(GBUFFER_TEX::DEPTH_SENCIL32), 3);
+		prog->SetUniformTextureHandle("g_BRDFTex", m_IntegratedIBL, 4);
+
+		m_SkyCubeTex->Apply(prog->FetchUniform("g_SkyCubeTex"), 5);
+		m_IrrCubeTex->Apply(prog->FetchUniform("g_IrradianceCubeTex"), 6);
+
+		glBindImageTexture(0, m_GBuffer->GetTexture(GBUFFER_TEX::COLLECTIVE24), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+		glDispatchCompute(WorkGroupSizeX, WorkGroupSizeY, 1);
+	}
+
+	glUseProgram(0);
+}
+
+void GraphicsEngine::DrawPostFX() {
+	m_GBuffer->ApplyPostProcessStage();
+	m_GBuffer->ClearScreen();
+	glDisable(GL_DEPTH_TEST);
+	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_DeferedPostFXShader);
+	prog->Apply();
+	prog->SetUniformTextureHandle("InputTex", m_GBuffer->GetTexture(GBUFFER_TEX::COLLECTIVE24), 0);
+	glBindVertexArray(0);
+	glDrawArrays(GL_POINTS, 0, 1);
+	glEnable(GL_DEPTH_TEST);
+	glUseProgram(0);
+}

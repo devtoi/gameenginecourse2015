@@ -16,32 +16,32 @@ void CameraFirstPerson::Update( const float deltaTime ) {
 	}
 
 	// Move forward
-	if ( g_Input.KeyDown( SDL_SCANCODE_UP ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_W ) ) {
 		this->MoveForward( m_MoveSpeed * deltaTime );
 	}
 
 	// Move back
-	if ( g_Input.KeyDown( SDL_SCANCODE_DOWN ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_S ) ) {
 		this->MoveForward( -m_MoveSpeed * deltaTime );
 	}
 
 	// Move right
-	if ( g_Input.KeyDown( SDL_SCANCODE_RIGHT ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_D ) ) {
 		this->MoveRight( m_MoveSpeed * deltaTime );
 	}
 
 	// Move left
-	if ( g_Input.KeyDown( SDL_SCANCODE_LEFT ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_A ) ) {
 		this->MoveRight( -m_MoveSpeed * deltaTime );
 	}
 
 	// Float up
-	if ( g_Input.KeyDown( SDL_SCANCODE_RSHIFT ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_LSHIFT ) ) {
 		this->MoveUp( m_MoveSpeed * deltaTime );
 	}
 
 	// Float down
-	if ( g_Input.KeyDown( SDL_SCANCODE_RCTRL ) ) {
+	if ( g_Input.KeyDown( SDL_SCANCODE_X ) ) {
 		this->MoveUp( -m_MoveSpeed * deltaTime );
 	}
 }

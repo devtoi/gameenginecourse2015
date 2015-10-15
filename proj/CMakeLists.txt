@@ -112,6 +112,15 @@ find_path(SOIL2Include soil2/SOIL2.h
 find_library(SOIL2Library
 	NAMES soil2 SOIL2 libsoil2 soil2-debug
 	PATHS ${LibraryDirectoryAbsolute})
+list(APPEND assetLibraries ${SOIL2Library})
+
+# Find assimp
+find_path(ASSIMPInclude assimp/scene.h
+	PATHS ${IncludeDirectoryAbsolute})
+find_library(ASSIMPLibrary
+	NAMES assimp libassimp assimpd
+	PATHS ${LibraryDirectoryAbsolute})
+list(APPEND assetLibraries ${ASSIMPLibrary})
 
 # Find fmod
 find_path(FMODInclude fmod/fmod.h
@@ -145,6 +154,10 @@ endif (UNIX)
 if (WIN32)
 	list(APPEND openglLibraries "opengl32")
 endif(WIN32)
+
+
+
+
 
 include_directories(
 	${SDL2Includes}

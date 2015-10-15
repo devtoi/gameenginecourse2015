@@ -1,10 +1,7 @@
 #pragma once
 
 #include "../Subsystem.h"
-
-namespace gfx {
-	class Window;
-}
+class Window;
 
 class SSWindow : public Subsystem {
 public:
@@ -20,7 +17,7 @@ public:
 
 	Subsystem* 	CreateNew( ) const override;
 
-	gfx::Window* GetWindow() const;
+	Window* GetWindow() const;
 
 	static int GetStaticID( );
 
@@ -33,6 +30,6 @@ private:
 
 	const pString m_WindowTitle = "engineT";
 
-	gfx::Window* m_Window = nullptr;
+	Window* m_Window = nullptr;
 
 };

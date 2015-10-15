@@ -1,0 +1,287 @@
+//declarations
+struct Light
+{
+	vec4 Color;
+	vec3 Position;
+	float Intensity;
+	vec3 Direction;
+	float Length;
+	vec3 Padd;
+	float Range;
+};
+
+#define PI 3.141592653589793
+#define M_INV_PI 0.31830988618379067153776752674503
+#define saturate(x) clamp(x,0.0f,1.0f)
+#define sqr(x) x * x
+#define NUMBER_OF_SAMPLES 512
+//Functions
+float IORToF0(float n){
+	return pow(n - 1, 2) / pow(n + 1, 2);
+}
+
+float LambertDiffuse(vec3 normal, vec3 lightDir){
+	return max(0, dot(normal, lightDir));
+}
+float radicalInverse_VdC(uint bits) {
+     bits = (bits << 16u) | (bits >> 16u);
+     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+     return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+ }
+ // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+ vec2 Hammersley(uint i, uint N) {
+     return vec2(float(i)/float(N), radicalInverse_VdC(i));
+ }
+
+vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N)
+{
+	float a = Roughness * Roughness;
+
+	// Compute distribution direction
+	float Phi = 2 * PI * Xi.x;
+	float CosTheta = sqrt((1 - Xi.y) / (1 + (a*a - 1) * Xi.y));		
+	float SinTheta = sqrt(1 - CosTheta * CosTheta);
+
+	// Convert to spherical direction
+	vec3 H;
+	H.x = SinTheta * cos(Phi);
+	H.y = SinTheta * sin(Phi);
+	H.z = CosTheta;
+
+	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
+	vec3 TangentX = normalize(cross(UpVector, N));
+	vec3 TangentY = cross(N, TangentX);
+
+	// Tangent to world space
+	return TangentX * H.x + TangentY * H.y + N * H.z;
+}
+
+float normal_distrib(
+	float ndh,
+	float Roughness)
+{
+// use GGX / Trowbridge-Reitz, same as Disney and Unreal 4
+// cf http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p3
+	float alpha = Roughness * Roughness;
+	float tmp = alpha / max(1e-8,(ndh*ndh*(alpha*alpha-1.0)+1.0));
+	return tmp * tmp * M_INV_PI;
+}
+
+vec3 fresnel(
+	float vdh,
+	vec3 F0)
+{
+// Schlick with Spherical Gaussian approximation
+// cf http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p3
+	float sphg = pow(2.0, (-5.55473*vdh - 6.98316) * vdh);
+	return F0 + (vec3(1.0, 1.0, 1.0) - F0) * sphg;
+}
+
+float G1(
+	float ndw, // w is either Ln or Vn
+	float k)
+{
+// One generic factor of the geometry function divided by ndw
+// NB : We should have k > 0
+	return ndw / ( ndw * (1.0-k) + k );
+}
+
+float visibility(
+	float ndl,
+	float ndv,
+	float roughness)
+{
+// Schlick with Smith-like choice of k
+// cf http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p3
+// visibility is a Cook-Torrance geometry function divided by (n.l)*(n.v)
+	float k = pow( roughness + 1, 2.0) / 8.0;
+	return G1(ndl,k)*G1(ndv,k);
+}
+
+float GeometricAtt(float hdotn, float vdotn, float vdoth, float ndotl)
+{
+	float a = (2 * hdotn * vdotn) / vdoth;
+	float b = (2 * hdotn * ndotl) / vdoth;
+	float c = min(a,b);
+	return min(1,c);
+}
+
+float GGX_D(float ndoth, float  roughness) //GGX/Trowbridge-Reitz
+{
+	/*
+	float cosSquared = ndoth * ndoth;
+	float tanSquared = (1 - cosSquared) / cosSquared;
+	return (1.0 / PI) * sqr(roughness / cosSquared * ( sqr(roughness + tanSquared)));
+	
+	float den = sqr(ndoth) * sqr(roughness) + (1 - sqr(ndoth));
+	float v = ndoth > 0 ? 1 : 0;
+	return (v * sqr(roughness)) / ( PI * den * den);
+	*/
+
+	float rSqr = sqr(roughness);
+	float rSqr2 = sqr(rSqr);
+	float t = sqr(ndoth) * (rSqr2 - 1) + 1;
+	return rSqr2 / (PI * t * t);
+}
+vec3 F_Schlick(vec3 f0, float hdotl){
+	return f0 + (1.0 - f0) * pow(1.0f - hdotl, 5.0f);
+}
+
+vec3 microfacets_contrib(
+	float vdh,
+	float ndh,
+	float ndl,
+	float ndv,
+	vec3 Ks,
+	float Roughness)
+{
+// This is the contribution when using importance sampling with the GGX based
+// sample distribution. This means ct_contrib = ct_brdf / ggx_probability
+	return fresnel(vdh,Ks) * (visibility(ndl,ndv,Roughness) * vdh * ndl / ndh );
+}
+
+vec3 GGX_Specular(samplerCube SpecEnvMap, vec3 normal, vec3 toeye, float roughness, vec3 F0, out vec3 ks){
+	vec3 specular = vec3(0);
+
+	for(int i = 0; i < NUMBER_OF_SAMPLES; i++){
+		vec2 Xi = Hammersley(uint(i), uint(NUMBER_OF_SAMPLES));
+		vec3 H = ImportanceSampleGGX(Xi, roughness, normal);
+		vec3 L = -reflect(toeye,H);
+
+		float NoV = saturate(dot(normal,toeye));
+		float NoL = saturate(dot(normal,L));
+		float NoH = saturate(dot(normal,H));
+		float HoV = saturate(dot(H,toeye));
+
+		vec3 sampleColor = pow(texture(SpecEnvMap, L).rgb, vec3(2.2));
+		specular += sampleColor * microfacets_contrib(HoV, NoH, NoL, NoV,F0, roughness);
+	}
+	return specular / NUMBER_OF_SAMPLES;
+}
+
+ vec3 AproximateIBLSpecular(samplerCube envMap, sampler2D BRDFTex, vec3 F0 , float roughness, vec3 normal, vec3 toeye){
+ 	float NoV = saturate(dot(normal, toeye));
+ 	NoV = max(0.001, NoV);
+ 	vec3 R = 2 * dot(normal, toeye) * normal - toeye;
+
+ 	ivec2 texDim = textureSize(g_SkyCubeTex,0);
+	float numMips = ceil(log2(float(max(texDim.x,texDim.y)))) - 1.0f;
+	float mipLevel = numMips * roughness;
+
+	vec3 color = textureLod(envMap, R, mipLevel).xyz;
+	vec2 envBRDF = texture(BRDFTex, vec2(roughness, NoV)).rg;
+
+	return pow(color, vec3(2.2)) * (envBRDF.x * F0 + envBRDF.y);
+ }
+vec3 CookTorranceSpecular(vec3 normal, vec3 lightDir, vec3 toeye, float roughness, float metal, vec3 baseColor)
+{
+	vec3 halfWayVector = normalize(toeye + lightDir);
+	float hdotl = saturate(dot(halfWayVector, lightDir));
+	float ndotl = saturate(dot(normal, lightDir));
+	float ndoth = saturate(dot(halfWayVector, normal));
+	float ndotv = saturate(dot(toeye, normal));
+	float vdoth = saturate(dot(halfWayVector, toeye));
+
+	float ior = mix(1.4, 3.0, metal);//ior for plastic and iron, metallic values should actually be fetched from a texture and be in rgb space but this will do for now
+	vec3 F0 = vec3(IORToF0(ior));
+	F0 = mix(F0, baseColor, metal);
+ 	//vec3 F0 = vec3(0.002); //from water to plastic
+ 	//F0 = mix(F0, baseColor, metal);
+
+	vec3 F = F_Schlick(F0 ,hdotl);
+	float D = GGX_D(ndoth, roughness);
+	float G = visibility(ndotl, ndotv, roughness);
+	//float G = GeometricAtt(ndoth, ndotv, vdoth, ndotl);
+
+	return vec3(F * D * G) / (4 * ndotl * ndotv);
+}
+float OrenNayarDiffuse(in vec3 normal,in vec3 lightDir, in vec3 toeye,in float roughness){
+	float ndotl = dot(normal , lightDir);
+	float ndotv = dot(normal , toeye);
+
+	float angleVN = acos(ndotv);
+	float angleLN = acos(ndotl);
+
+	float alpha = max(angleVN, angleLN);
+	float beta = min(angleVN, angleLN);
+	float gamma = dot(toeye - normal * ndotv, lightDir - normal * ndotl);
+
+	float rSqr = roughness * roughness;
+
+	float A = 1.0 - 0.5 * (rSqr / (rSqr + 0.57));
+	float B = 0.45 * (rSqr / (rSqr + 0.09));
+
+	float C = sin(alpha) * tan(beta);
+
+	return max(0.0, ndotl) * (A + B * max(0.0 , gamma) * C);
+}
+
+vec4 CalcIBLLight( vec3 inNormal, vec3 posw, vec3 campos, vec3 baseColor, float roughness, float metal, samplerCube SpecEnvMap, samplerCube diffEnvMap, sampler2D BRDFTex )
+{
+	vec4 lightColor = vec4(0,0,0,1);
+	vec3 toeye = normalize(campos - posw);
+
+	//float ior = mix(1.46, 2.95, roughness); //ior for plastic and iron, metallic values should actually be fetched from a texture and be in rgb space but this will do for now
+ 	//vec3 F0 = vec3(IORToF0(ior));
+	float ior = mix(1.4, 3.0, metal);//ior for plastic and iron, metallic values should actually be fetched from a texture and be in rgb space but this will do for now
+	vec3 F0 = vec3(IORToF0(ior));
+	F0 = mix(F0, baseColor, metal);
+
+ 	vec3 irradiance = pow(texture(diffEnvMap, inNormal).rgb, vec3(2.2));
+ 	vec3 diffuse = baseColor * irradiance;
+
+ 	vec3 specular = AproximateIBLSpecular(SpecEnvMap, BRDFTex, F0, roughness, inNormal, toeye);
+
+ 	specular = saturate(specular);
+	return vec4(specular + diffuse * (vec3(1) - F0) * (1 - metal),1);
+}
+
+vec4 CalcDLight(Light light, vec3 inNormal, vec3 posw, vec3 campos, vec3 baseColor, float roughness, float metal )
+{
+	vec4 lightColor = vec4(0,0,0,0);
+	vec3 lightDir = normalize(light.Direction);
+	vec3 spec = vec3(0);
+	vec3 diff = vec3(0);
+	float ndotl = dot(inNormal, -lightDir);
+	diff = (ndotl * 0.5 + 0.5) * baseColor;
+	if(ndotl > 0){
+		vec3 toeye = normalize(campos - posw);
+		spec = CookTorranceSpecular(inNormal, -lightDir, toeye, roughness, metal, baseColor);
+	}
+	diff = mix(diff, vec3(0), metal);
+	spec = mix(spec, spec * baseColor, metal);
+	diff = saturate(diff);
+	spec = saturate(spec);
+	lightColor.xyz = vec3(light.Color.rgb) * (diff + spec);
+	return lightColor;
+}
+
+vec4 CalcPLight( Light light, vec3 inNormal, vec3 posw, vec3 campos, vec3 baseColor, float roughness, float metal )
+{
+	vec4 lightColor = vec4(0);
+	vec3 lightDir = posw - light.Position;
+	float dist = length(lightDir);
+	if(dist <= light.Range)
+	{
+		lightDir = normalize(lightDir);
+		vec3 toeye = normalize(campos - posw);
+		float att = light.Intensity / max(dist * dist, 0.0001f); //ty frostbite team;
+		vec3 spec = vec3(0);
+		vec3 diff = vec3(0);
+		float ndotl = dot(inNormal, -lightDir);
+		diff = max(0, ndotl) * baseColor;
+		if(ndotl > 0){
+			vec3 toeye = normalize(campos - posw);
+			spec = CookTorranceSpecular(inNormal, -lightDir, toeye, roughness, metal, baseColor);
+		}
+		diff = mix(diff, vec3(0), metal);
+		spec = mix(spec, spec * baseColor, metal);
+		diff = saturate(diff);
+		spec = saturate(spec);
+		lightColor.xyz = vec3(light.Color.rgb) * (diff + spec) * att;
+	}
+	return lightColor;
+}

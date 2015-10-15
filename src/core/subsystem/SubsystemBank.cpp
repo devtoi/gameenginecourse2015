@@ -2,7 +2,7 @@
 #include <cassert>
 #include "graphics/SSWindow.h"
 #include "graphics/SSGraphicsSwap.h"
-#include "graphics/SSGraphicsInitialize.h"
+#include "graphics/SSGraphics.h"
 #include "graphics/SSParticles.h"
 #include "graphics/SSVisualizer.h"
 #include "profile/SSProfilerInOut.h"
@@ -22,7 +22,7 @@ SubsystemBank& SubsystemBank::GetInstance() {
 void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSDeranesPoolTest>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
-	CreateSubsystemTemplate<SSGraphicsInitialize>();
+	CreateSubsystemTemplate<SSGraphics>();
 	CreateSubsystemTemplate<SSParticles>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSSimplePoolTest>();
@@ -31,14 +31,14 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSThreadTest>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
-	CreateSubsystemTemplate<SSStackTest>();
+	//CreateSubsystemTemplate<SSStackTest>();
 	CreateSubsystemTemplate<SSResourcingTest>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetStartOrderPriority( prio );
 	};
 	setStartPrio( SSWindow::GetStaticID(),          	-500 ); // Before Input, graphics etc.
-	setStartPrio( SSGraphicsInitialize::GetStaticID(), 	-400 ); //                                    | After window
+	setStartPrio(SSGraphics::GetStaticID(), 	-400 ); //                                    | After window
 
 	// Update priorities
 	auto setUpdatePrio = [this] ( int id, int prio ) {
@@ -46,13 +46,13 @@ void SubsystemBank::Initialize() {
 	};
 	// Defaulted
 	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
-	setUpdatePrio( SSGraphicsInitialize::GetStaticID(), 0 );
+	setUpdatePrio(SSWindow::GetStaticID(), 0);
+	setUpdatePrio(SSGraphics::GetStaticID(), 0 ); //after window
 	setUpdatePrio( SSParticles::GetStaticID(), 0);
-	setUpdatePrio( SSStackTest::GetStaticID(), 0);
+	//setUpdatePrio( SSStackTest::GetStaticID(), 0);
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSSimplePoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
-	setUpdatePrio( SSWindow::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
 	setUpdatePrio( SSResourcingTest::GetStaticID(), 0);
 	setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|

@@ -5,9 +5,13 @@ const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
 
 void SSWindow::Startup( SubsystemCollection* const ) {
-	m_Window = pNew( gfx::Window );
-	gfx::WindowSettings ws;
+	m_Window = pNew( Window );
+	WindowSettings ws;
 	ws.Title = m_WindowTitle;
+	ws.OpenGL = true;
+	ws.Width = 1600;
+	ws.Height = 900;
+	ws.Vsync = true;
 	m_Window->Initialize( ws );
 }
 
@@ -31,6 +35,6 @@ int SSWindow::GetStaticID() {
 	return SSWindow::ID;
 }
 
-gfx::Window* SSWindow::GetWindow() const {
+Window* SSWindow::GetWindow() const {
 	return m_Window;
 }
