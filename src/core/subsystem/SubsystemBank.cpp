@@ -23,11 +23,11 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSDeranesPoolTest>();
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphics>();
-	CreateSubsystemTemplate<SSParticles>();
+	//CreateSubsystemTemplate<SSParticles>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSSimplePoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
-	CreateSubsystemTemplate<SSVisualizer>();
+	//CreateSubsystemTemplate<SSVisualizer>();
 	CreateSubsystemTemplate<SSThreadTest>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
@@ -48,14 +48,14 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSDeranesPoolTest::GetStaticID(), 0 );
 	setUpdatePrio(SSWindow::GetStaticID(), 0);
 	setUpdatePrio(SSGraphics::GetStaticID(), 0 ); //after window
-	setUpdatePrio( SSParticles::GetStaticID(), 0);
+	//setUpdatePrio( SSParticles::GetStaticID(), 0);
 	//setUpdatePrio( SSStackTest::GetStaticID(), 0);
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSSimplePoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
 	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
 	setUpdatePrio( SSResourcingTest::GetStaticID(), 0);
-	setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
+	//setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
 	

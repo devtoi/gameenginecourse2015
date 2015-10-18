@@ -2,7 +2,7 @@
 
 #include "../Subsystem.h"
 class Window;
-
+typedef void* SDL_GL_Context;
 class SSWindow : public Subsystem {
 public:
 	SSWindow( int ID ) : Subsystem( Name, ID ) {
@@ -31,5 +31,6 @@ private:
 	const pString m_WindowTitle = "engineT";
 
 	Window* m_Window = nullptr;
+	SDL_GL_Context  m_LoadingContext = nullptr;
 
 };

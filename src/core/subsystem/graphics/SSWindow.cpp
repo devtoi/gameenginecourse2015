@@ -1,6 +1,7 @@
 #include "SSWindow.h"
 #include <gfx/Window.h>
-
+#include <SDL2/SDL.h>
+#include <resourcing/Loaders/DDSLoader.h>
 const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
 
@@ -13,6 +14,11 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	ws.Height = 900;
 	ws.Vsync = true;
 	m_Window->Initialize( ws );
+
+	m_LoadingContext = SDL_GL_CreateContext(m_Window->GetWindow());
+
+	DDSLoader ddsloader;
+	ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
 }
 
 void SSWindow::Shutdown( SubsystemCollection* const ) {

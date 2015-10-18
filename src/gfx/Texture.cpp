@@ -12,6 +12,32 @@ Texture::Texture() {
 	m_Handle = 0;
 }
 
+Texture::Texture(GLuint handle, TextureType type) {
+	if (handle == 0 || !glIsTexture(handle))
+		return;
+	m_Loaded = true;
+	glBindTexture(GL_TEXTURE_2D, handle);
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_Width);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_Height);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	m_Channels = (type == TEXTURE_COLOR) ? 4 : 1;
+	m_Type = type;
+	m_HeighestLoadedMip = 0;
+	m_MaxMip = log2(glm::max(m_Height, m_Width));
+	m_Filename = "";
+	m_Handle = handle;
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 Texture::~Texture() {
 	glDeleteTextures(1, &m_Handle);
 }
@@ -70,7 +96,7 @@ void Texture::InitWithData(int width, int height, int channels, void* data) {
 
 	glGenTextures(1, &m_Handle);
 	glBindTexture(GL_TEXTURE_2D, m_Handle);
-	glTexImage2D(GL_TEXTURE_2D, 0, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, width, height, 0, m_Type == TEXTURE_COLOR ? GL_RGBA : GL_R, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, width, height, 0, m_Type == TEXTURE_COLOR ? GL_BGRA : GL_R, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	GLfloat fLargest;
@@ -95,12 +121,17 @@ void Texture::InitWithoutData(int width, int height, int channels) {
 	glBindTexture(GL_TEXTURE_2D, m_Handle);
 	unsigned int w = m_Width;
 	unsigned int h = m_Height;
+	GLuint pbo;
+	glGenBuffers(1, &pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	unsigned char* buffer = new unsigned char[m_Width * m_Height * 4];
+	memset(buffer, 0xFFU, m_Width * m_Height * 4);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, m_Width * m_Height * 4, buffer, GL_STATIC_DRAW);
 	//generate all mips
-	for (int i = 0; i < m_MaxMip; i++) {
-		glTexImage2D(GL_TEXTURE_2D, 0, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, w, h, 0, m_Type == TEXTURE_COLOR ? GL_RGBA : GL_R, GL_UNSIGNED_BYTE, nullptr);
-		w = w >> 1;
-		h = h >> 1;
-	}
+	glTexImage2D(GL_TEXTURE_2D, 0, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, w, h, 0, m_Type == TEXTURE_COLOR ? GL_BGRA : GL_R, GL_UNSIGNED_BYTE, 0);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
@@ -120,7 +151,7 @@ void Texture::UpdateMipLevel(int level, void* data) {
 	glBindTexture(GL_TEXTURE_2D, m_Handle);
 	int mipW = (unsigned)m_Width >> level;
 	int mipH = (unsigned)m_Height >> level;
-	glTexImage2D(GL_TEXTURE_2D, level, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, mipW, mipH, 0, m_Type == TEXTURE_COLOR ? GL_RGBA : GL_R, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, level, m_Type == TEXTURE_COLOR ? GL_RGBA8 : GL_R8, mipW, mipH, 0, m_Type == TEXTURE_COLOR ? GL_BGRA : GL_R, GL_UNSIGNED_BYTE, data);
 	m_HeighestLoadedMip = (m_HeighestLoadedMip < level) ? m_HeighestLoadedMip : level;
 }
 
@@ -154,4 +185,5 @@ void Texture::Resize(int width, int height) {
 	GLint intFormat;
 	m_Type == TEXTURE_COLOR ? intFormat = GL_RGBA : intFormat = GL_RED;
 	glTexStorage2D(GL_TEXTURE_2D, 1, intFormat, width, height);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -91,7 +91,7 @@ void main(){
 	roughness = max(minRoughness, roughness);
 
 	vec3 normal = CalcBumpedNormal(v_Out.NormalW.xyz, v_Out.TangentW.xyz, g_NormalTex, v_Out.TexCoord.xy);
-	vec4 albedo = textureLod(g_DiffuseTex, v_Out.TexCoord.xy,0);
+	vec4 albedo = texture(g_DiffuseTex, v_Out.TexCoord.xy);
 	if(albedo.a <= 0.01f){
 		discard;
 	}

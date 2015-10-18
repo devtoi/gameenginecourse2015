@@ -50,7 +50,6 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	glEnable( GL_STENCIL_TEST );
 	glStencilFunc( GL_ALWAYS, 1, 0xFF );
 	glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
-
 	glClearColor( 0.39f, 0.61f, 0.93f, 1.0f ); // cornflower blue
 	//load default materials
 	g_MaterialBank.Initialize();
@@ -69,7 +68,8 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	m_IntegratedIBL = 0;
 	glGenTextures( 1, &m_IntegratedIBL );
 	glBindTexture( GL_TEXTURE_2D, m_IntegratedIBL );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RG16, 1024, 1024, 0, GL_RG, GL_FLOAT, nullptr );
+	GLuint texSize = 256;
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RG16, texSize, texSize, 0, GL_RG, GL_FLOAT, nullptr );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -79,7 +79,7 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle( m_PreFilterIblCompute );
 	prog->Apply();
 	glBindImageTexture( 0, m_IntegratedIBL, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RG16 );
-	const GLuint x = 1024 / 16;
+	const GLuint x = texSize / 16;
 	glDispatchCompute( x, x, 1 );
 	glUseProgram( 0 );
 	// LightEngine
@@ -93,11 +93,11 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	// Skybox
 	m_SkyProgram = new SkyProgram();
 	m_SkyProgram->Init();
-	m_SkyProgram->SetSkyTexture("../../../asset/texture/sky/sky9.dds");
+	m_SkyProgram->SetSkyTexture("../../../asset/texture/sky/skybox.dds");
 	m_SkyCubeTex = new Texture();
-	m_SkyCubeTex->Init("../../../asset/texture/sky/sky9_filter.dds",TEXTURE_CUBE);
+	m_SkyCubeTex->Init("../../../asset/texture/sky/skybox_rad.dds",TEXTURE_CUBE);
 	m_IrrCubeTex = new Texture();
-	m_IrrCubeTex->Init("../../../asset/texture/sky/sky9_irr.dds", TEXTURE_CUBE);
+	m_IrrCubeTex->Init("../../../asset/texture/sky/skybox_irr.dds", TEXTURE_CUBE);
 	//terrain deform
 	m_TerrainDeform = new TerrainDeformationProgram( );
 	m_TerrainDeform->Initialize();
@@ -124,23 +124,6 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 		colors[i + 3] = 255;
 	}
 	m_TestTexture->InitWithoutData(16, 16, 4);
-	m_TestTexture->UpdateMipLevel(0, colors);
-	for (int i = 0; i < 256 * 4; i += 4) {
-		colors[i] = 255;
-		colors[i + 1] = 0;
-		colors[i + 2] = 0;
-		colors[i + 3] = 255;
-	}
-	m_TestTexture->UpdateMipLevel(1, colors);
-	for (int i = 0; i < 256 * 4; i += 4) {
-		colors[i] = 0;
-		colors[i + 1] = 0;
-		colors[i + 2] = 255;
-		colors[i + 3] = 255;
-	}
-	m_TestTexture->UpdateMipLevel(2, colors);
-	m_TestTexture->UpdateMipLevel(3, colors);
-	m_TestTexture->UpdateMipLevel(4, colors);
 }
 
 void GraphicsEngine::Deinitialize() {
@@ -210,7 +193,7 @@ void GraphicsEngine::DrawGeometry() {
 				Texture*  normalTex	   = g_MaterialBank.GetTexture( mat->GetNormalTexture() );
 				Texture*  roughnessTex = g_MaterialBank.GetTexture( mat->GetRoughnessTexture() );
 				Texture*  metalTex	   = g_MaterialBank.GetTexture( mat->GetMetalTexture() );
-				prog->SetUniformTextureHandle( "g_DiffuseTex", m_TestTexture->GetHandle(),	0 );
+				prog->SetUniformTextureHandle( "g_DiffuseTex", 1,	0 );
 				prog->SetUniformTextureHandle( "g_NormalTex",	 normalTex->GetHandle(),	1 );
 				prog->SetUniformTextureHandle( "g_RoughnessTex", roughnessTex->GetHandle(), 2 );
 				prog->SetUniformTextureHandle( "g_MetallicTex",	 metalTex->GetHandle(),		3 );

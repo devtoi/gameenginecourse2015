@@ -19,7 +19,7 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
 
-	m_TestModel = gfx::g_ModelBank.LoadModel("../../../asset/cube.obj");
+	m_TestModel = gfx::g_ModelBank.LoadModel("../../../asset/suzanne.obj");
 	gfx::g_ModelBank.BuildBuffers();
 
 	m_Camera = pNew(CameraFirstPerson);
@@ -36,15 +36,15 @@ void SSGraphics::UpdateUserLayer( const float deltaTime ) {
 	gfx::ShaderInput input;
 	std::vector<gfx::ShaderInput> inputList;
 	for (int x = -10; x < 10; x+= 2) {
-		input.World = glm::translate(glm::vec3(x, 0, -25)) * glm::rotate(30.0f, glm::vec3(-0.5f,-1, 0));
+		input.World = glm::translate(glm::vec3(x, 0, -25)) * glm::rotate(-30.0f, glm::vec3(-0.5f,-1, 0));
 		input.Color = glm::vec4(1);
 		inputList.push_back(input);
 	}
 	m_RenderQueue->Enqueue(m_TestModel, inputList);
 
 	gfx::Light dl;
-	dl.Color = glm::vec4(1);
-	dl.Direction = glm::vec3(0.5f, -1, 0);
+	dl.Color = glm::vec4(0.27f,0.33f,0.39f, 1.0f);
+	dl.Direction = glm::vec3(0) - glm::vec3(5,0.6186f, -5);
 	gfx::g_LightEngine.AddDirLightToQueue(dl);
 
 	gfx::View v;

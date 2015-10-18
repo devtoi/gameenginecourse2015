@@ -213,10 +213,10 @@ void main()
 	}
 	for(i = 0; i < numDLights; ++i){
 		Light d = lights[MAX_POINTLIGHTS + i];
-		lightColor += CalcDLight(d, normal, posW.xyz, gCamPos.xyz, albedo.xyz, roughnessMetal.x, roughnessMetal.y ) * shadow;
+		lightColor += CalcDLight(d, normal, posW.xyz, gCamPos.xyz, albedo.xyz, roughnessMetal.x, roughnessMetal.y );
 	}
 	//IBL
-	lightColor += CalcIBLLight( normal, posW.xyz, gCamPos.xyz, albedo.xyz, roughnessMetal.x, roughnessMetal.y, g_SkyCubeTex, g_IrradianceCubeTex, g_BRDFTex) * (shadow + ( 1.0 - (shadow * 0.1)));
+	lightColor += CalcIBLLight( normal, posW.xyz, gCamPos.xyz, albedo.xyz, roughnessMetal.x, roughnessMetal.y, g_SkyCubeTex, g_IrradianceCubeTex, g_BRDFTex);
 	float luma = dot( lightColor.rgb, vec3(0.299, 0.587, 0.114) );
 	vec4 outColor = vec4(Reinhard(lightColor.rgb), luma);
 	imageStore(output_img, screenPos, pow(outColor, vec4(1.0 / 2.2)));

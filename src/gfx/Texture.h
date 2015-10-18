@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <string>
+#include "GFXLibraryDefine.h"
 
 typedef int TextureHandle;
 namespace gfx {
@@ -10,10 +11,10 @@ enum TextureType {
 	TEXTURE_GREYSCALE,
 	TEXTURE_CUBE
 };
-
 class Texture {
   public:
 	Texture();
+	GFX_API Texture(GLuint handle, TextureType type);
 	~Texture();
 
 	bool Init( const char* Filename, TextureType type);
