@@ -29,7 +29,7 @@ public:
 	const static pString Name;
 private:
 	static int ID;
-	ToiStackAllocator* m_Allocator;
+    ToiStackAllocator* m_Allocator = nullptr;
 
 	std::thread m_Threads[8];
 	unsigned int m_Patterns[4];
