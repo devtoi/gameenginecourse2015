@@ -138,6 +138,12 @@ find_library(ZZIPLibrary
 	
 # Find zlib
 find_package( ZLIB REQUIRED )
+find_path(ZLIBInclude zlib.h
+	PATHS ${IncludeDirectoryAbsolute})
+find_library(ZLIBLibrary
+	NAMES zlibwapi z
+	PATHS ${LibraryDirectoryAbsolute})
+
 	
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	list(APPEND standardLibraries "c++")
