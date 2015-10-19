@@ -64,12 +64,15 @@ void DDSLoader::LoadCompleteDDS(const char* filename) {
 		size_t size = glm::max(li->divSize, w) / li->divSize * glm::max(li->divSize, h) / li->divSize * li->blockBytes;
 		assert(size == header.dwPitchOrLinearSize);
 		assert(header.dwFlags & DDSD_LINEARSIZE);
-		unsigned char* buffer = (unsigned char*)malloc(size);
+		unsigned char* buffer = (unsigned char*)malloc(size * 2);
 		if (!buffer)
 			return;
+		glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)SDL_GL_GetProcAddress("glCompressedTexImage2D");
+		fread(buffer, 1, size * 2, file);
+		size_t offset = 0;
 		for (int i = 0; i < mipCount; i++) {
-			fread(buffer, 1, size, file);
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, i, li->internalFormat, w, h, 0, size, buffer);
+			glCompressedTexImage2D(GL_TEXTURE_2D, i, li->internalFormat, w, h, 0, size, buffer + offset);
+			offset += size;
 			w = w >> 1;
 			h = h >> 1;
 			size = glm::max(li->divSize, w) / li->divSize * glm::max(li->divSize, h) / li->divSize * li->blockBytes;

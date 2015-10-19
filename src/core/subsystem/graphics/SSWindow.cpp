@@ -1,7 +1,7 @@
 #include "SSWindow.h"
 #include <gfx/Window.h>
 #include <SDL2/SDL.h>
-#include <resourcing/Loaders/DDSLoader.h>
+#include <resourcing/Loader/DDSLoader.h>
 const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
 
