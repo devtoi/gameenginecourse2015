@@ -137,7 +137,6 @@ find_library(ZZIPLibrary
 	PATHS ${LibraryDirectoryAbsolute})
 	
 # Find zlib
-find_package( ZLIB REQUIRED )
 find_path(ZLIBInclude zlib.h
 	PATHS ${IncludeDirectoryAbsolute})
 find_library(ZLIBLibrary
