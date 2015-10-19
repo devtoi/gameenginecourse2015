@@ -102,22 +102,22 @@ void SSPoolThreadingTest::Shutdown( SubsystemCollection* const ) {
 }
 
 void SSPoolThreadingTest::UpdateUserLayer( const float ) {
-	if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
-		for ( size_t i = 0; i < 50; ++i ) {
-			m_NrOfThreads = 1;
-			RunTests();
-			m_NrOfThreads = 2;
-			RunTests();
-			m_NrOfThreads = 4;
-			RunTests();
-			m_NrOfThreads = 8;
-			RunTests();
-			m_NrOfThreads = 16;
-			RunTests();
-			m_NrOfThreads = 32;
-			RunTests();
-		}
-	}
+	//if ( g_Input.KeyUpDown( SDL_SCANCODE_V ) ) {
+		//for ( size_t i = 0; i < 50; ++i ) {
+			//m_NrOfThreads = 1;
+			//RunTests();
+			//m_NrOfThreads = 2;
+			//RunTests();
+			//m_NrOfThreads = 4;
+			//RunTests();
+			//m_NrOfThreads = 8;
+			//RunTests();
+			//m_NrOfThreads = 16;
+			//RunTests();
+			//m_NrOfThreads = 32;
+			//RunTests();
+		//}
+	//}
 }
 
 void SSPoolThreadingTest::UpdateSimulationLayer( const float timeStep ) {

@@ -80,15 +80,15 @@ void SSSimplePoolTest::Shutdown( SubsystemCollection* const ) {
 }
 
 void SSSimplePoolTest::UpdateUserLayer( const float ) {
-	if ( g_Input.KeyUpDown( SDL_SCANCODE_C ) ) {
-		RunTests();
-	}
-	if ( g_Input.KeyUpDown( SDL_SCANCODE_T ) ) {
-		for ( size_t i = 0; i < 50; ++i ) {
-			RunTests();
-		}
-		Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
-	}
+	//if ( g_Input.KeyUpDown( SDL_SCANCODE_C ) ) {
+		//RunTests();
+	//}
+	//if ( g_Input.KeyUpDown( SDL_SCANCODE_T ) ) {
+		//for ( size_t i = 0; i < 50; ++i ) {
+			//RunTests();
+		//}
+		//Profiler::ProfilerManager::GetInstance().PrintAveragesMilliSeconds();
+	//}
 }
 
 void SSSimplePoolTest::UpdateSimulationLayer( const float ) { }
