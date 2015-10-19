@@ -23,7 +23,8 @@ endif(USE_CUSTOM_ALLOCATOR_HEADER_FOR_RESOURCING)
 add_definitions(-DRESOURCING_DLL_EXPORT)
 # Create library for utilities
 add_library(Resourcing SHARED ${ResourcingSources})
-target_link_libraries(Resourcing Utility gfx ${RESOURCING_MEMORY_LIB} ${standardLibraries} ${openglLibraries} ${ZZIPLibrary} ${ZLIBLibrary})
+
+target_link_libraries(Resourcing Utility gfx ${RESOURCING_MEMORY_LIB} ${standardLibraries} ${openglLibraries} ${ZLIB_LIBRARIES} ${ZZIPLibrary})
 
 install(
 	TARGETS Resourcing DESTINATION lib

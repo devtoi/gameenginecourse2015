@@ -137,11 +137,7 @@ find_library(ZZIPLibrary
 	PATHS ${LibraryDirectoryAbsolute})
 	
 # Find zlib
-find_path(ZLIBInclude zlib.h
-	PATHS ${IncludeDirectoryAbsolute})
-find_library(ZLIBLibrary
-	NAMES zlibwapi
-	PATHS ${LibraryDirectoryAbsolute})
+find_package( ZLIB REQUIRED )
 	
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	list(APPEND standardLibraries "c++")
@@ -154,10 +150,6 @@ endif (UNIX)
 if (WIN32)
 	list(APPEND openglLibraries "opengl32")
 endif(WIN32)
-
-
-
-
 
 include_directories(
 	${SDL2Includes}

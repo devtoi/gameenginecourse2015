@@ -1,7 +1,7 @@
 #include "Window.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_video.h>
+
 Window::Window() {
 
 }
@@ -46,9 +46,6 @@ void Window::Initialize(const WindowSettings& windowSettings) {
 		//Logger::Log("Could not create window: " + rString(SDL_GetError()), "Window", LogSeverity::ERROR_MSG);
 		return;
 	}
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	SDL_GetWindowWMInfo(m_Window, &info);
 	//set up GL
 	if (m_Initialized) {
 		SDL_QuitSubSystem(SDL_INIT_VIDEO);
