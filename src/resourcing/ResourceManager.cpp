@@ -1,6 +1,8 @@
 #include "ResourceManager.h"
 #include "Resource.h"
 #include "ResourceLoader.h"
+#include "loader/DDSLoader.h"
+#include <utility/Logger.h>
 
 ResourceManager& ResourceManager::GetInstance() {
 	static ResourceManager resourceManager;
@@ -9,6 +11,7 @@ ResourceManager& ResourceManager::GetInstance() {
 
 ResourceManager::ResourceManager() {
 	// LSR new for all resource loaders
+	AddResourceLoader( std::make_unique<DDSLoader>(), { "dds" } );
 }
 
 ResourceManager::~ResourceManager() {
@@ -21,7 +24,25 @@ ResourceManager::~ResourceManager() {
 }
 
 Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
-	return nullptr;
+	auto resourceIterator = m_Resources.find( identifier );
+	if ( resourceIterator == m_Resources.end() ) {
+		pString suffix = "dds"; // TODOJM: Get from identifier
+		FileContent fileContent = m_PackageManager.GetFileContent( identifier );
+		if ( fileContent.Loaded ) {
+			auto loaderIterator = m_ResourceLoaderMapping.find( suffix );
+			if ( loaderIterator == m_ResourceLoaderMapping.end() ) {
+				Logger::Log( "Failed to find resource loader for suffix: " + suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+				return nullptr;
+			} else {
+				return loaderIterator->second->LoadResource( fileContent );
+			}
+		} else {
+			return nullptr;
+		}
+	} else {
+		resourceIterator->second.ReferenceCount += 1;
+		return resourceIterator->second.Resource.get();
+	}
 }
 
 void ResourceManager::ReleaseResource( const ResourceIdentifier identifier ) {
@@ -31,5 +52,15 @@ Resource* ResourceManager::GetResourcePointer( const ResourceIdentifier identifi
 	return nullptr;
 }
 
-void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourceLoader ) {
+void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourceLoader, std::initializer_list<pString> fileSuffixes ) {
+	m_ResourceLoaders.push_back( std::move( resourceLoader ) );
+	for ( const auto& suffix : fileSuffixes ) {
+		auto it = m_ResourceLoaderMapping.find( suffix );
+		if ( it == m_ResourceLoaderMapping.end() ) {
+			m_ResourceLoaderMapping.emplace( suffix, m_ResourceLoaders.back().get() );
+		} else {
+			Logger::Log( "Suffix: " + suffix + " mapping already exist.", "ResourceManager", LogSeverity::ERROR_MSG );
+		}
+	}
 }
+

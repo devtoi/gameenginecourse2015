@@ -73,6 +73,10 @@ void RegisterLogger() {
 
 		{ "Dataoriented",	  ""							},
 		{ "CollectionHelper", "Dataoriented"				},
+
+		{ "Resourcing", 	  ""							},
+		{ "ResourceManager",  "Resourcing"					},
+		{ "PackageManager",   "Resourcing"					}
 	};
 
 	for ( auto& entry : loggerRegisters ) {

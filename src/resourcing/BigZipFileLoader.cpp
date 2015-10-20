@@ -5,21 +5,13 @@
 #include <zzip/zzip.h>
 #include <utility/Config.h>
 
-BigZipFileLoader& BigZipFileLoader::GetInstance() {
-	static BigZipFileLoader instance;
-	return instance;
-}
-
-BigZipFileLoader::BigZipFileLoader() {
-}
-
 BigZipFileLoader::~BigZipFileLoader() {
 	if( m_Dir ) { 
 		zzip_dir_close( m_Dir );
 	}
 }
 
-void Recurse( Config& cfg, std::string scopeString, rMap<std::string, Config::ConfigEntry*>* scope, std::map<AssetIndentifier, std::string>& assetMap ){
+void BigZipFileLoader::Recurse( Config& cfg, std::string scopeString, rMap<pString, Config::ConfigEntry*>* scope ) {
 	for( auto& entry : *scope ) {
 		std::string tscopeString = scopeString + "." + entry.first;
 
@@ -28,25 +20,22 @@ void Recurse( Config& cfg, std::string scopeString, rMap<std::string, Config::Co
 
 			auto map = cfg.GetScopeMap( "Assets." + tscopeString );
 
-			Recurse( cfg, tscopeString, map, assetMap );
+			Recurse( cfg, tscopeString, map );
 		} else {
-			assetMap[Hash( tscopeString )] = entry.second->Value.StringVal;
-
-			AssetIndentifier hashed = Hash( tscopeString ); 
-			int i = 0;
+			ResourceIdentifier hashed = HashResourceName( tscopeString ); 
+			m_AssetPaths[hashed] = entry.second->Value.StringVal;
 		}
 	}
-
 }
 
-bool BigZipFileLoader::LoadMetaData( const char * path ) {
+bool BigZipFileLoader::Initialize( const pString& path ) {
 	
-	m_Dir = zzip_dir_open( path, 0 );
+	m_Dir = zzip_dir_open( path.c_str(), 0 );
 	if ( !m_Dir ) {
 		return false;
 	}
 
-	ZZIP_FILE* fp = zzip_file_open( m_Dir, "AssetMap.cfg", 0 );
+	ZZIP_FILE* fp = zzip_file_open( m_Dir, ASSET_MAP_FILE_PATH, 0 );
 	if ( !fp ) {
 		return false;
 	}
@@ -62,32 +51,32 @@ bool BigZipFileLoader::LoadMetaData( const char * path ) {
 	zzip_file_close( fp );
 	
 	Config cfg;
-	bool result = cfg.ReadFileFromMemory( buffer, "AssetMap.cfg" );
+	bool result = cfg.ReadFileFromMemory( buffer, ASSET_MAP_FILE_PATH );
 
 	auto assetScope = cfg.GetScopeMap( "Assets" );
 
 	rString scopeString = "";
-	Recurse( cfg, scopeString, assetScope, m_AssetPaths );
+	Recurse( cfg, scopeString, assetScope );
 
 	return result;
 }
 
-void* BigZipFileLoader::GetFileContent( AssetIndentifier key, uint32_t& outSize ) {
+FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier ) {
 	if( !m_Dir ) {
 		printf( "ERROR: Couldn't open bigfile" );
-		return nullptr;
+		return INVALID_FILE_CONTENT;
 	}
 
 	std::string path;
-	auto it = m_AssetPaths.find( key );
+	auto it = m_AssetPaths.find( identifier );
 	if( it != m_AssetPaths.end() ) {
-		path = m_AssetPaths[key];
+		path = m_AssetPaths[identifier];
 	}
 
 	if( path != "" ) {
 		ZZIP_FILE* fp = zzip_file_open( m_Dir, path.c_str(), 0 );
 		if ( !fp ) {
-			return nullptr;
+			return INVALID_FILE_CONTENT;
 		}
 
 		ZZIP_STAT stats;
@@ -100,20 +89,12 @@ void* BigZipFileLoader::GetFileContent( AssetIndentifier key, uint32_t& outSize 
 
 		zzip_file_close( fp );
 
-		return buffer;
+		FileContent fileContent;
+		fileContent.Loaded = true;
+		fileContent.Size = len;
+		fileContent.Content = buffer;
+		return fileContent;
 	}
 
-	return nullptr;
-}
-
-//Example key: Texture.Sky.Sky001
-void * BigZipFileLoader::GetFileContent( const char* key, uint32_t& outSize ) {
-	return GetFileContent( Hash( std::string( key ) ), outSize );
-
-	/*std::string val;
-
-	rIStringStream iss( key );
-	getline( iss, val, '.' );
-*/
-	
+	return INVALID_FILE_CONTENT;
 }

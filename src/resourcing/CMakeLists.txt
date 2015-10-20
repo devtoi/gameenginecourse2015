@@ -1,12 +1,4 @@
 file(GLOB_RECURSE ResourcingSources
-	"ResourcingLibraryDefine.h"
-	"ResourceTypes.h"
-	"ResourceManager.h"
-	"ResourceManager.cpp"
-	"Resource.h"
-	"Resource.cpp"
-	"ResourceLoader.h"
-	"ResourceLoader.cpp"
 	"*.h"
 	"*.cpp"
 )

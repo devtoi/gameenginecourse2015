@@ -1,7 +1,11 @@
 #pragma once
+#include <memory/Alloc.h>
+#include "ResourceTypes.h"
+#include "FileContent.h"
 
 class Resource;
 
 class ResourceLoader {
-	virtual Resource* LoadResource() = 0;
+public:
+	virtual Resource* LoadResource( const FileContent& fileContent ) = 0;
 };

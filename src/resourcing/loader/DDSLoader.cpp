@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <glm/glm.hpp>
 #include <gfx/Texture.h>
+
 DDSLoader::DDSLoader() {
 }
 
@@ -11,7 +12,7 @@ DDSLoader::~DDSLoader() {
 
 }
 
-Resource* DDSLoader::LoadResource() {
+Resource* DDSLoader::LoadResource( const FileContent& fileContent ) {
 	return nullptr;
 }
 
