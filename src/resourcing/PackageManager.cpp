@@ -5,6 +5,7 @@
 
 PackageManager::PackageManager() {
 	m_Packages.push_back( std::make_unique<BigZipFileLoader>() );
+	m_Packages.back().get()->Initialize( "../../../asset/Assets.zip" );
 }
 
 PackageManager::~PackageManager() {
