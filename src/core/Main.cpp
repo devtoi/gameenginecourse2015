@@ -76,7 +76,8 @@ void RegisterLogger() {
 
 		{ "Resourcing", 	  ""							},
 		{ "ResourceManager",  "Resourcing"					},
-		{ "PackageManager",   "Resourcing"					}
+		{ "PackageManager",   "Resourcing"					},
+		{ "ZipLoader",   	  "PackageManager"				}
 	};
 
 	for ( auto& entry : loggerRegisters ) {

@@ -4,6 +4,7 @@
 #include <zlib.h>
 #include <zzip/zzip.h>
 #include <utility/Config.h>
+#include <utility/Logger.h>
 
 BigZipFileLoader::~BigZipFileLoader() {
 	if( m_Dir ) { 
@@ -63,11 +64,11 @@ bool BigZipFileLoader::Initialize( const pString& path ) {
 
 FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier ) {
 	if( !m_Dir ) {
-		printf( "ERROR: Couldn't open bigfile" );
+		Logger::Log( "Tried to get content from zip archive that is not loaded", "ZipLoader", LogSeverity::ERROR_MSG );
 		return INVALID_FILE_CONTENT;
 	}
 
-	std::string path;
+	std::string path = "";
 	auto it = m_AssetPaths.find( identifier );
 	if( it != m_AssetPaths.end() ) {
 		path = m_AssetPaths[identifier];
@@ -93,6 +94,11 @@ FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier ) {
 		fileContent.Loaded = true;
 		fileContent.Size = len;
 		fileContent.Content = buffer;
+
+		size_t dotPos = path.find_last_of( "." );
+		if ( dotPos != std::string::npos ) {
+			fileContent.Suffix = path.substr(dotPos+1);
+		}
 		return fileContent;
 	}
 

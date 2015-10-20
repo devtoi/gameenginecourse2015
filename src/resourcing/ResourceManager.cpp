@@ -32,11 +32,11 @@ Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier )
 		FileContent fileContent = m_PackageManager.GetFileContent( identifier );
 		if ( fileContent.Loaded ) {
 			auto loaderIterator = m_ResourceLoaderMapping.find( suffix );
-			if ( loaderIterator == m_ResourceLoaderMapping.end() ) {
+			if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
+				return loaderIterator->second->LoadResource( fileContent );
+			} else {
 				Logger::Log( "Failed to find resource loader for suffix: " + suffix, "ResourceManager", LogSeverity::ERROR_MSG );
 				return nullptr;
-			} else {
-				return loaderIterator->second->LoadResource( fileContent );
 			}
 		} else {
 			return nullptr;
