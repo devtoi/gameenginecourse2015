@@ -21,6 +21,7 @@ class ModelBank {
 	GFX_API static ModelBank& GetInstance();
 	GFX_API const Model& FetchModel(ModelHandle handle);
 	GFX_API ModelHandle LoadModel(const char* filename);
+	GFX_API ModelHandle LoadModel(void* file, size_t length, const char* name);
 	GFX_API ModelHandle AddModel(Model& TheModel);
 	GFX_API void UpdateModel(ModelHandle& handle, Model& model);
 	GFX_API void BuildBuffers();

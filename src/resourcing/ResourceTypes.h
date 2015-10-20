@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstddef>
 
-typedef uint64_t ResourceIdentifier;
+typedef size_t ResourceIdentifier;
 
 enum class ResourceLifetimeHint {
 	Permanent,
@@ -10,3 +10,5 @@ enum class ResourceLifetimeHint {
 	Temporary,
 	Frame,
 };
+
+#define HashResourceName( aString ) std::hash<std::string>()( aString )

@@ -40,6 +40,33 @@ gfx::ModelHandle gfx::ModelBank::LoadModel(const char* filename) {
 	return handle;
 }
 
+gfx::ModelHandle gfx::ModelBank::LoadModel(void* file, size_t length, const char* name) {
+	//check if we already has a model with same filename
+	for (auto& it : m_Models) {
+		if (it.second.Name == name)
+			return it.first;
+	}
+	Assimp::Importer loader;
+	Model model;
+	const aiScene* scene = loader.ReadFileFromMemory(file, length, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenSmoothNormals | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace);
+	if (scene && scene->HasMeshes()) {
+		model.VertexHandle = (int)m_Vertices.size();
+		LoadMeshes(model, scene);
+		model.MaterialOffset = g_MaterialBank.GetMaterialCount();
+		model.Name = std::string(name);
+		g_MaterialBank.LoadMaterials(model, name, scene);
+	}
+	else if (!scene) {
+		printf("error loading model: %s \n", name);
+		return -1;
+	}
+	printf("Loaded Model %s\n", name);
+	model.Loaded = true;
+	ModelHandle handle = ++m_Numerator;
+	m_Models[handle] = model;
+	return handle;
+}
+
 void gfx::ModelBank::LoadMeshes(Model& model, const aiScene* scene) {
 	int size = 0;
 	int indices = 0;
