@@ -1,7 +1,7 @@
 #include "SSWindow.h"
 #include <gfx/Window.h>
 #include <SDL2/SDL.h>
-#include <resourcing/Loader/DDSLoader.h>
+#include <resourcing/loader/DDSLoader.h>
 #include <resourcing/ResourceManager.h>
 #include <chrono>
 const pString SSWindow::Name = "Window";
@@ -27,7 +27,7 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	std::cout << "loading textures took " << duration << "ms\n";
 
-	g_ResourceManager.AquireResource(0);
+    //g_ResourceManager.AquireResource(0);
 }
 
 void SSWindow::Shutdown( SubsystemCollection* const ) {

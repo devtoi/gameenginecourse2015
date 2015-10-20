@@ -2,7 +2,7 @@
 #include "Resource.h"
 #include "ResourceLoader.h"
 #include "loader/DDSLoader.h"
-#include "Loader/ModelLoader.h"
+#include "loader/ModelLoader.h"
 #include <utility/Logger.h>
 
 ResourceManager& ResourceManager::GetInstance() {
@@ -28,14 +28,13 @@ ResourceManager::~ResourceManager() {
 Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator == m_Resources.end() ) {
-		pString suffix = "obj"; // TODOJM: Get from identifier
 		FileContent fileContent = m_PackageManager.GetFileContent( identifier );
 		if ( fileContent.Loaded ) {
-			auto loaderIterator = m_ResourceLoaderMapping.find( suffix );
+			auto loaderIterator = m_ResourceLoaderMapping.find( fileContent.Suffix );
 			if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
 				return loaderIterator->second->LoadResource( fileContent );
 			} else {
-				Logger::Log( "Failed to find resource loader for suffix: " + suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+				Logger::Log( "Failed to find resource loader for suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
 				return nullptr;
 			}
 		} else {

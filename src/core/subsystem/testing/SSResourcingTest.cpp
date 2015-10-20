@@ -14,8 +14,7 @@ void SSResourcingTest::Startup( SubsystemCollection* const subsystemCollection )
 	//Example usage, should be done internally in the resource manager
 	uint32_t size;
 	//void* textureData = BigFileLoader::GetInstance().GetFileContent( "Texture.Checkerboard", size );
-
-	g_ResourceManager;
+	g_ResourceManager.AquireResource( HashResourceName( "Model.Cube" ) );
 }
 
 void SSResourcingTest::Shutdown( SubsystemCollection* const subsystemCollection ) {

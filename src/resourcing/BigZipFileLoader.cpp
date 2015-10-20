@@ -19,7 +19,7 @@ void BigZipFileLoader::Recurse( Config& cfg, std::string scopeString, rMap<pStri
 		if( entry.second->Type == Config::Type::Map ) {
 			tscopeString = scopeString == "" ? entry.first : scopeString + "." + entry.first;
 
-			auto map = cfg.GetScopeMap( "Assets." + tscopeString );
+			auto map = cfg.GetScopeMap( "Asset." + tscopeString );
 
 			Recurse( cfg, tscopeString, map );
 		} else {
@@ -54,7 +54,7 @@ bool BigZipFileLoader::Initialize( const pString& path ) {
 	Config cfg;
 	bool result = cfg.ReadFileFromMemory( buffer, ASSET_MAP_FILE_PATH );
 
-	auto assetScope = cfg.GetScopeMap( "Assets" );
+	auto assetScope = cfg.GetScopeMap( "Asset" );
 
 	rString scopeString = "";
 	Recurse( cfg, scopeString, assetScope );
