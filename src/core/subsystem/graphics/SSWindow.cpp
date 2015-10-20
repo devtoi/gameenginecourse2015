@@ -2,6 +2,7 @@
 #include <gfx/Window.h>
 #include <SDL2/SDL.h>
 #include <resourcing/Loader/DDSLoader.h>
+#include <chrono>
 const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
 
@@ -18,7 +19,12 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	m_LoadingContext = SDL_GL_CreateContext(m_Window->GetWindow());
 
 	DDSLoader ddsloader;
+	std::chrono::steady_clock::time_point start, end;
+	start = std::chrono::high_resolution_clock::now();
 	ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
+	end = std::chrono::high_resolution_clock::now();
+	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "loading textures took " << duration << "ms\n";
 }
 
 void SSWindow::Shutdown( SubsystemCollection* const ) {

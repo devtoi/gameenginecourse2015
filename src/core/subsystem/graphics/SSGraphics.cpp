@@ -19,7 +19,7 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
 
-	m_TestModel = gfx::g_ModelBank.LoadModel("../../../asset/cube.obj");
+	m_TestModel = gfx::g_ModelBank.LoadModel("../../../asset/suzanne.obj");
 	gfx::g_ModelBank.BuildBuffers();
 
 	m_Camera = pNew(CameraFirstPerson);

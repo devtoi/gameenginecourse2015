@@ -493,7 +493,7 @@ void gfx::ShaderProgram::SaveProgramBinary() {
 	//Logger::Log("Saved program binary", "ShaderProgram", LogSeverity::INFO_MSG);
 	delete [] programBinary;
 	delete binaryFormats;
-	delete formats;
+	delete [] formats;
 }
 
 void gfx::ShaderProgram::LoadProgramBinary(const std::string& filename) {

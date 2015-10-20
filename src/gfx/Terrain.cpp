@@ -41,7 +41,6 @@ void Terrain::Load(const char* filename) {
 
 	//rString hthrFile = terrainConfig->GetString("HeightmapHighRes", "test_high.png", "A high res version of the heightmap for the graphics");
 	//load terrain heightmap
-	width, height, channels;
 	image = nullptr;
 	image = SOIL_load_image((m_HeightmapFolder).c_str(), &width, &height, &channels, 1);
 	if (image == nullptr) {

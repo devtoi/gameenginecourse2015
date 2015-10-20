@@ -78,7 +78,30 @@ void DDSLoader::LoadCompleteDDS(const char* filename) {
 			size = glm::max(li->divSize, w) / li->divSize * glm::max(li->divSize, h) / li->divSize * li->blockBytes;
 		}
 		free(buffer);
-	} else {
+	} else if (li->palette) {
+		assert(header.dwFlags & DDSD_PITCH);
+		assert(header.sPixelFormat.dwRGBBitCount == 8);
+		size_t size = header.dwPitchOrLinearSize * h;
+		assert(size == w * h * li->blockBytes);
+		unsigned char * data = (unsigned char *)malloc(size);
+		unsigned int palette[256];
+		unsigned int * unpacked = (unsigned int *)malloc(size*sizeof(unsigned int));
+		fread(palette, 4, 256, file);
+		for (unsigned int ix = 0; ix < mipCount; ++ix) {
+			fread(data, 1, size, file);
+			for (unsigned int zz = 0; zz < size; ++zz) {
+				unpacked[zz] = palette[data[zz]];
+			}
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, h);
+			glTexImage2D(GL_TEXTURE_2D, ix, li->internalFormat, w, h, 0, li->externalFormat, li->type, unpacked);
+			w = w >> 1;
+			h = h >> 1;
+			size = w * h * li->blockBytes;
+		}
+		free(data);
+		free(unpacked);
+	}
+	else {
 		if (li->swap)
 			glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_TRUE);
 		size_t size = w * h * li->blockBytes;

@@ -28,7 +28,7 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSSimplePoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
 	//CreateSubsystemTemplate<SSVisualizer>();
-	CreateSubsystemTemplate<SSThreadTest>();
+	//CreateSubsystemTemplate<SSThreadTest>();
 	CreateSubsystemTemplate<SSPoolThreadingTest>();
 	CreateSubsystemTemplate<SSProfilerInOut>();
 	//CreateSubsystemTemplate<SSStackTest>();
@@ -53,7 +53,7 @@ void SubsystemBank::Initialize() {
 	setUpdatePrio( SSStackAllocatorBasicTest::GetStaticID(), 0 );
 	setUpdatePrio( SSSimplePoolTest::GetStaticID(), 0 );
 	setUpdatePrio( SSPoolThreadingTest::GetStaticID(), 0 );
-	setUpdatePrio( SSThreadTest::GetStaticID(), 0);
+	//setUpdatePrio( SSThreadTest::GetStaticID(), 0);
 	setUpdatePrio( SSResourcingTest::GetStaticID(), 0);
 	//setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
