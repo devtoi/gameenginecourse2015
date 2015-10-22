@@ -22,7 +22,8 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	DDSLoader ddsloader;
 	std::chrono::steady_clock::time_point start, end;
 	start = std::chrono::high_resolution_clock::now();
-	ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
+	//ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
+	g_ResourceManager.AquireResource( HashResourceName( "Texture.Color" ) );
 	end = std::chrono::high_resolution_clock::now();
 	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	std::cout << "loading textures took " << duration << "ms\n";
