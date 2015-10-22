@@ -1,9 +1,10 @@
 #include "DDSLoader.h"
-#include "DDS.h"
 #include <stdio.h>
 #include <assert.h>
 #include <glm/glm.hpp>
 #include <gfx/Texture.h>
+#include "DDS.h"
+#include "../Resource.h"
 
 DDSLoader::DDSLoader() {
 }
@@ -12,7 +13,7 @@ DDSLoader::~DDSLoader() {
 
 }
 
-Resource* DDSLoader::LoadResource( const FileContent& fileContent ) {
+std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileContent ) {
 	return nullptr;
 }
 
