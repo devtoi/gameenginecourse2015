@@ -83,5 +83,6 @@ const WindowSettings& Window::GetWindowSettings() const {
 }
 
 void Window::MakeCurrent() {
-	SDL_GL_MakeCurrent( m_Window, m_GLContext );
+	if (SDL_GL_MakeCurrent(m_Window, m_GLContext) < 0)
+		printf("Error makeing context current\n");
 }

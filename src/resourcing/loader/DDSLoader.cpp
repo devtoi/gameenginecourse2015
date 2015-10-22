@@ -60,6 +60,10 @@ void DDSLoader::LoadCompleteDDS(const char* filename) {
 		hasMips = true;
 	
 	glGenTextures(1, &texture);
+	if (texture == 0) {
+		printf("error with gl context\n");
+		return;
+	}
 	glBindTexture(GL_TEXTURE_2D, texture);
 	if (li->compressed) {
 		size_t size = glm::max(li->divSize, w) / li->divSize * glm::max(li->divSize, h) / li->divSize * li->blockBytes;

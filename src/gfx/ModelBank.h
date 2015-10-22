@@ -28,7 +28,6 @@ class ModelBank {
 	GFX_API void DeleteModel();
 	GFX_API void ApplyBuffers();
 	GFX_API void Clear();
-	GFX_API std::vector<VertexPosNormalTexTangent>& GetVertices();
 	GFX_API  VertexBuffer& GetVertexBuffer();
 	GFX_API GLuint& GetIndexBuffer();
   private:

@@ -259,7 +259,7 @@ void GraphicsEngine::DrawPostFX() {
 	prog->Apply();
 	prog->SetUniformTextureHandle("InputTex", m_BloomProgram->GetFinalTexture(), 0);
 	prog->SetUniformVec2("ScreenSize", glm::vec2(m_GraphicsSettings.Width, m_GraphicsSettings.Height));
-	static bool useAA = true;
+	static bool useAA = false;
 	prog->SetUniformBool("useAA", useAA);
 	glBindVertexArray( 0 );
 	glDrawArrays( GL_POINTS, 0, 1 );

@@ -202,7 +202,6 @@ void main()
 	vec3 normal = texture(gNormalBuffer, uv).xyz;
 	normal = normalize(normal);
 	vec2 roughnessMetal = texture(gRoughMetalBuffer,uv).xy;
-	roughnessMetal.x = roughnessMetal.x * roughnessMetal.x;
 
 	vec4 lightColor = vec4(0.0);
 	uint i;

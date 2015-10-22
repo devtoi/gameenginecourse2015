@@ -164,7 +164,7 @@ vec3 GGX_Specular(samplerCube SpecEnvMap, vec3 normal, vec3 toeye, float roughne
 
  vec3 AproximateIBLSpecular(samplerCube envMap, sampler2D BRDFTex, vec3 F0 , float roughness, vec3 normal, vec3 toeye){
  	float NoV = saturate(dot(normal, toeye));
- 	NoV = max(0.001, NoV);
+ 	NoV = max(0.01, NoV);
  	vec3 R = 2 * dot(normal, toeye) * normal - toeye;
 
  	ivec2 texDim = textureSize(g_SkyCubeTex,0);

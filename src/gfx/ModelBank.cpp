@@ -173,10 +173,6 @@ void gfx::ModelBank::ApplyBuffers() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
 }
 
-std::vector<gfx::VertexPosNormalTexTangent>& gfx::ModelBank::GetVertices() {
-	return m_Vertices;
-}
-
 gfx::VertexBuffer& gfx::ModelBank::GetVertexBuffer( ) {
 	return m_VertexBuffer;
 }
