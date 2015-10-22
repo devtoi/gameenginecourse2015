@@ -19,7 +19,9 @@ ResourceManager::ResourceManager() {
 ResourceManager::~ResourceManager() {
 	m_ResourceLoaders.clear();
 	for ( auto& resource : m_Resources ) {
-		ReleaseResource( resource.first );
+        if ( resource.second.Resource ) {
+            ReleaseResource( resource.first );
+        }
 	}
 	m_Resources.clear();
 	m_ResourceLoaderMapping.clear();

@@ -134,7 +134,7 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 	}
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipCount - 1);
     gfx::Texture* tex = new gfx::Texture(texture, gfx::TEXTURE_COLOR);
-	//fclose(file);
+    return std::unique_ptr<Resource>( nullptr );
 }
 
 void DDSLoader::SetWindow(SDL_Window* window) {
