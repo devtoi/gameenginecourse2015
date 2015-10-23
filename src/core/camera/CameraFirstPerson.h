@@ -9,7 +9,7 @@
 */
 #include "Camera.h"
 
-#define CAMERA_FIRST_PERSON_RUN_SPEED	50.0f	// Given in meters per second.
+#define CAMERA_FIRST_PERSON_RUN_SPEED	10.0f	// Given in meters per second.
 #define CAMERA_FIRST_PERSON_WALK_SPEED	3.0f	// Given in meters per second.
 #define CAMERA_FIRST_PERSON_TURN_SPEED	0.0033f	// Given in radians per pixel.
 

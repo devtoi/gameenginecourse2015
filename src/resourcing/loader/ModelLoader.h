@@ -5,5 +5,5 @@ class ModelLoader : public ResourceLoader {
 public:
 	RESOURCING_API ModelLoader();
 	RESOURCING_API ~ModelLoader();
-	RESOURCING_API virtual Resource* LoadResource(const FileContent& fileContent);
+	RESOURCING_API std::unique_ptr<Resource> LoadResource( const FileContent& fileContent ) override;
 };

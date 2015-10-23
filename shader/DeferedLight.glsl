@@ -205,7 +205,7 @@ void main()
 
 	vec4 lightColor = vec4(0.0);
 	uint i;
-	float shadow =  1.0f;//ComputeShadow(posW.xyz);
+	float shadow = ComputeShadow(posW.xyz);
 	for(i = 0; i < sPointLightCount; ++i){
 		Light p = lights[sPointLightIndex[i]];
 		lightColor += CalcPLight(p, normal, posW.xyz, gCamPos.xyz, albedo.xyz, roughnessMetal.x, roughnessMetal.y );

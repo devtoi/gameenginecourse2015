@@ -95,7 +95,7 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	m_SkyProgram->Init();
 	m_SkyProgram->SetSkyTexture("../../../asset/texture/sky/skybox.dds");
 	m_SkyCubeTex = new Texture();
-	m_SkyCubeTex->Init("../../../asset/texture/sky/skybox_rad.dds",TEXTURE_CUBE);
+	m_SkyCubeTex->Init("../../../asset/texture/sky/skybox.dds",TEXTURE_CUBE);
 	m_IrrCubeTex = new Texture();
 	m_IrrCubeTex->Init("../../../asset/texture/sky/skybox_irr.dds", TEXTURE_CUBE);
 	//terrain deform
@@ -112,18 +112,6 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	//transparency
 	m_TransparencyProgram = new TransparencyProgram();
 	m_TransparencyProgram->Initialize(m_GraphicsSettings.Width, m_GraphicsSettings.Height);
-
-	//test for manual mip loading
-
-	m_TestTexture = new Texture();
-	unsigned char* colors = new unsigned char[256 * 4];
-	for (int i = 0; i < 256 * 4; i += 4) {
-		colors[i] = 0;
-		colors[i + 1] = 255;
-		colors[i + 2] = 0;
-		colors[i + 3] = 255;
-	}
-	m_TestTexture->InitWithoutData(16, 16, 4);
 }
 
 void GraphicsEngine::Deinitialize() {

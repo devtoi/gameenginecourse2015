@@ -2,6 +2,7 @@
 #include <gfx/Window.h>
 #include <SDL2/SDL.h>
 #include <resourcing/loader/DDSLoader.h>
+#include <resourcing/ResourceManager.h>
 #include <GL/glew.h>
 #include <chrono>
 #include <thread>
@@ -31,7 +32,7 @@ void LoadTexture(DDSLoader* loader) {
 #elif PLATFORM == PLATFORM_LINUX
 	//TODO:Fill out with GLX code
 #endif
-	loader->LoadCompleteDDS("../../../asset/texture/color.dds");
+	//loader->LoadCompleteDDS("../../../asset/texture/color.dds");
 
 	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 	GLenum result;
@@ -83,6 +84,7 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	//ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
 	std::thread t = std::thread(LoadTexture, &ddsloader);
 	t.detach();
+	g_ResourceManager.AquireResource( HashResourceName( "Texture.Color" ) );
 	end = std::chrono::high_resolution_clock::now();
 	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	std::cout << "loading textures took " << duration << "ms\n";
