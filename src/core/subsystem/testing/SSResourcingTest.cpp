@@ -8,16 +8,12 @@ int SSResourcingTest::ID = -1;
 typedef BigZipFileLoader BigFileLoader;
 
 void SSResourcingTest::Startup( SubsystemCollection* const subsystemCollection ) {
-
-	//BigFileLoader::GetInstance().LoadMetaData( "../../../asset/Assets.zip" );
-
-	//Example usage, should be done internally in the resource manager
-	uint32_t size;
-	//void* textureData = BigFileLoader::GetInstance().GetFileContent( "Texture.Checkerboard", size );
-	g_ResourceManager.AquireResource( HashResourceName( "Model.Cube" ) );
+	m_CubeResourceIdentifier = HashResourceName( "Model.Cube" );
+	g_ResourceManager.AquireResource( m_CubeResourceIdentifier );
 }
 
 void SSResourcingTest::Shutdown( SubsystemCollection* const subsystemCollection ) {
+	g_ResourceManager.ReleaseResource( m_CubeResourceIdentifier );
 }
 
 void SSResourcingTest::UpdateUserLayer( const float deltaTime ) {

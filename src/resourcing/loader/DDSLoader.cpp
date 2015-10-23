@@ -6,7 +6,7 @@
 #include <utility/SerializationUtility.h>
 #include <gfx/Texture.h>
 #include "DDS.h"
-#include "../Resource.h"
+#include "../resource/TextureResource.h"
 
 DDSLoader::DDSLoader() { }
 
@@ -60,7 +60,7 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		size_t size = glm::max( li->divSize, w ) / li->divSize * glm::max( li->divSize, h ) / li->divSize * li->blockBytes;
 		assert( size == header.dwPitchOrLinearSize );
 		assert( header.dwFlags & DDSD_LINEARSIZE );
-		unsigned char* buffer = ( unsigned char* )malloc( size * 2 );
+		unsigned char* buffer = ( unsigned char* )tMalloc( size * 2 );
 		if ( !buffer ) {
 			return std::unique_ptr<Resource>( nullptr );
 		}
@@ -80,9 +80,9 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		assert( header.sPixelFormat.dwRGBBitCount == 8 );
 		size_t size = header.dwPitchOrLinearSize * h;
 		assert( size == w * h * li->blockBytes );
-		unsigned char * data = ( unsigned char* )malloc( size );
+		unsigned char * data = ( unsigned char* )tMalloc( size );
 		unsigned int	palette[256];
-		unsigned int *	unpacked = ( unsigned int* )malloc( size * sizeof( unsigned int ) );
+		unsigned int *	unpacked = ( unsigned int* )tMalloc( size * sizeof( unsigned int ) );
 		SerializationUtility::CopyAndIncrementSource( palette, content, 4 * 256 );
 		for ( unsigned int ix = 0; ix < mipCount; ++ix ) {
 			SerializationUtility::CopyAndIncrementSource( data, content, size );
@@ -95,8 +95,8 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 			h	 = h >> 1;
 			size = w * h * li->blockBytes;
 		}
-		free( data );
-		free( unpacked );
+		tFree( data );
+		tFree( unpacked );
 	} else   {
 		if ( li->swap ) {
 			glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_TRUE );
@@ -112,8 +112,9 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_FALSE );
 	}
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipCount - 1 );
-	gfx::Texture* tex = new gfx::Texture( texture, gfx::TEXTURE_COLOR );
-	return std::unique_ptr<Resource>( nullptr );
+	std::unique_ptr<gfx::Texture> tex = std::make_unique<gfx::Texture>( texture, gfx::TEXTURE_COLOR );
+
+	return std::make_unique<TextureResource>( std::move( tex ), fileContent.Size ); // TODOJM/TODOHJ: Remove header from size
 }
 
 void DDSLoader::SetWindow( SDL_Window* window ) {

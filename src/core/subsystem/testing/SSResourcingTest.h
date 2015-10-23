@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Subsystem.h"
-
+#include <resourcing/ResourceTypes.h>
 
 class SSResourcingTest : public Subsystem {
 public:
@@ -22,4 +22,5 @@ public:
 	const static pString Name;
 private:
 	static int ID;
+	ResourceIdentifier m_CubeResource = RESOURCE_IDENTIFIER_INVALID;
 };
