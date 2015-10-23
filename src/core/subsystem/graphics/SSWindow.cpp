@@ -32,7 +32,7 @@ void LoadTexture(DDSLoader* loader) {
 #elif PLATFORM == PLATFORM_LINUX
 	//TODO:Fill out with GLX code
 #endif
-	//loader->LoadCompleteDDS("../../../asset/texture/color.dds");
+	g_ResourceManager.AquireResource(HashResourceName("Texture.Color"));
 
 	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 	GLenum result;
@@ -44,6 +44,7 @@ void LoadTexture(DDSLoader* loader) {
 	//mark for completion here
 #ifdef PLATFORM == PLATFORM_WINDOWS
 	wglMakeCurrent(nullptr, nullptr);
+
 #elif PLATFORM == PLATFORM_LINUX
 	//TODO:Fill out with GLX code
 #endif
@@ -84,7 +85,6 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 	//ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
 	std::thread t = std::thread(LoadTexture, &ddsloader);
 	t.detach();
-	g_ResourceManager.AquireResource( HashResourceName( "Texture.Color" ) );
 	end = std::chrono::high_resolution_clock::now();
 	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	std::cout << "loading textures took " << duration << "ms\n";

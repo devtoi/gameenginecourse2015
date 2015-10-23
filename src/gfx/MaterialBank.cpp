@@ -4,6 +4,7 @@
 #include "Model.h"
 #include "Material.h"
 #include "gfxutility.h"
+
 gfx::MaterialBank::MaterialBank() {
 }
 
@@ -16,12 +17,10 @@ gfx::MaterialBank& gfx::MaterialBank::GetInstance() {
 	return m_Bank;
 }
 void gfx::MaterialBank::Initialize(){
-	m_DefaultAlbedo = LoadTexture("../../../asset/texture/whitePixel.png", TEXTURE_COLOR);
-	m_DefaultNormal = LoadTexture("../../../asset/texture/normal.dds", TEXTURE_COLOR);
-	m_DefaultRoughness = LoadTexture("../../../asset/texture/roughness.png", TEXTURE_GREYSCALE);
-	m_DefaultMetal = LoadTexture("../../../asset/texture/metal.png", TEXTURE_GREYSCALE);
-
-
+	//m_DefaultAlbedo = LoadTexture("../../../asset/texture/whitePixel.png", TEXTURE_COLOR);
+	//m_DefaultNormal = LoadTexture("../../../asset/texture/normal.dds", TEXTURE_COLOR);
+	//m_DefaultRoughness = LoadTexture("../../../asset/texture/roughness.png", TEXTURE_GREYSCALE);
+	//m_DefaultMetal = LoadTexture("../../../asset/texture/metal.png", TEXTURE_GREYSCALE);
 }
 void gfx::MaterialBank::LoadMaterials(Model& model, std::string filename, const aiScene* scene) {
 	model.MaterialOffset = (unsigned int)m_Materials.size();
@@ -44,7 +43,7 @@ void gfx::MaterialBank::LoadMaterials(Model& model, std::string filename, const 
 		if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-				std::string fullpath = GetDirectoryFromFilePath(filename) + "/" + path.data;
+				std::string fullpath = path.data;
 				modelMat->SetAlbedoTexture(LoadTexture(fullpath.c_str(), TEXTURE_COLOR));
 			}
 		} else {
@@ -54,7 +53,7 @@ void gfx::MaterialBank::LoadMaterials(Model& model, std::string filename, const 
 		if (mat->GetTextureCount(aiTextureType_HEIGHT) > 0) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_HEIGHT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-				std::string fullpath = GetDirectoryFromFilePath(filename) + path.data;
+				std::string fullpath = path.data;
 				modelMat->SetNormalTexture(LoadTexture(fullpath.c_str(), TEXTURE_COLOR));
 			}
 		} else {
@@ -64,7 +63,7 @@ void gfx::MaterialBank::LoadMaterials(Model& model, std::string filename, const 
 		if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_SPECULAR, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-				std::string fullpath = GetDirectoryFromFilePath(filename) + path.data;
+				std::string fullpath = path.data;
 				modelMat->SetRoughnessTexture(LoadTexture(fullpath.c_str(), TEXTURE_GREYSCALE));
 			}
 		} else {
@@ -74,7 +73,7 @@ void gfx::MaterialBank::LoadMaterials(Model& model, std::string filename, const 
 		if (mat->GetTextureCount(aiTextureType_AMBIENT) > 0) { //use ambient texture as metal map for now
 			aiString path;
 			if (mat->GetTexture(aiTextureType_AMBIENT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-				std::string fullpath = GetDirectoryFromFilePath(filename) + path.data;
+				std::string fullpath = path.data;
 				modelMat->SetMetalTexture(LoadTexture(fullpath.c_str(), TEXTURE_GREYSCALE));
 			}
 		} else {

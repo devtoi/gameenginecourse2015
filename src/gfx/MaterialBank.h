@@ -4,6 +4,7 @@
 #include <vector>
 #include "Texture.h"
 #include "GFXLibraryDefine.h"
+#include <resourcing/ResourceManager.h>
 struct aiScene;
 typedef int TextureHandle;
 namespace gfx {
@@ -30,10 +31,11 @@ class MaterialBank {
 	std::vector<Material*>				m_Materials;
 	std::map<std::string, Material*>	m_MatMap;
 	std::vector<Texture*>				m_Textures;
-	TextureHandle						m_DefaultAlbedo;
-	TextureHandle						m_DefaultNormal;
-	TextureHandle						m_DefaultRoughness;
-	TextureHandle						m_DefaultMetal;
+	//TextureHandle						m_DefaultAlbedo;
+	//TextureHandle						m_DefaultNormal;
+	//TextureHandle						m_DefaultRoughness;
+	//TextureHandle						m_DefaultMetal;
+
 
 };
 }
