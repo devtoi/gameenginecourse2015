@@ -3,6 +3,7 @@
 #include "ResourceLoader.h"
 #include "loader/DDSLoader.h"
 #include "loader/ModelLoader.h"
+#include "Loader/TextureLoader.h"
 #include <utility/Logger.h>
 
 ResourceManager& ResourceManager::GetInstance() {
@@ -14,6 +15,7 @@ ResourceManager::ResourceManager() {
 	// LSR new for all resource loaders
 	AddResourceLoader( std::make_unique<DDSLoader>(), { "dds" } );
 	AddResourceLoader( std::make_unique<ModelLoader>(), { "obj" } );
+	AddResourceLoader(std::make_unique<TextureLoader>(), { "png" });
 }
 
 ResourceManager::~ResourceManager() {

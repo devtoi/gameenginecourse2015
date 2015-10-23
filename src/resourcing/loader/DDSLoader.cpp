@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <glm/glm.hpp>
 #include <utility/SerializationUtility.h>
-#include <gfx/Texture.h>
+#include <SDL2/SDL.h>
 #include "DDS.h"
-#include "../Resource.h"
+#include "../resource/TextureResource.h"
 
 DDSLoader::DDSLoader() { }
 
@@ -19,12 +19,11 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 	unsigned int h		  = 0;
 	unsigned int mipCount = 0;
 	bool		 hasMips  = false;
-	GLuint		 texture  = 0;
+	GLuint texture = 0;
 
 	SerializationUtility::CopyAndIncrementSource( &header, content, sizeof( header ) );
 	assert( header.dwMagic == DDS_MAGIC );
 	assert( header.dwSize == 124 );
-
 	w		 = header.dwWidth;
 	h		 = header.dwHeight;
 	mipCount = ( header.dwFlags & DDSD_MIPMAPCOUNT ) ? header.dwMipMapCount : 1;
@@ -53,14 +52,13 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 	if ( mipCount > 1 ) {
 		hasMips = true;
 	}
-
 	glGenTextures( 1, &texture );
-	glBindTexture( GL_TEXTURE_2D, texture );
+	glBindTexture( GL_TEXTURE_2D, texture);
 	if ( li->compressed ) {
 		size_t size = glm::max( li->divSize, w ) / li->divSize * glm::max( li->divSize, h ) / li->divSize * li->blockBytes;
 		assert( size == header.dwPitchOrLinearSize );
 		assert( header.dwFlags & DDSD_LINEARSIZE );
-		unsigned char* buffer = ( unsigned char* )malloc( size * 2 );
+		unsigned char* buffer = ( unsigned char* )tMalloc( size * 2 );
 		if ( !buffer ) {
 			return std::unique_ptr<Resource>( nullptr );
 		}
@@ -80,9 +78,9 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		assert( header.sPixelFormat.dwRGBBitCount == 8 );
 		size_t size = header.dwPitchOrLinearSize * h;
 		assert( size == w * h * li->blockBytes );
-		unsigned char * data = ( unsigned char* )malloc( size );
+		unsigned char * data = ( unsigned char* )tMalloc( size );
 		unsigned int	palette[256];
-		unsigned int *	unpacked = ( unsigned int* )malloc( size * sizeof( unsigned int ) );
+		unsigned int *	unpacked = ( unsigned int* )tMalloc( size * sizeof( unsigned int ) );
 		SerializationUtility::CopyAndIncrementSource( palette, content, 4 * 256 );
 		for ( unsigned int ix = 0; ix < mipCount; ++ix ) {
 			SerializationUtility::CopyAndIncrementSource( data, content, size );
@@ -95,8 +93,8 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 			h	 = h >> 1;
 			size = w * h * li->blockBytes;
 		}
-		free( data );
-		free( unpacked );
+		tFree( data );
+		tFree( unpacked );
 	} else   {
 		if ( li->swap ) {
 			glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_TRUE );
@@ -111,8 +109,18 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		}
 		glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_FALSE );
 	}
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipCount - 1);
-    gfx::Texture* tex = new gfx::Texture(texture, gfx::TEXTURE_COLOR);
-    return std::unique_ptr<Resource>( new Resource(fileContent.Size - 124) );
+	glBindTexture(GL_TEXTURE_2D, 0);
+	TextureResource* tex = new TextureResource(texture,fileContent.Size - 124);
+    return std::unique_ptr<TextureResource>(tex);
 }
 

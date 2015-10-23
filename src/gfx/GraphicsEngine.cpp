@@ -177,14 +177,14 @@ void GraphicsEngine::DrawGeometry() {
 			for ( auto& mesh : model.Meshes ) {
 				// set textures
 				Material* mat		   = g_MaterialBank.GetMaterial( model.MaterialOffset + mesh.Material );
-				Texture*  albedoTex	   = g_MaterialBank.GetTexture( mat->GetAlbedoTexture() );
-				Texture*  normalTex	   = g_MaterialBank.GetTexture( mat->GetNormalTexture() );
-				Texture*  roughnessTex = g_MaterialBank.GetTexture( mat->GetRoughnessTexture() );
-				Texture*  metalTex	   = g_MaterialBank.GetTexture( mat->GetMetalTexture() );
-				prog->SetUniformTextureHandle( "g_DiffuseTex", 1,	0 );
-				prog->SetUniformTextureHandle( "g_NormalTex",	 normalTex->GetHandle(),	1 );
-				prog->SetUniformTextureHandle( "g_RoughnessTex", roughnessTex->GetHandle(), 2 );
-				prog->SetUniformTextureHandle( "g_MetallicTex",	 metalTex->GetHandle(),		3 );
+				//Texture*  albedoTex	   = mat->GetAlbedoTexture()->GetTexture();
+				//Texture*  normalTex	   = mat->GetNormalTexture()->GetTexture();
+				//Texture*  roughnessTex = mat->GetRoughnessTexture()->GetTexture();
+				//Texture*  metalTex	   = mat->GetMetalTexture()->GetTexture();
+				prog->SetUniformTextureHandle( "g_DiffuseTex",	mat->GetAlbedoTexture()->GetTexture(),		0 );
+				prog->SetUniformTextureHandle( "g_NormalTex",	mat->GetNormalTexture()->GetTexture(),		1 );
+				prog->SetUniformTextureHandle( "g_RoughnessTex",mat->GetRoughnessTexture()->GetTexture(),	2 );
+				prog->SetUniformTextureHandle( "g_MetallicTex", mat->GetMetalTexture()->GetTexture(),		3 );
 
 				glDrawElementsInstanced( GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
 					( GLvoid* )( 0 + ( ( model.IndexHandle + mesh.IndexBufferOffset ) * sizeof( unsigned int ) ) ), instanceCount );

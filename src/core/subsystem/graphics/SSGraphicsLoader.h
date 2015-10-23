@@ -1,14 +1,13 @@
 #pragma once
 
 #include "../Subsystem.h"
-#include <resourcing/ResourceTypes.h>
 
-class SSResourcingTest : public Subsystem {
+class SSGraphicsLoader : public Subsystem {
 public:
-	SSResourcingTest( int ID ) : Subsystem( Name, ID ) {
-		SSResourcingTest::ID = ID;
+	SSGraphicsLoader( int ID ) : Subsystem( Name, ID ) {
+		SSGraphicsLoader::ID = ID;
 	}
-	~SSResourcingTest() = default;
+	~SSGraphicsLoader() = default;
 	
 	void 		Startup( SubsystemCollection* const subsystemCollection ) override;
 	void 		Shutdown( SubsystemCollection* const subsystemCollection ) override;
@@ -22,5 +21,4 @@ public:
 	const static pString Name;
 private:
 	static int ID;
-	ResourceIdentifier m_CubeResource = RESOURCE_IDENTIFIER_INVALID;
 };

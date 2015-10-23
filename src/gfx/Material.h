@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <resourcing/resource/TextureResource.h>
 namespace gfx {
 typedef int TextureHandle;
 class Material {
@@ -12,39 +13,39 @@ class Material {
 		return m_Name;
 	}
 
-	TextureHandle GetAlbedoTexture()					{
+	TextureResource* GetAlbedoTexture()					{
 		return m_AlbedoTexture;
 	}
-	TextureHandle GetNormalTexture()					{
+	TextureResource* GetNormalTexture()					{
 		return m_NormalTexture;
 	}
-	TextureHandle GetRoughnessTexture()					{
+	TextureResource* GetRoughnessTexture()					{
 		return m_RoughnessTexture;
 	}
-	TextureHandle GetMetalTexture()						{
+	TextureResource* GetMetalTexture()						{
 		return m_MetalTexture;
 	}
 	//Setters
 	void SetName(std::string name)						{
 		m_Name = name;
 	}
-	void SetAlbedoTexture	( TextureHandle tex)		{
+	void SetAlbedoTexture	(TextureResource* tex)		{
 		m_AlbedoTexture = tex;
 	}
-	void SetNormalTexture	( TextureHandle tex)		{
+	void SetNormalTexture	(TextureResource* tex)		{
 		m_NormalTexture = tex;
 	}
-	void SetRoughnessTexture( TextureHandle tex)		{
+	void SetRoughnessTexture(TextureResource* tex)		{
 		m_RoughnessTexture = tex;
 	}
-	void SetMetalTexture	( TextureHandle tex)		{
+	void SetMetalTexture	( TextureResource* tex)		{
 		m_MetalTexture = tex;
 	}
   private:
-	TextureHandle m_AlbedoTexture	= -1;
-	TextureHandle m_NormalTexture = -1;
-	TextureHandle m_RoughnessTexture = -1;
-	TextureHandle m_MetalTexture = -1;
+	TextureResource* m_AlbedoTexture	= nullptr;
+	TextureResource* m_NormalTexture	= nullptr;
+	TextureResource* m_RoughnessTexture = nullptr;
+	TextureResource* m_MetalTexture		= nullptr;
 	std::string m_Name = "";
 };
 }

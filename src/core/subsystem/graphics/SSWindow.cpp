@@ -32,7 +32,7 @@ void LoadTexture(DDSLoader* loader) {
 #elif PLATFORM == PLATFORM_LINUX
 	//TODO:Fill out with GLX code
 #endif
-	g_ResourceManager.AquireResource(HashResourceName("Texture.Color"));
+	//g_ResourceManager.AquireResource(HashResourceName("Texture.Color"));
 
 	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 	GLenum result;

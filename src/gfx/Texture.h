@@ -15,7 +15,7 @@ class Texture {
   public:
 	Texture();
 	GFX_API Texture(GLuint handle, TextureType type);
-	~Texture();
+	GFX_API ~Texture();
 
 	bool Init( const char* Filename, TextureType type);
 	void InitWithData(int width, int height, int channels, void* data);
