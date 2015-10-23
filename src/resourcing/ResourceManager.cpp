@@ -20,13 +20,18 @@ ResourceManager::ResourceManager() {
 
 ResourceManager::~ResourceManager() {
 	m_ResourceLoaders.clear();
+	m_ResourceLoaderMapping.clear();
+	UnloadAllResources();
+}
+
+void ResourceManager::UnloadAllResources() {
 	for ( auto& resource : m_Resources ) {
+		Logger::Log( "Resource: " + rToString( resource.first ) + " is still loaded, please release it proberly", "ResourceManager", LogSeverity::WARNING_MSG );
         if ( resource.second.Resource ) {
             ReleaseResource( resource.first );
         }
 	}
 	m_Resources.clear();
-	m_ResourceLoaderMapping.clear();
 }
 
 Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
