@@ -6,6 +6,7 @@
 #include "graphics/SSParticles.h"
 #include "graphics/SSVisualizer.h"
 #include "profile/SSProfilerInOut.h"
+#include "resourcing/SSResourceManager.h"
 #include "testing/SSDeranesPoolTest.h"
 #include "testing/SSStackAllocatorBasicTest.h"
 #include "testing/SSSimplePoolTest.h"
@@ -24,15 +25,16 @@ void SubsystemBank::Initialize() {
 	CreateSubsystemTemplate<SSGraphicsSwap>();
 	CreateSubsystemTemplate<SSGraphics>();
 	//CreateSubsystemTemplate<SSParticles>();
+	CreateSubsystemTemplate<SSResourceManager>();
+	CreateSubsystemTemplate<SSPoolThreadingTest>();
+	CreateSubsystemTemplate<SSProfilerInOut>();
+	//CreateSubsystemTemplate<SSStackTest>();
+	CreateSubsystemTemplate<SSResourcingTest>();
 	CreateSubsystemTemplate<SSStackAllocatorBasicTest>();
 	CreateSubsystemTemplate<SSSimplePoolTest>();
 	CreateSubsystemTemplate<SSWindow>();
 	//CreateSubsystemTemplate<SSVisualizer>();
 	//CreateSubsystemTemplate<SSThreadTest>();
-	CreateSubsystemTemplate<SSPoolThreadingTest>();
-	CreateSubsystemTemplate<SSProfilerInOut>();
-	//CreateSubsystemTemplate<SSStackTest>();
-	CreateSubsystemTemplate<SSResourcingTest>();
 	// Startup priorities
 	auto setStartPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetStartOrderPriority( prio );
@@ -58,12 +60,13 @@ void SubsystemBank::Initialize() {
 	//setUpdatePrio( SSVisualizer::GetStaticID(), 10);		  // After Particles					|
 	setUpdatePrio( SSProfilerInOut::GetStaticID(), 250 ); // After profiling 					| before graphics swap
 	setUpdatePrio( SSGraphicsSwap::GetStaticID(), 500 );  // Before frame reset stuff 			| After all rendering
-	
+
 	// Shutdown priorities
 	auto setShutdownPrio = [this] ( int id, int prio ) {
 		m_SubsystemTemplates.at( id )->SetShutdownOrderPriority( prio );
 	};
-	setShutdownPrio( SSWindow::GetStaticID(), 900 ); //									| After context destruction
+	setShutdownPrio( SSResourceManager::GetStaticID(), 800 ); 	// Before graphics context destruction 	|
+	setShutdownPrio( SSWindow::GetStaticID(), 900 ); 			//									 	| After context destruction
 }
 
 void SubsystemBank::Deinitialize() {

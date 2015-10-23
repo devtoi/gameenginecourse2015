@@ -15,6 +15,8 @@ class ResourceManager {
 public:
 	RESOURCING_API static ResourceManager& GetInstance();
 
+	RESOURCING_API void UnloadAllResources();
+
 	RESOURCING_API Resource* AquireResource( const ResourceIdentifier identifier );
 	RESOURCING_API void ReleaseResource( const ResourceIdentifier identifier );
 	RESOURCING_API Resource* GetResourcePointer( const ResourceIdentifier identifier );
