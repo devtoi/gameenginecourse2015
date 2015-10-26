@@ -29,6 +29,7 @@ dump/
 # Compiled
 /bin
 src/.ycm_extra_conf.pyc
+/packet/*.exe
 
 # Installed
 install/*
