@@ -35,14 +35,14 @@ void ResourceManager::UnloadAllResources() {
 }
 
 Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
-	std::lock( m_ResourceLoaderMutex, m_ResourcesMutex );
-	std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex, std::adopt_lock );
+	//std::lock( m_ResourceLoaderMutex, m_ResourcesMutex );
+	//std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex, std::adopt_lock );
 
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator == m_Resources.end() ) {
 		FileContent fileContent = m_PackageManager.GetFileContent( identifier );
 		if ( fileContent.Loaded ) {
-			std::lock_guard<std::mutex> resourceLoaderLock( m_ResourceLoaderMutex, std::adopt_lock );
+			//std::lock_guard<std::mutex> resourceLoaderLock( m_ResourceLoaderMutex, std::adopt_lock );
 			auto loaderIterator = m_ResourceLoaderMapping.find( fileContent.Suffix );
 			if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
 				Logger::Log( "Loaded resource", "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
@@ -65,7 +65,7 @@ Resource* ResourceManager::AquireResource( const ResourceIdentifier identifier )
 }
 
 void ResourceManager::ReleaseResource( const ResourceIdentifier identifier ) {
-	std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
+	//std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator != m_Resources.end() ) {
 		resourceIterator->second.ReferenceCount--;
@@ -79,7 +79,7 @@ void ResourceManager::ReleaseResource( const ResourceIdentifier identifier ) {
 }
 
 Resource* ResourceManager::GetResourcePointer( const ResourceIdentifier identifier ) {
-	std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
+	//std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator != m_Resources.end() ) {
 		return resourceIterator->second.Resource.get();
@@ -89,7 +89,7 @@ Resource* ResourceManager::GetResourcePointer( const ResourceIdentifier identifi
 }
 
 void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourceLoader, std::initializer_list<pString> fileSuffixes ) {
-	std::lock_guard<std::mutex> resourceLoaderLock( m_ResourceLoaderMutex );
+	//std::lock_guard<std::mutex> resourceLoaderLock( m_ResourceLoaderMutex );
 	m_ResourceLoaders.push_back( std::move( resourceLoader ) );
 	for ( const auto& suffix : fileSuffixes ) {
 		auto it = m_ResourceLoaderMapping.find( suffix );
@@ -102,7 +102,7 @@ void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourc
 }
 
 size_t ResourceManager::GetTotalResourceSize() const {
-	std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
+	//std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex );
 	size_t size = 0;
 	for ( const auto& resource : m_Resources ) {
 		size += resource.second.Resource.get()->GetSize();

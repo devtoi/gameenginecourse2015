@@ -36,10 +36,10 @@ private:
 
 	pVector<std::unique_ptr<ResourceLoader>> m_ResourceLoaders;
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;
-	std::mutex m_ResourceLoaderMutex;
+	//std::mutex m_ResourceLoaderMutex;
 
 	pUnorderedMap<ResourceIdentifier, ResourceEntry> m_Resources;
-	mutable std::mutex m_ResourcesMutex;
+	//mutable std::mutex m_ResourcesMutex;
 
 	PackageManager m_PackageManager;
 };

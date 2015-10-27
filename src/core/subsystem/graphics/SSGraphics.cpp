@@ -2,10 +2,11 @@
 #include <utility/Config.h>
 #include <gfx/GraphicsEngine.h>
 #include <gfx/RenderQueue.h>
-#include <gfx/ModelBank.h>
 #include <gfx/LightEngine.h>
 #include "../../camera/CameraFirstPerson.h"
 #include <glm/gtx/transform.hpp>
+#include <resourcing/ResourceManager.h>
+#include <resourcing/ModelBank.h>
 const pString SSGraphics::Name = "Graphics";
 int SSGraphics::ID = -1;
 
@@ -19,9 +20,10 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
 
-	m_TestModel = gfx::g_ModelBank.LoadModel("../../../asset/suzanne.obj");
-	gfx::g_ModelBank.BuildBuffers();
+	m_TestModel = HashResourceName("Model.Suzanne");
+	g_ResourceManager.AquireResource(m_TestModel);
 
+	g_ModelBank.BuildBuffers();
 	m_Camera = pNew(CameraFirstPerson);
 	m_Camera->CalculateViewProjection();
 }

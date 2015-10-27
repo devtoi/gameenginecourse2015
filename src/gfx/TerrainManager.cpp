@@ -1,7 +1,6 @@
 #include "TerrainManager.h"
 #include "RenderQueue.h"
 #include "ShaderBank.h"
-#include "MaterialBank.h"
 #include "Material.h"
 #include <glm/gtx/transform.hpp>
 using namespace gfx;
@@ -100,13 +99,13 @@ void TerrainManager::RenderTerrains(RenderQueue* rq, const CameraData& camera) {
 		prog->SetUniformFloat("g_TileScale", it.Size / m_VertexCount);
 		prog->SetUniformVec2("g_Size", glm::vec2(it.Size));
 		//textures
-		prog->SetUniformTextureHandle("g_DiffuseTex", g_MaterialBank.GetTexture(terrain->GetAlbedoMap())->GetHandle(), 0);
-		prog->SetUniformTextureHandle("g_RoughnessTex", g_MaterialBank.GetTexture(terrain->GetRoughnessMap())->GetHandle(), 1);
-		prog->SetUniformTextureHandle("g_HeightMap", terrain->GetHeightMap(), 2);
-		glPatchParameteri(GL_PATCH_VERTICES, 3);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDrawElements(GL_PATCHES, m_IndexCount, GL_UNSIGNED_INT, (GLvoid*)0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//prog->SetUniformTextureHandle("g_DiffuseTex", g_MaterialBank.GetTexture(terrain->GetAlbedoMap())->GetHandle(), 0);
+		//prog->SetUniformTextureHandle("g_RoughnessTex", g_MaterialBank.GetTexture(terrain->GetRoughnessMap())->GetHandle(), 1);
+		//prog->SetUniformTextureHandle("g_HeightMap", terrain->GetHeightMap(), 2);
+		//glPatchParameteri(GL_PATCH_VERTICES, 3);
+		////glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glDrawElements(GL_PATCHES, m_IndexCount, GL_UNSIGNED_INT, (GLvoid*)0);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }
 

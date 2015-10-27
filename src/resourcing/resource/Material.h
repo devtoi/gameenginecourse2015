@@ -1,6 +1,5 @@
 #pragma once
 #include <resourcing/resource/TextureResource.h>
-namespace gfx {
 typedef int TextureHandle;
 class Material {
   public:
@@ -47,4 +46,3 @@ class Material {
 	TextureResource* m_MetalTexture		= nullptr;
 	std::string m_Name = "";
 };
-}

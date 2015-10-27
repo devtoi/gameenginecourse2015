@@ -2,10 +2,11 @@
 #include "RenderQueue.h"
 #include "LightEngine.h"
 #include "ShaderBank.h"
-#include "ModelBank.h"
 #include "BufferManager.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+#include <resourcing/ModelBank.h>
+#include <resourcing/ResourceManager.h>
 using namespace gfx;
 #define LIGHT_TEXTURE_SIZE 4096.0f
 CascadedShadowMap::CascadedShadowMap() { }
@@ -62,13 +63,13 @@ void CascadedShadowMap::Render ( RenderQueue* rq ) {
 	g_ModelBank.ApplyBuffers();
 	// for each model to be rendered
 	for ( auto& mo : rq->GetModelQueue() ) {
-		const Model& model = g_ModelBank.FetchModel ( mo.Model );
+		const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
 		instanceCount = mo.InstanceCount;
 		prog->SetUniformUInt ( "g_BufferOffset", bufferOffset );
 		// for each mesh
-		for ( auto& mesh : model.Meshes ) {
-			glDrawElementsInstanced ( GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
-									  ( GLvoid* ) ( 0 + ( ( model.IndexHandle + mesh.IndexBufferOffset ) * sizeof ( unsigned int ) ) ), instanceCount );
+		for ( auto& mesh : model->Meshes ) {
+			glDrawElementsInstanced ( GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
+									  ( GLvoid* ) ( 0 + ( ( model->IndexOffset + mesh.IndexOffset ) * sizeof ( unsigned int ) ) ), instanceCount );
 		}
 		bufferOffset += instanceCount;
 	}

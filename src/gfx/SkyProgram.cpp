@@ -1,8 +1,9 @@
 #include "SkyProgram.h"
 #include "RenderQueue.h"
 #include "ShaderBank.h"
-#include "ModelBank.h"
 #include <glm/gtx/transform.hpp>
+#include <resourcing/ResourceManager.h>
+#include <resourcing/ModelBank.h>
 using namespace gfx;
 
 SkyProgram::SkyProgram() {
@@ -17,7 +18,8 @@ void SkyProgram::Init() {
 	//load Shader
 	m_Shader = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedSky.glsl");
 	//Load model
-	m_Model = g_ModelBank.LoadModel("../../../asset/SkyCube.dae");
+	m_Model = HashResourceName("Model.Cube");
+	g_ResourceManager.AquireResource(m_Model);
 }
 void SkyProgram::Render(const CameraData& camera) {
 	glCullFace(GL_FRONT);
@@ -29,9 +31,9 @@ void SkyProgram::Render(const CameraData& camera) {
 	prog->SetUniformMat4("g_World", glm::translate(camera.Position));
 	m_Tex->Apply(prog->FetchUniform("g_SkyTex"), 0);
 	g_ModelBank.ApplyBuffers();
-	Model m = g_ModelBank.FetchModel(m_Model);
-	glDrawElements(GL_TRIANGLES, m.Meshes[0].Indices, GL_UNSIGNED_INT,
-	               (GLvoid*)(0 + ((m.IndexHandle + m.Meshes[0].IndexBufferOffset) * sizeof(unsigned int))));
+	ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(m_Model);
+	glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
+	               (GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
 
 	glCullFace(GL_BACK);
 }

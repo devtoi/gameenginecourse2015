@@ -4,10 +4,7 @@
 #include <glm/gtx/transform.hpp>
 #include "Camera.h"
 #include "RenderQueue.h"
-#include "ModelBank.h"
 #include "ShaderBank.h"
-#include "MaterialBank.h"
-#include "Material.h"
 #include "GBuffer.h"
 #include "LightEngine.h"
 #include "TerrainManager.h"
@@ -20,6 +17,8 @@
 #include "BloomProgram.h"
 #include "TransparencyProgram.h"
 #include "gfxutility.h"
+#include <resourcing/ResourceManager.h>
+#include <resourcing/ModelBank.h>
 using namespace gfx;
 
 GraphicsEngine::GraphicsEngine() { }
@@ -51,8 +50,6 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	glStencilFunc( GL_ALWAYS, 1, 0xFF );
 	glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
 	glClearColor( 0.39f, 0.61f, 0.93f, 1.0f ); // cornflower blue
-	//load default materials
-	g_MaterialBank.Initialize();
 
 	m_RenderQueue = new RenderQueue( );
 	m_RenderQueue->CreateBuffer();
@@ -170,24 +167,20 @@ void GraphicsEngine::DrawGeometry() {
 
 		// for each model to be rendered
 		for ( auto& mo : m_RenderQueue->GetModelQueue() ) {
-			const Model& model = g_ModelBank.FetchModel( mo.Model );
+			const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
 			instanceCount = mo.InstanceCount;
 			prog->SetUniformUInt( "g_BufferOffset", bufferOffset );
 			// for each mesh
-			for ( auto& mesh : model.Meshes ) {
+			for ( auto& mesh : model->Meshes ) {
 				// set textures
-				Material* mat		   = g_MaterialBank.GetMaterial( model.MaterialOffset + mesh.Material );
-				//Texture*  albedoTex	   = mat->GetAlbedoTexture()->GetTexture();
-				//Texture*  normalTex	   = mat->GetNormalTexture()->GetTexture();
-				//Texture*  roughnessTex = mat->GetRoughnessTexture()->GetTexture();
-				//Texture*  metalTex	   = mat->GetMetalTexture()->GetTexture();
+				Material* mat = model->Materials.at(mesh.Material);
 				prog->SetUniformTextureHandle( "g_DiffuseTex",	mat->GetAlbedoTexture()->GetTexture(),		0 );
 				prog->SetUniformTextureHandle( "g_NormalTex",	mat->GetNormalTexture()->GetTexture(),		1 );
 				prog->SetUniformTextureHandle( "g_RoughnessTex",mat->GetRoughnessTexture()->GetTexture(),	2 );
 				prog->SetUniformTextureHandle( "g_MetallicTex", mat->GetMetalTexture()->GetTexture(),		3 );
 
-				glDrawElementsInstanced( GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
-					( GLvoid* )( 0 + ( ( model.IndexHandle + mesh.IndexBufferOffset ) * sizeof( unsigned int ) ) ), instanceCount );
+				glDrawElementsInstanced( GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
+					( GLvoid* )( 0 + ( ( model->IndexOffset + mesh.IndexOffset ) * sizeof( unsigned int ) ) ), instanceCount );
 			}
 			bufferOffset += instanceCount;
 		}

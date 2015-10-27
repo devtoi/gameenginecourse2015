@@ -1,12 +1,11 @@
 #include "TransparencyProgram.h"
 #include "ShaderBank.h"
 #include "RenderQueue.h"
-#include "ModelBank.h"
-#include "MaterialBank.h"
-#include "Material.h"
 #include "BufferManager.h"
 #include "GBuffer.h"
 #include "LightEngine.h"
+#include <resourcing/ResourceManager.h>
+#include <resourcing/ModelBank.h>
 gfx::TransparencyProgram::TransparencyProgram(){
 }
 
@@ -77,28 +76,22 @@ void gfx::TransparencyProgram::Render(RenderQueue const * rq, GBuffer const * gb
 		unsigned int instanceCount = 0;
 		// for each model to be rendered
 		for (auto& mo : rq->GetTranparentModelQueue()) {
-			const Model& model = g_ModelBank.FetchModel(mo.Model);
+			const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
 			instanceCount = mo.InstanceCount;
 			prog->SetUniformUInt("g_BufferOffset", bufferOffset);
 			prog->SetUniformFloat("g_Transparency", mo.Transparency);
 			prog->SetUniformFloat("g_ZNear", view.camera.Near);
 			prog->SetUniformFloat("g_ZFar", view.camera.Far);
 			// for each mesh
-			for (auto& mesh : model.Meshes) {
+			for (auto& mesh : model->Meshes) {
 				// set textures
-				Material* mat = g_MaterialBank.GetMaterial(model.MaterialOffset + mesh.Material);
-
-				//Texture*  albedoTex = mat->GetAlbedoTexture()->GetTexture();
-				//Texture*  normalTex = mat->GetNormalTexture()->GetTexture();
-				//Texture*  roughnessTex = mat->GetRoughnessTexture()->GetTexture();
-				//Texture*  metalTex = mat->GetMetalTexture()->GetTexture();
-
+				Material* mat = model->Materials.at(mesh.Material);
 				prog->SetUniformTextureHandle("g_DiffuseTex",	mat->GetAlbedoTexture()->GetTexture(), 0);
 				prog->SetUniformTextureHandle("g_NormalTex",	mat->GetNormalTexture()->GetTexture(), 1);
 				prog->SetUniformTextureHandle("g_RoughnessTex", mat->GetRoughnessTexture()->GetTexture(), 2);
 				prog->SetUniformTextureHandle("g_MetallicTex",	mat->GetMetalTexture()->GetTexture(), 3);
-				glDrawElementsInstanced(GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
-					(GLvoid*)(0 + ((model.IndexHandle + mesh.IndexBufferOffset) * sizeof(unsigned int))), instanceCount);
+				glDrawElementsInstanced(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
+					(GLvoid*)(0 + ((model->IndexOffset + mesh.IndexOffset) * sizeof(unsigned int))), instanceCount);
 			}
 			bufferOffset += instanceCount;
 		}

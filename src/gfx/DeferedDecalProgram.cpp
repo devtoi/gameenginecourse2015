@@ -1,9 +1,9 @@
 #include "DeferedDecalProgram.h"
-#include "ModelBank.h"
 #include "ShaderBank.h"
 #include "RenderQueue.h"
 #include "GBuffer.h"
-#include "MaterialBank.h"
+#include <resourcing/ResourceManager.h>
+#include <resourcing/ModelBank.h>
 gfx::DeferedDecalProgram::DeferedDecalProgram(){
 
 }
@@ -16,7 +16,8 @@ void gfx::DeferedDecalProgram::Initialize(){
 	//Load Shader
 	m_ShaderProg = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedDecals.glsl");
 	//Load model
-	m_Model = g_ModelBank.LoadModel("../../../asset/model/cube.dae");
+	m_Model = HashResourceName("Model.Cube");
+	g_ResourceManager.AquireResource(m_Model);
 }
 
 void gfx::DeferedDecalProgram::Render(RenderQueue* rq, GBuffer* gbuffer){
@@ -24,7 +25,7 @@ void gfx::DeferedDecalProgram::Render(RenderQueue* rq, GBuffer* gbuffer){
 	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_ShaderProg);
 	prog->Apply();
 	g_ModelBank.ApplyBuffers();
-	Model m = g_ModelBank.FetchModel(m_Model);
+	ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(m_Model);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	for (auto& view : rq->GetViews()) {
@@ -35,13 +36,13 @@ void gfx::DeferedDecalProgram::Render(RenderQueue* rq, GBuffer* gbuffer){
 		prog->SetUniformVec2("g_ViewportSize", glm::vec2(view.viewport.width, view.viewport.height));
 		prog->SetUniformVec2("g_ViewportOffset", glm::vec2(view.viewport.x, view.viewport.y));
 		for (auto& decal : rq->GetDeferedDecals()) {
-			prog->SetUniformTextureHandle("g_DecalAlbedo", g_MaterialBank.GetTexture(decal.Texture)->GetHandle(), 0);
+			//prog->SetUniformTextureHandle("g_DecalAlbedo", g_MaterialBank.GetTexture(decal.Texture)->GetHandle(), 0);
 			prog->SetUniformVec4("g_Tint", decal.Tint);
 			prog->SetUniformMat4("g_World", decal.World);
 			prog->SetUniformMat4("g_InvWorld", glm::inverse(decal.World));
 			
-			glDrawElements(GL_TRIANGLES, m.Meshes[0].Indices, GL_UNSIGNED_INT,
-				(GLvoid*)(0 + ((m.IndexHandle + m.Meshes[0].IndexBufferOffset) * sizeof(unsigned int))));
+			glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
+				(GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
 		}
 	}
 	glEnable(GL_DEPTH_TEST);

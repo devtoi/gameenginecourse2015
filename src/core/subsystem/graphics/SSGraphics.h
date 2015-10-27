@@ -30,5 +30,5 @@ private:
 	gfx::GraphicsEngine* m_GraphicsEngine = nullptr;
 	gfx::RenderQueue* m_RenderQueue = nullptr;
 	Camera* m_Camera = nullptr;
-	int m_TestModel;
+	size_t m_TestModel;
 };
