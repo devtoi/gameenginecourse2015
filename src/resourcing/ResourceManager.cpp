@@ -26,7 +26,7 @@ ResourceManager::~ResourceManager() {
 
 void ResourceManager::UnloadAllResources() {
 	for ( auto& resource : m_Resources ) {
-		Logger::Log( "Resource: " + rToString( resource.first ) + " is still loaded, please release it proberly", "ResourceManager", LogSeverity::WARNING_MSG );
+		Logger::Log( "Resource: " + rToString( resource.first ) + " is still loaded, please release it properly", "ResourceManager", LogSeverity::WARNING_MSG );
         if ( resource.second.Resource ) {
             ReleaseResource( resource.first );
         }
