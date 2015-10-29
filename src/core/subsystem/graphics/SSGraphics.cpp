@@ -22,7 +22,7 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 
 	m_TestModel = HashResourceName("Model.Suzanne");
 	g_ResourceManager.AquireResource(m_TestModel);
-	g_ResourceManager.PostQuitJob();
+	//g_ResourceManager.PostQuitJob();
 	m_Camera = pNew(CameraFirstPerson);
 	m_Camera->CalculateViewProjection();
 }

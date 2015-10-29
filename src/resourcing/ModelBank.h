@@ -18,6 +18,7 @@ class ModelBank {
 	RESOURCING_API void DeleteModel(const ResourceIdentifier id);
 	RESOURCING_API bool ApplyBuffers();
 	RESOURCING_API void Clear();
+	RESOURCING_API ModelResource* GetModel(const ResourceIdentifier id);
   private:
 	ModelBank();
 	GLuint											m_VertexBuffer = 0;

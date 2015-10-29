@@ -68,3 +68,11 @@ bool ModelBank::ApplyBuffers() {
 	}
 	return false;
 }
+
+ModelResource* ModelBank::GetModel(const ResourceIdentifier id) {
+	auto model = m_Models.find(id);
+	if (model != m_Models.end()) {
+		return model->second;
+	}
+	return nullptr;
+}

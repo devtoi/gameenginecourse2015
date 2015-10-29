@@ -47,6 +47,8 @@ void ResourceManager::WorkerThread() {
 			ResourceJob job = m_JobQueue.front();
 			m_JobQueue.pop();
 			m_JobQueueMutex.unlock();
+			if (job.File.ID == WORKER_THREAD_STOP)
+				return;
 			auto loaderIterator = m_ResourceLoaderMapping.find(job.File.Suffix);
 			if (loaderIterator != m_ResourceLoaderMapping.end()) {
 				Logger::Log("Loaded resource", "ResourceManager", LogSeverity::DEBUG_MSG); // TODOJM: Reverse lookup name
@@ -61,12 +63,12 @@ void ResourceManager::WorkerThread() {
 		} else {
 			m_JobQueueMutex.unlock();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
 
 void ResourceManager::StartWorkerThread(SDL_Window* window) {
-#ifdef PLATFORM == PLATFORM_WINDOWS
+#if PLATFORM == PLATFORM_WINDOWS
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if (SDL_GetWindowWMInfo(window, &info) < 0) {

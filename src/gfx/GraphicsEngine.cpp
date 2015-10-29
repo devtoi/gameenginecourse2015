@@ -110,7 +110,7 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	m_TransparencyProgram = new TransparencyProgram();
 	m_TransparencyProgram->Initialize(m_GraphicsSettings.Width, m_GraphicsSettings.Height);
 	//VAO
-	g_ModelBank.Init();
+	//g_ModelBank.Init();
 	g_ModelBank.ApplyBuffers();
 	glGenVertexArrays(1, &m_VertexArrayObject);
 	glBindVertexArray(m_VertexArrayObject);
