@@ -16,6 +16,7 @@ FileContent PackageManager::GetFileContent( const ResourceIdentifier identifier 
 	FileContent fileContent = INVALID_FILE_CONTENT;
 	for ( const auto& package : m_Packages ) {
 		fileContent = package->GetFileContent( identifier );
+		fileContent.ID = identifier;
 		if ( fileContent.Loaded ) {
 			break;
 		}

@@ -2,7 +2,7 @@
 
 namespace gfx {
 class Texture;
-typedef int ModelHandle;
+typedef size_t ModelHandle;
 typedef int ShaderProgramHandle;
 struct CameraData;
 class SkyProgram {

@@ -1,7 +1,6 @@
 #include "Terrain.h"
 #include <Soil2/SOIL2.h>
 #include "Texture.h"
-#include "MaterialBank.h"
 
 using namespace gfx;
 

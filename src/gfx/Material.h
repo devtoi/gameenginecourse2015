@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <resourcing/resource/TextureResource.h>
 namespace gfx {
 typedef int TextureHandle;

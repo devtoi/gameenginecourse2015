@@ -2,11 +2,11 @@
 #include <memory>
 #include <memory/Alloc.h>
 #include "ResourceTypes.h"
-#include "FileContent.h"
+#include "ResourceManager.h"
 
 class Resource;
 
 class ResourceLoader {
 public:
-	virtual std::unique_ptr<Resource> LoadResource( const FileContent& fileContent ) = 0;
+	virtual Resource* LoadResource( const FileContent& fileContent) = 0;
 };

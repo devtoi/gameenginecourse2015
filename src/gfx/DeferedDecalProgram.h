@@ -10,7 +10,7 @@ namespace gfx {
 		void Initialize();
 		void Render(RenderQueue* rq, GBuffer* gbuffer);
 	private:
-		unsigned int m_Model;
+		size_t m_Model;
 		unsigned int m_ShaderProg;
 	};
 }

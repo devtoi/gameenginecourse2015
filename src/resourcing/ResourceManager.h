@@ -2,7 +2,9 @@
 #include <mutex>
 #include <memory/Alloc.h>
 #include <memory>
+#include <SDL2/SDL.h>
 #include "ResourcingLibraryDefine.h"
+#include "Resource.h"
 #include "ResourceTypes.h"
 #include "PackageManager.h"
 
@@ -17,7 +19,7 @@ public:
 
 	RESOURCING_API void UnloadAllResources();
 
-	RESOURCING_API Resource* AquireResource( const ResourceIdentifier identifier );
+	RESOURCING_API void AquireResource( const ResourceIdentifier identifier );
 	RESOURCING_API void ReleaseResource( const ResourceIdentifier identifier );
 	RESOURCING_API Resource* GetResourcePointer( const ResourceIdentifier identifier );
 
@@ -25,13 +27,22 @@ public:
 
 	RESOURCING_API size_t GetTotalResourceSize( ) const;
 
+	RESOURCING_API void StartWorkerThread(SDL_Window* window);
+	RESOURCING_API void PostQuitJob();
+
 private:
 	ResourceManager();
 	~ResourceManager();
+	void WorkerThread();
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;
-		std::unique_ptr<Resource> Resource;
+		Resource* Resource;
+	};
+
+	struct ResourceJob {
+		FileContent File;
+		ResourceEntry* Entry;
 	};
 
 	pVector<std::unique_ptr<ResourceLoader>> m_ResourceLoaders;
@@ -39,7 +50,13 @@ private:
 	std::mutex m_ResourceLoaderMutex;
 
 	pUnorderedMap<ResourceIdentifier, ResourceEntry> m_Resources;
-	mutable std::mutex m_ResourcesMutex;
+	std::queue<ResourceJob>							 m_JobQueue;
+	mutable std::mutex	m_JobQueueMutex;
+	mutable std::mutex	m_PackageMutex;
+	mutable std::mutex	m_ResourceMutex;
+	std::thread			m_WorkerThread;
 
 	PackageManager m_PackageManager;
+
+	const size_t WORKER_THREAD_STOP = 10;
 };

@@ -19,8 +19,6 @@ HDC Device;
 typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 GLXContext MainContext;
 GLXContext LoadingContext;
-
-
 #endif
 
 const pString SSWindow::Name = "Window";
@@ -63,31 +61,35 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 
 	glewExperimental = GL_TRUE;
 	glewInit();
+	g_ResourceManager.StartWorkerThread(m_Window->GetWindow());
+//
+//#ifdef PLATFORM == PLATFORM_WINDOWS
+//	SDL_SysWMinfo info;
+//	SDL_VERSION(&info.version);
+//	if (SDL_GetWindowWMInfo(m_Window->GetWindow(), &info) < 0) {
+//		assert(false);
+//	}
+//	HWND hWnd = info.info.win.window;
+//	Device = GetDC(hWnd);
+//	MainContext = wglGetCurrentContext();
+//	LoadingContext = wglCreateContext(Device);
+//	wglShareLists(MainContext, LoadingContext);
+//#elif PLATFORM == PLATFORM_LINUX
+//	//TODO:Fill out with GLX code
+//	return;
+//#endif
+//	DDSLoader ddsloader;
+//	std::chrono::steady_clock::time_point start, end;
+//	start = std::chrono::high_resolution_clock::now();
+//	//ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
+//	std::thread t = std::thread(LoadTexture, &ddsloader);
+//	t.detach();
+//	end = std::chrono::high_resolution_clock::now();
+//	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+//	std::cout << "loading textures took " << duration << "ms\n";
+//
+	
 
-#ifdef PLATFORM == PLATFORM_WINDOWS
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(m_Window->GetWindow(), &info) < 0) {
-		assert(false);
-	}
-	HWND hWnd = info.info.win.window;
-	Device = GetDC(hWnd);
-	MainContext = wglGetCurrentContext();
-	LoadingContext = wglCreateContext(Device);
-	wglShareLists(MainContext, LoadingContext);
-#elif PLATFORM == PLATFORM_LINUX
-	//TODO:Fill out with GLX code
-	return;
-#endif
-	DDSLoader ddsloader;
-	std::chrono::steady_clock::time_point start, end;
-	start = std::chrono::high_resolution_clock::now();
-	//ddsloader.LoadCompleteDDS("../../../asset/texture/color.dds");
-	std::thread t = std::thread(LoadTexture, &ddsloader);
-	t.detach();
-	end = std::chrono::high_resolution_clock::now();
-	long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	std::cout << "loading textures took " << duration << "ms\n";
 }
 
 void SSWindow::Shutdown( SubsystemCollection* const ) {

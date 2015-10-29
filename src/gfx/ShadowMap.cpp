@@ -1,7 +1,6 @@
 #include "ShadowMap.h"
 #include "ShaderBank.h"
 #include "BufferManager.h"
-#include "ModelBank.h"
 #include "RenderQueue.h"
 #include "Lights.h"
 #include <glm/gtx/transform.hpp>
@@ -56,24 +55,24 @@ void ShadowMap::Render( RenderQueue* rq ) {
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset( 1.0f, 4.0f );
 
-	glm::mat4 viewProj = m_Proj * m_View;
-	prog->SetUniformMat4( "g_ViewProj", viewProj );
-	unsigned int bufferOffset  = 0;
-	unsigned int instanceCount = 0;
-	g_ModelBank.ApplyBuffers();
-	// for each model to be rendered
-	for ( auto& mo : rq->GetModelQueue() ) {
-		const Model& model = g_ModelBank.FetchModel( mo.Model );
-		instanceCount = mo.InstanceCount;
-		prog->SetUniformUInt( "g_BufferOffset", bufferOffset );
-		// for each mesh
-		for ( auto& mesh : model.Meshes ) {
-			glDrawElementsInstanced( GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
-				( GLvoid* )( 0 + ( ( model.IndexHandle + mesh.IndexBufferOffset ) * sizeof( unsigned int ) ) ), instanceCount );
-		}
-		bufferOffset += instanceCount;
-	}
-	glDisable(GL_POLYGON_OFFSET_FILL);
+	//glm::mat4 viewProj = m_Proj * m_View;
+	//prog->SetUniformMat4( "g_ViewProj", viewProj );
+	//unsigned int bufferOffset  = 0;
+	//unsigned int instanceCount = 0;
+	//g_ModelBank.ApplyBuffers();
+	//// for each model to be rendered
+	//for ( auto& mo : rq->GetModelQueue() ) {
+	//	const Model& model = g_ModelBank.FetchModel( mo.Model );
+	//	instanceCount = mo.InstanceCount;
+	//	prog->SetUniformUInt( "g_BufferOffset", bufferOffset );
+	//	// for each mesh
+	//	for ( auto& mesh : model.Meshes ) {
+	//		glDrawElementsInstanced( GL_TRIANGLES, mesh.Indices, GL_UNSIGNED_INT,
+	//			( GLvoid* )( 0 + ( ( model.IndexHandle + mesh.IndexBufferOffset ) * sizeof( unsigned int ) ) ), instanceCount );
+	//	}
+	//	bufferOffset += instanceCount;
+	//}
+	//glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 glm::mat4 ShadowMap::GetLightMatrix() const {

@@ -61,5 +61,6 @@ class GraphicsEngine {
 	ShaderProgramHandle			m_DeferedLightShader;
 	ShaderProgramHandle			m_FXAAShader;
 	GLuint						m_IntegratedIBL;
+	GLuint						m_VertexArrayObject;
 };
 }

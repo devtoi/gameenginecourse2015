@@ -22,7 +22,7 @@ void gfx::RenderQueue::UpdateBuffer() {
 	g_BufferManager.UpdateBuffer("TransparentShaderInputs", 0, m_TransparentShaderInputBuffer.data(), (int)(m_TransparentShaderInputBuffer.size() * sizeof(ShaderInput)));
 }
 
-void gfx::RenderQueue::Enqueue(ModelHandle model, const std::vector<ShaderInput>& inputs) {
+void gfx::RenderQueue::Enqueue(ResourceIdentifier model, const std::vector<ShaderInput>& inputs) {
 	ModelObject mo;
 	mo.Model = model;
 	mo.InstanceCount = (int)inputs.size();
@@ -30,7 +30,7 @@ void gfx::RenderQueue::Enqueue(ModelHandle model, const std::vector<ShaderInput>
 	m_ShaderInputBuffer.insert(m_ShaderInputBuffer.end(), inputs.begin(), inputs.end());
 }
 
-void gfx::RenderQueue::Enqueue(ModelHandle model, const ShaderInput& input) {
+void gfx::RenderQueue::Enqueue(ResourceIdentifier model, const ShaderInput& input) {
 	ModelObject mo;
 	mo.Model = model;
 	mo.InstanceCount = 1;
@@ -38,7 +38,7 @@ void gfx::RenderQueue::Enqueue(ModelHandle model, const ShaderInput& input) {
 	m_ShaderInputBuffer.insert(m_ShaderInputBuffer.end(), input);
 }
 
-void gfx::RenderQueue::Enqueue(ModelHandle model, const std::vector<ShaderInput>& inputs, float transparency) {
+void gfx::RenderQueue::Enqueue(ResourceIdentifier model, const std::vector<ShaderInput>& inputs, float transparency) {
 	TransparentModelObject mo;
 	mo.Model = model;
 	mo.InstanceCount = (int)inputs.size();
@@ -47,7 +47,7 @@ void gfx::RenderQueue::Enqueue(ModelHandle model, const std::vector<ShaderInput>
 	m_TransparentShaderInputBuffer.insert(m_TransparentShaderInputBuffer.end(), inputs.begin(), inputs.end());
 }
 
-void gfx::RenderQueue::Enqueue(ModelHandle model, const ShaderInput& input, float transparency) {
+void gfx::RenderQueue::Enqueue(ResourceIdentifier model, const ShaderInput& input, float transparency) {
 	TransparentModelObject mo;
 	mo.Model = model;
 	mo.InstanceCount = 1;

@@ -1,18 +1,18 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <vector>
+#include <resourcing/ResourceTypes.h>
 #include "GFXLibraryDefine.h"
 namespace gfx {
-typedef int ModelHandle;
 typedef unsigned short TerrainHandle;
 
 struct ModelObject {
-	ModelHandle Model;
+	ResourceIdentifier Model;
 	unsigned int InstanceCount;
 };
 
 struct TransparentModelObject {
-	ModelHandle Model;
+	ResourceIdentifier Model;
 	unsigned int InstanceCount;
 	float Transparency;
 };
@@ -73,10 +73,10 @@ class RenderQueue {
   public:
 	RenderQueue();
 	~RenderQueue();
-	GFX_API void Enqueue(ModelHandle model, const std::vector<ShaderInput>& inputs);
-	GFX_API void Enqueue(ModelHandle model, const ShaderInput& input);
-	GFX_API void Enqueue(ModelHandle model, const std::vector<ShaderInput>& inputs, float transparency);
-	GFX_API void Enqueue(ModelHandle model, const ShaderInput& input, float transparency);
+	GFX_API void Enqueue(ResourceIdentifier model, const std::vector<ShaderInput>& inputs);
+	GFX_API void Enqueue(ResourceIdentifier model, const ShaderInput& input);
+	GFX_API void Enqueue(ResourceIdentifier model, const std::vector<ShaderInput>& inputs, float transparency);
+	GFX_API void Enqueue(ResourceIdentifier model, const ShaderInput& input, float transparency);
 	GFX_API void Enqueue(const TerrainDeformation& td);
 	GFX_API void Enqueue(const TerrainObject& to);
 	GFX_API void Enqueue(const DeferedDecal& dd);
