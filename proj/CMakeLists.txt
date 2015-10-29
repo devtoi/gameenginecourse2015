@@ -79,9 +79,13 @@ set(CMAKE_INSTALL_PREFIX "${ProjectRoot}gameenginecourse")
 set(TargetArchitecture "x86_64")
 
 # Find SDL2
-find_path(SDL2Include SDL2/SDL.h
-	PATHS ${IncludeDirectoryAbsolute})
+find_path(SDL2Include SDL.h
+	PATH_SUFFIXES include/SDL2 include
+	PATHS
+		${IncludeDirectoryAbsolute}
+		"/usr/include/SDL2")
 set(SDL2Includes ${SDL2Include})
+message(${SDL2Includes})
 find_library(SDL2Library
 	NAMES SDL2 SDL2main
 	PATHS ${LibraryDirectoryAbsolute})
@@ -89,7 +93,7 @@ set(SDL2Libraries ${SDL2Library})
 if (WIN32)
 	find_library(SDL2mainLibrary
 		NAMES SDL2main
-		PATHS ${LibraryDirectoryAbsolute})
+		PATHS /${LibraryDirectoryAbsolute})
 	list(APPEND SDL2Libraries ${SDL2mainLibrary})
 endif(WIN32)
 

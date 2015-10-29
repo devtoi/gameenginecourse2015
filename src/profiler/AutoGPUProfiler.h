@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <SDL2/SDL_timer.h>
+#include "SDL_timer.h"
 #include <memory/Alloc.h>
 #include "GPUProfiler.h"
 #include "ProfileMacro.h"

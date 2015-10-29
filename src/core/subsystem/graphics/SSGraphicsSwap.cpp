@@ -1,5 +1,5 @@
 #include "SSGraphicsSwap.h"
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <gfx/Window.h>
 #include "../SubsystemCollection.h"
 #include "SSWindow.h"

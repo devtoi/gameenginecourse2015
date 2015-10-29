@@ -1,5 +1,5 @@
 #include "TextureLoader.h"
-#include <Soil2/Soil2.h>
+#include <Soil2/SOIL2.h>
 #include <utility/Logger.h>
 #include "../resource/TextureResource.h"
 

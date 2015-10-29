@@ -1,6 +1,7 @@
 #include "Window.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_video.h>
+#include "SDL.h"
+#include "SDL_video.h"
+using namespace gfx;
 
 Window::Window() {
 

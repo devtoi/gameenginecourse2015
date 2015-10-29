@@ -1,5 +1,5 @@
 #include "GraphicsEngine.h"
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <GL/glew.h>
 #include <glm/gtx/transform.hpp>
 #include "Camera.h"

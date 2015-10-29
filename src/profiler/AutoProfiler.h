@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL2/SDL_timer.h>
+#include "SDL_timer.h"
 #include <memory/Alloc.h>
 #include "Profiler.h"
 #include "ProfileMacro.h"

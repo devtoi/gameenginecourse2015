@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Subsystem.h"
-class Window;
+#include <gfx/Window.h>
 typedef void* SDL_GL_Context;
 class SSWindow : public Subsystem {
 public:
@@ -17,7 +17,7 @@ public:
 
 	Subsystem* 	CreateNew( ) const override;
 
-	Window* GetWindow() const;
+	gfx::Window* GetWindow() const;
 
 	static int GetStaticID( );
 
@@ -30,7 +30,7 @@ private:
 
 	const pString m_WindowTitle = "engineT";
 
-	Window* m_Window = nullptr;
+	gfx::Window* m_Window = nullptr;
 	SDL_GL_Context  m_LoadingContext = nullptr;
 
 };

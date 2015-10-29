@@ -1,6 +1,6 @@
 #include "Engine.h"
 #include <glm/gtx/transform.hpp>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include <input/InputContext.h>
 #include <input/InputState.h>
 #include <input/TextInput.h>

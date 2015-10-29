@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <glm/glm.hpp>
 #include <utility/SerializationUtility.h>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include "DDS.h"
 #include "../resource/TextureResource.h"
 

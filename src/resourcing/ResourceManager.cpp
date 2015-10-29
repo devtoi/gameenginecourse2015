@@ -2,22 +2,21 @@
 #include "ResourceLoader.h"
 #include "loader/DDSLoader.h"
 #include "loader/ModelLoader.h"
-#include "Loader/TextureLoader.h"
+#include "loader/TextureLoader.h"
 #include <utility/Logger.h>
 #include "ModelBank.h"
 //glcontext handling
 #include <utility/PlatformDefinitions.h>
-#ifdef PLATFORM == PLATFORM_WINDOWS
-#include <SDL2/SDL_syswm.h>
-#include <GL/wglew.h>
-HGLRC LoadingContext;
-HGLRC MainContext;
-HDC Device;
+#if PLATFORM == PLATFORM_WINDOWS
+    HGLRC LoadingContext;
+    HGLRC MainContext;
+    HDC Device;
 #elif PLATFORM == PLATFORM_LINUX
-#include <GL/glxew.h
-typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-GLXContext MainContext;
-GLXContext LoadingContext;
+    typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+    GLXContext g_MainContext;
+    GLXContext g_LoadingContext;
+    Display* g_Display;
+    Window g_Window;
 #endif
 
 ResourceManager& ResourceManager::GetInstance() {
@@ -39,7 +38,11 @@ ResourceManager::~ResourceManager() {
 }
 
 void ResourceManager::WorkerThread() {
+#if PLATFORM == PLATFORM_WINDOWS
 	wglMakeCurrent(Device, LoadingContext);
+#elif PLATFORM == PLATFORM_LINUX
+	glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
+#endif
 	while (true) {
 		//lock mutex for queue
 		m_JobQueueMutex.lock();
@@ -66,20 +69,87 @@ void ResourceManager::WorkerThread() {
 }
 
 void ResourceManager::StartWorkerThread(SDL_Window* window) {
-#ifdef PLATFORM == PLATFORM_WINDOWS
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if (SDL_GetWindowWMInfo(window, &info) < 0) {
 		assert(false);
 	}
+#if PLATFORM == PLATFORM_WINDOWS
 	HWND hWnd = info.info.win.window;
 	Device = GetDC(hWnd);
 	MainContext = wglGetCurrentContext();
 	LoadingContext = wglCreateContext(Device);
 	wglShareLists(MainContext, LoadingContext);
 #elif PLATFORM == PLATFORM_LINUX
-	//TODO:Fill out with GLX code
-	return;
+	g_Display = info.info.x11.display;
+	g_Window = info.info.x11.window;
+	g_MainContext = glXGetCurrentContext();
+
+	// Get a matching FB config
+	static int visual_attribs[] =
+	{
+		GLX_X_RENDERABLE    , True,
+		GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
+		GLX_RENDER_TYPE     , GLX_RGBA_BIT,
+		GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
+		GLX_RED_SIZE        , 8,
+		GLX_GREEN_SIZE      , 8,
+		GLX_BLUE_SIZE       , 8,
+		GLX_ALPHA_SIZE      , 8,
+		GLX_DEPTH_SIZE      , 24,
+		GLX_STENCIL_SIZE    , 8,
+		GLX_DOUBLEBUFFER    , True,
+		//GLX_SAMPLE_BUFFERS  , 1,
+		//GLX_SAMPLES         , 4,
+		None
+	};
+
+	int fbcount;
+	GLXFBConfig* fbc = glXChooseFBConfig(g_Display, DefaultScreen(g_Display), visual_attribs, &fbcount);
+	if (!fbc)
+	{
+		printf( "Failed to retrieve a framebuffer config\n" );
+		exit(1);
+	}
+	printf( "Found %d matching FB configs.\n", fbcount );
+
+	// Pick the FB config/visual with the most samples per pixel
+	printf( "Getting XVisualInfos\n" );
+	int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
+
+	int i;
+	for (i=0; i<fbcount; ++i)
+	{
+		XVisualInfo *vi = glXGetVisualFromFBConfig( g_Display, fbc[i] );
+		if ( vi )
+		{
+			int samp_buf, samples;
+			glXGetFBConfigAttrib( g_Display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
+			glXGetFBConfigAttrib( g_Display, fbc[i], GLX_SAMPLES       , &samples  );
+
+			printf( "  Matching fbconfig %d, visual ID 0x%2x: SAMPLE_BUFFERS = %d,"
+					" SAMPLES = %d\n", 
+					i, vi -> visualid, samp_buf, samples );
+
+			if ( best_fbc < 0 || samp_buf && samples > best_num_samp )
+				best_fbc = i, best_num_samp = samples;
+			if ( worst_fbc < 0 || !samp_buf || samples < worst_num_samp )
+				worst_fbc = i, worst_num_samp = samples;
+		}
+		XFree( vi );
+	}
+
+	GLXFBConfig bestFbc = fbc[ best_fbc ];
+
+	// Be sure to free the FBConfig list allocated by glXChooseFBConfig()
+	XFree( fbc );
+
+	// Get a visual
+	XVisualInfo *vi = glXGetVisualFromFBConfig( g_Display, bestFbc );
+
+	g_LoadingContext = glXCreateContext( g_Display, vi, g_MainContext, True );
+	XFree( vi );
+
 #endif
 	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this);
 	m_WorkerThread.detach();
