@@ -85,7 +85,7 @@ find_path(SDL2Include SDL.h
 		${IncludeDirectoryAbsolute}/SDL2
 		"/usr/include/SDL2")
 set(SDL2Includes ${SDL2Include})
-message(${SDL2Includes})
+
 find_library(SDL2Library
 	NAMES SDL2 SDL2main
 	PATHS ${LibraryDirectoryAbsolute})
