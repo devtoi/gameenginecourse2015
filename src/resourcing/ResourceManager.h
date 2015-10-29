@@ -9,24 +9,6 @@
 #include "ResourceTypes.h"
 #include "PackageManager.h"
 
-//glcontext handling
-#include <utility/PlatformDefinitions.h>
-#if PLATFORM == PLATFORM_WINDOWS
-    #include "SDL_syswm.h"
-    #include <GL/wglew.h>
-    extern HGLRC LoadingContext;
-    extern HGLRC MainContext;
-    extern HDC Device;
-#elif PLATFORM == PLATFORM_LINUX
-    #include <GL/glxew.h>
-    #include "SDL_syswm.h"
-    typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-    extern GLXContext g_MainContext;
-    extern GLXContext g_LoadingContext;
-    extern Display* g_Display;
-    extern Window g_Window;
-#endif
-
 #define g_ResourceManager ResourceManager::GetInstance()
 
 class Resource;

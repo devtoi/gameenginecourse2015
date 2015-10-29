@@ -7,11 +7,16 @@
 #include "ModelBank.h"
 //glcontext handling
 #include <utility/PlatformDefinitions.h>
+
 #if PLATFORM == PLATFORM_WINDOWS
+    #include "SDL_syswm.h"
+    #include <GL/wglew.h>
     HGLRC LoadingContext;
     HGLRC MainContext;
     HDC Device;
 #elif PLATFORM == PLATFORM_LINUX
+    #include <GL/glxew.h>
+    #include "SDL_syswm.h"
     typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
     GLXContext g_MainContext;
     GLXContext g_LoadingContext;

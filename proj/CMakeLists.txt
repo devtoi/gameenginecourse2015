@@ -82,7 +82,7 @@ set(TargetArchitecture "x86_64")
 find_path(SDL2Include SDL.h
 	PATH_SUFFIXES include/SDL2 include
 	PATHS
-		${IncludeDirectoryAbsolute}
+		${IncludeDirectoryAbsolute}/SDL2
 		"/usr/include/SDL2")
 set(SDL2Includes ${SDL2Include})
 message(${SDL2Includes})
@@ -93,7 +93,7 @@ set(SDL2Libraries ${SDL2Library})
 if (WIN32)
 	find_library(SDL2mainLibrary
 		NAMES SDL2main
-		PATHS /${LibraryDirectoryAbsolute})
+		PATHS ${LibraryDirectoryAbsolute})
 	list(APPEND SDL2Libraries ${SDL2mainLibrary})
 endif(WIN32)
 
