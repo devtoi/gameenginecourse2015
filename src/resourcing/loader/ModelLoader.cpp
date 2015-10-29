@@ -13,7 +13,7 @@ ModelLoader::ModelLoader(){
 ModelLoader::~ModelLoader(){
 }
 
-RESOURCING_API std::unique_ptr<Resource> ModelLoader::LoadResource(const FileContent& fileContent){
+RESOURCING_API Resource* ModelLoader::LoadResource(const FileContent& fileContent){
 	Assimp::Importer loader;
 	ModelResource* model = new ModelResource();
 	const aiScene* scene = loader.ReadFileFromMemory(fileContent.Content, fileContent.Size, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenSmoothNormals | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace);
@@ -25,7 +25,9 @@ RESOURCING_API std::unique_ptr<Resource> ModelLoader::LoadResource(const FileCon
 		return nullptr;
 	}
 	g_ModelBank.AddModel(model, fileContent.ID);
-	return std::unique_ptr<ModelResource>(model);
+	model->SetReady();
+	g_ModelBank.BuildBuffers();
+	return model;
 }
 
 void ModelLoader::LoadDefaultMaterial()
@@ -85,18 +87,18 @@ void ModelLoader::LoadMeshes(ModelResource& model, const aiScene* scene) {
 
 void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 	if (!m_HasDefault) {
-		m_DefaultAlbedo = (TextureResource*)g_ResourceManager.AquireResource(HashResourceName("Texture.WhitePixel"));
-		m_DefaultNormal = (TextureResource*)g_ResourceManager.AquireResource(HashResourceName("Texture.Normal"));
-		m_DefaultRoughness = (TextureResource*)g_ResourceManager.AquireResource(HashResourceName("Texture.Roughness"));
-		m_DefaultMetal = (TextureResource*)g_ResourceManager.AquireResource(HashResourceName("Texture.Metal"));
+		g_ResourceManager.AquireResource(HashResourceName("Texture.WhitePixel"));
+		g_ResourceManager.AquireResource(HashResourceName("Texture.Normal"));
+		g_ResourceManager.AquireResource(HashResourceName("Texture.Roughness"));
+		g_ResourceManager.AquireResource(HashResourceName("Texture.Metal"));
 		m_HasDefault = true;
 	}
 	if (scene->mNumMaterials == 0) {
 		Material* defaultMat = new Material();
-		defaultMat->SetAlbedoTexture(m_DefaultAlbedo);
-		defaultMat->SetNormalTexture(m_DefaultNormal);
-		defaultMat->SetRoughnessTexture(m_DefaultRoughness);
-		defaultMat->SetMetalTexture(m_DefaultMetal);
+		defaultMat->SetAlbedoTexture(HashResourceName("Texture.WhitePixel"));
+		defaultMat->SetNormalTexture(HashResourceName("Texture.Normal"));
+		defaultMat->SetRoughnessTexture(HashResourceName("Texture.Roughness"));
+		defaultMat->SetMetalTexture(HashResourceName("Texture.Metal"));
 		model.Materials.push_back(defaultMat);
 	}
 	for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
@@ -111,41 +113,45 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				modelMat->SetAlbedoTexture((TextureResource*)g_ResourceManager.AquireResource(HashResourceName(path.data)));
+				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				modelMat->SetAlbedoTexture(HashResourceName(path.data));
 			}
 		}
 		else {
-			modelMat->SetAlbedoTexture(m_DefaultAlbedo);
+			modelMat->SetAlbedoTexture(HashResourceName("Texture.WhitePixel"));
 		}
 		//normal map
 		if (mat->GetTextureCount(aiTextureType_HEIGHT) > 0) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_HEIGHT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				modelMat->SetNormalTexture((TextureResource*)g_ResourceManager.AquireResource(HashResourceName(path.data)));
+				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				modelMat->SetNormalTexture(HashResourceName(path.data));
 			}
 		} else {
-			modelMat->SetNormalTexture(m_DefaultNormal);
+			modelMat->SetNormalTexture(HashResourceName("Texture.Normal"));
 		}
 		//roughness map
 		if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_SPECULAR, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				modelMat->SetRoughnessTexture((TextureResource*)g_ResourceManager.AquireResource(HashResourceName(path.data)));
+				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				modelMat->SetRoughnessTexture(HashResourceName(path.data));
 			}
 		} else {
-			modelMat->SetRoughnessTexture(m_DefaultRoughness);
+			modelMat->SetRoughnessTexture(HashResourceName("Texture.Roughness"));
 		}
 		//Metal map
 		if (mat->GetTextureCount(aiTextureType_AMBIENT) > 0) { //use ambient texture as metal map for now
 			aiString path;
 			if (mat->GetTexture(aiTextureType_AMBIENT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				modelMat->SetMetalTexture((TextureResource*)g_ResourceManager.AquireResource(HashResourceName(path.data)));
+				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				modelMat->SetMetalTexture(HashResourceName(path.data));
 			}
 		}else {
-			modelMat->SetMetalTexture(m_DefaultMetal);
+			modelMat->SetMetalTexture(HashResourceName("Texture.Metal"));
 		}
 		model.Materials.push_back(modelMat);
 	}

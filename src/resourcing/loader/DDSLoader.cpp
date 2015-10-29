@@ -12,7 +12,7 @@ DDSLoader::DDSLoader() { }
 
 DDSLoader::~DDSLoader() { }
 
-std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileContent ) {
+Resource* DDSLoader::LoadResource( const FileContent& fileContent ) {
 	const Byte* content = static_cast<Byte*>( fileContent.Content );
 	DDS_header	 header;
 	unsigned int w		  = 0;
@@ -60,7 +60,7 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 		assert( header.dwFlags & DDSD_LINEARSIZE );
 		unsigned char* buffer = ( unsigned char* )tMalloc( size * 2 );
 		if ( !buffer ) {
-			return std::unique_ptr<Resource>( nullptr );
+			return nullptr;
 		}
 		glCompressedTexImage2D = ( PFNGLCOMPRESSEDTEXIMAGE2DPROC )SDL_GL_GetProcAddress( "glCompressedTexImage2D" );
 		SerializationUtility::CopyAndIncrementSource( buffer, content, size * 2 );
@@ -120,7 +120,8 @@ std::unique_ptr<Resource> DDSLoader::LoadResource( const FileContent& fileConten
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipCount - 1);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	TextureResource* tex = new TextureResource(texture,fileContent.Size - 124);
-    return std::unique_ptr<TextureResource>(tex);
+	TextureResource* tex = new TextureResource(texture,fileContent.Size - sizeof(header));
+	tex->SetReady();
+    return tex;
 }
 

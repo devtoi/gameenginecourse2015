@@ -20,6 +20,7 @@ class ModelResource : public Resource {
 public:
 	ModelResource();
 	~ModelResource();
+	void CalcSize();
 
 	std::vector<Vertex> Vertices;
 	std::vector<unsigned int> Indices;

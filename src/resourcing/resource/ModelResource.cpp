@@ -1,7 +1,12 @@
 #include "ModelResource.h"
 
-ModelResource::ModelResource() : Resource(1){
+ModelResource::ModelResource() {
 }
+
 ModelResource::~ModelResource() {
 
+}
+
+void ModelResource::CalcSize() {
+	this->SetSize(sizeof(this));
 }

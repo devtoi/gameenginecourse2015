@@ -7,7 +7,7 @@ class ModelLoader : public ResourceLoader {
 public:
 	RESOURCING_API ModelLoader();
 	RESOURCING_API ~ModelLoader();
-	RESOURCING_API std::unique_ptr<Resource> LoadResource( const FileContent& fileContent ) override;
+	RESOURCING_API Resource* LoadResource( const FileContent& fileContent ) override;
 	RESOURCING_API void LoadDefaultMaterial();
 private:
 	void LoadMeshes(ModelResource& model, const aiScene* scene);

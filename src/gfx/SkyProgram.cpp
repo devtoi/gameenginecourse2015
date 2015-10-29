@@ -30,11 +30,15 @@ void SkyProgram::Render(const CameraData& camera) {
 	prog->SetUniformMat4("g_ProjView", camera.ProjView);
 	prog->SetUniformMat4("g_World", glm::translate(camera.Position));
 	m_Tex->Apply(prog->FetchUniform("g_SkyTex"), 0);
-	g_ModelBank.ApplyBuffers();
-	ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(m_Model);
-	glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
-	               (GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
-
+	if (g_ModelBank.ApplyBuffers()) {
+		ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(m_Model);
+		if (model == nullptr) {
+			glCullFace(GL_BACK);
+			return;
+		}
+		glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
+			(GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
+	}
 	glCullFace(GL_BACK);
 }
 void SkyProgram::SetSkyTexture(const char* filename) {

@@ -1,6 +1,8 @@
 #include "TextureLoader.h"
 #include <Soil2/Soil2.h>
+#include <utility/Logger.h>
 #include "../resource/TextureResource.h"
+
 TextureLoader::TextureLoader() {
 
 }
@@ -9,11 +11,11 @@ TextureLoader::~TextureLoader() {
 
 }
 
-std::unique_ptr<Resource> TextureLoader::LoadResource(const FileContent& fileContent) {
+Resource* TextureLoader::LoadResource(const FileContent& fileContent) {
 		GLuint texture = SOIL_load_OGL_texture_from_memory((unsigned char*)fileContent.Content,fileContent.Size, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT | SOIL_FLAG_MULTIPLY_ALPHA | SOIL_FLAG_GL_MIPMAPS);
 		if (!glIsTexture(texture) || texture == 0) {
-			//Logger::Log( pString( "Failed to load texture: " ) + Filename, "Texture", LogSeverity::ERROR_MSG );
-			return false;
+			Logger::Log( pString( "Failed to load texture" ), "Texture", LogSeverity::ERROR_MSG );
+			return nullptr;
 		}
 		glBindTexture(GL_TEXTURE_2D, texture);
 		GLfloat fLargest;
@@ -28,5 +30,6 @@ std::unique_ptr<Resource> TextureLoader::LoadResource(const FileContent& fileCon
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		TextureResource* tex = new TextureResource(texture, fileContent.Size);
-		return std::unique_ptr<TextureResource>(tex);
+		tex->SetReady();
+		return tex;
 }

@@ -86,10 +86,15 @@ void gfx::TransparencyProgram::Render(RenderQueue const * rq, GBuffer const * gb
 			for (auto& mesh : model->Meshes) {
 				// set textures
 				Material* mat = model->Materials.at(mesh.Material);
-				prog->SetUniformTextureHandle("g_DiffuseTex",	mat->GetAlbedoTexture()->GetTexture(), 0);
-				prog->SetUniformTextureHandle("g_NormalTex",	mat->GetNormalTexture()->GetTexture(), 1);
-				prog->SetUniformTextureHandle("g_RoughnessTex", mat->GetRoughnessTexture()->GetTexture(), 2);
-				prog->SetUniformTextureHandle("g_MetallicTex",	mat->GetMetalTexture()->GetTexture(), 3);
+				TextureResource* albedo = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetAlbedoTexture());
+				TextureResource* normal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetNormalTexture());
+				TextureResource* roughness = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetRoughnessTexture());
+				TextureResource* metal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetMetalTexture());
+
+				prog->SetUniformTextureHandle("g_DiffuseTex", albedo->GetTexture(), 0);
+				prog->SetUniformTextureHandle("g_NormalTex", normal->GetTexture(), 1);
+				prog->SetUniformTextureHandle("g_RoughnessTex", roughness->GetTexture(), 2);
+				prog->SetUniformTextureHandle("g_MetallicTex", metal->GetTexture(), 3);
 				glDrawElementsInstanced(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
 					(GLvoid*)(0 + ((model->IndexOffset + mesh.IndexOffset) * sizeof(unsigned int))), instanceCount);
 			}

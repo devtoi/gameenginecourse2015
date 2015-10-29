@@ -18,6 +18,11 @@ void ModelBank::AddModel(ModelResource* model, const ResourceIdentifier id) {
 	m_Models[id] = model;
 }
 
+void ModelBank::Init() {
+	glGenBuffers(1, &m_VertexBuffer);
+	glGenBuffers(1, &m_IndexBuffer);
+}
+
 void ModelBank::DeleteModel(const ResourceIdentifier id) {
 	
 }
@@ -45,32 +50,21 @@ void ModelBank::BuildBuffers() {
 		//insert vertices and indices
 		vertices.insert(vertices.end(), model.second->Vertices.begin(), model.second->Vertices.end());
 		indices.insert(indices.end(), model.second->Indices.begin(), model.second->Indices.end());
-		indexCounter += indices.size();
-		vertexCounter += vertices.size();
+		indexCounter += model.second->Indices.size();
+		vertexCounter += model.second->Vertices.size();
 	}
-	glGenVertexArrays(1, &m_VertexArrayObject);
-	glGenBuffers(1, &m_VertexBuffer);
-
-	glBindVertexArray(m_VertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (4 * sizeof(float)));
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (8 * sizeof(float)));
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (12 * sizeof(float)));
-	
-	glGenBuffers( 1, &m_IndexBuffer );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size( ), indices.data(), GL_STATIC_DRAW );
 }
 
-void ModelBank::ApplyBuffers() {
-	glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-	glBindVertexArray(m_VertexArrayObject);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
+bool ModelBank::ApplyBuffers() {
+	if (m_VertexBuffer != 0 && m_IndexBuffer != 0) {
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
+		return true;
+	}
+	return false;
 }

@@ -109,6 +109,19 @@ void GraphicsEngine::Initialize(const GraphicsSettings& settings) {
 	//transparency
 	m_TransparencyProgram = new TransparencyProgram();
 	m_TransparencyProgram->Initialize(m_GraphicsSettings.Width, m_GraphicsSettings.Height);
+	//VAO
+	g_ModelBank.Init();
+	g_ModelBank.ApplyBuffers();
+	glGenVertexArrays(1, &m_VertexArrayObject);
+	glBindVertexArray(m_VertexArrayObject);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (4 * sizeof(float)));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (8 * sizeof(float)));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (unsigned char*)0 + (12 * sizeof(float)));
 }
 
 void GraphicsEngine::Deinitialize() {
@@ -151,38 +164,43 @@ void GraphicsEngine::DrawGeometry() {
 	glEnable( GL_DEPTH_TEST );
 	glDisable( GL_BLEND );
 	glEnable( GL_STENCIL_TEST );
-	for ( auto& view : m_RenderQueue->GetViews() ) {
-		glViewport( ( GLint )view.viewport.x, ( GLint )view.viewport.y, ( GLsizei )view.viewport.width, ( GLsizei )view.viewport.height );
+	glBindVertexArray(m_VertexArrayObject);
+	for (auto& view : m_RenderQueue->GetViews()) {
+		glViewport((GLint)view.viewport.x, (GLint)view.viewport.y, (GLsizei)view.viewport.width, (GLsizei)view.viewport.height);
 		// Render Sky
-		m_SkyProgram->Render( view.camera );
-		// Render Terrains
-		//g_TerrainManager.RenderTerrains( m_RenderQueue, view.camera );
-		g_ModelBank.ApplyBuffers();
+		m_SkyProgram->Render(view.camera);
 		// set per frame variables
-		ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle( m_DeferedGeometryShader );
+		ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_DeferedGeometryShader);
 		prog->Apply();
-		prog->SetUniformMat4( "g_ViewProj", view.camera.ProjView );
-		unsigned int bufferOffset  = 0;
+		prog->SetUniformMat4("g_ViewProj", view.camera.ProjView);
+		unsigned int bufferOffset = 0;
 		unsigned int instanceCount = 0;
+		if (g_ModelBank.ApplyBuffers()) {
+			// for each model to be rendered
+			for (auto& mo : m_RenderQueue->GetModelQueue()) {
+				const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
+				if (model == nullptr) continue;
+				instanceCount = mo.InstanceCount;
+				prog->SetUniformUInt("g_BufferOffset", bufferOffset);
+				// for each mesh
+				for (auto& mesh : model->Meshes) {
+					// set textures
+					Material* mat = model->Materials.at(mesh.Material);
+					TextureResource* albedo = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetAlbedoTexture());
+					TextureResource* normal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetNormalTexture());
+					TextureResource* roughness = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetRoughnessTexture());
+					TextureResource* metal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetMetalTexture());
 
-		// for each model to be rendered
-		for ( auto& mo : m_RenderQueue->GetModelQueue() ) {
-			const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
-			instanceCount = mo.InstanceCount;
-			prog->SetUniformUInt( "g_BufferOffset", bufferOffset );
-			// for each mesh
-			for ( auto& mesh : model->Meshes ) {
-				// set textures
-				Material* mat = model->Materials.at(mesh.Material);
-				prog->SetUniformTextureHandle( "g_DiffuseTex",	mat->GetAlbedoTexture()->GetTexture(),		0 );
-				prog->SetUniformTextureHandle( "g_NormalTex",	mat->GetNormalTexture()->GetTexture(),		1 );
-				prog->SetUniformTextureHandle( "g_RoughnessTex",mat->GetRoughnessTexture()->GetTexture(),	2 );
-				prog->SetUniformTextureHandle( "g_MetallicTex", mat->GetMetalTexture()->GetTexture(),		3 );
+					prog->SetUniformTextureHandle("g_DiffuseTex", (albedo) ? albedo->GetTexture() : 0, 0);
+					prog->SetUniformTextureHandle("g_NormalTex", (normal) ? normal->GetTexture() : 0, 1);
+					prog->SetUniformTextureHandle("g_RoughnessTex", (roughness) ? roughness->GetTexture() : 0, 2);
+					prog->SetUniformTextureHandle("g_MetallicTex", (metal) ? metal->GetTexture() : 0, 3);
 
-				glDrawElementsInstanced( GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
-					( GLvoid* )( 0 + ( ( model->IndexOffset + mesh.IndexOffset ) * sizeof( unsigned int ) ) ), instanceCount );
+					glDrawElementsInstanced(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
+						(GLvoid*)(0 + ((model->IndexOffset + mesh.IndexOffset) * sizeof(unsigned int))), instanceCount);
+				}
+				bufferOffset += instanceCount;
 			}
-			bufferOffset += instanceCount;
 		}
 	}
 	m_DecalProgram->Render(m_RenderQueue, m_GBuffer);

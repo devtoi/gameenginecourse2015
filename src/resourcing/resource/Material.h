@@ -11,38 +11,38 @@ class Material {
 		return m_Name;
 	}
 
-	TextureResource* GetAlbedoTexture()					{
+	size_t GetAlbedoTexture()					{
 		return m_AlbedoTexture;
 	}
-	TextureResource* GetNormalTexture()					{
+	size_t GetNormalTexture()					{
 		return m_NormalTexture;
 	}
-	TextureResource* GetRoughnessTexture()					{
+	size_t GetRoughnessTexture()				{
 		return m_RoughnessTexture;
 	}
-	TextureResource* GetMetalTexture()						{
+	size_t GetMetalTexture()					{
 		return m_MetalTexture;
 	}
 	//Setters
 	void SetName(std::string name)						{
 		m_Name = name;
 	}
-	void SetAlbedoTexture	(TextureResource* tex)		{
+	void SetAlbedoTexture	(size_t tex)		{
 		m_AlbedoTexture = tex;
 	}
-	void SetNormalTexture	(TextureResource* tex)		{
+	void SetNormalTexture	(size_t tex)		{
 		m_NormalTexture = tex;
 	}
-	void SetRoughnessTexture(TextureResource* tex)		{
+	void SetRoughnessTexture(size_t tex)		{
 		m_RoughnessTexture = tex;
 	}
-	void SetMetalTexture	( TextureResource* tex)		{
+	void SetMetalTexture	(size_t tex)		{
 		m_MetalTexture = tex;
 	}
   private:
-	TextureResource* m_AlbedoTexture	= nullptr;
-	TextureResource* m_NormalTexture	= nullptr;
-	TextureResource* m_RoughnessTexture = nullptr;
-	TextureResource* m_MetalTexture		= nullptr;
+	size_t m_AlbedoTexture		= 0;
+	size_t m_NormalTexture		= 0;
+	size_t m_RoughnessTexture	= 0;
+	size_t m_MetalTexture		= 0;
 	std::string m_Name = "";
 };

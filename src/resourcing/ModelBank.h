@@ -13,14 +13,14 @@ class ModelBank {
 	RESOURCING_API ~ModelBank();
 	RESOURCING_API static ModelBank& GetInstance();
 	RESOURCING_API void AddModel(ModelResource* model,const ResourceIdentifier id);
+	RESOURCING_API void Init();
 	RESOURCING_API void BuildBuffers();
 	RESOURCING_API void DeleteModel(const ResourceIdentifier id);
-	RESOURCING_API void ApplyBuffers();
+	RESOURCING_API bool ApplyBuffers();
 	RESOURCING_API void Clear();
   private:
 	ModelBank();
-	GLuint											m_VertexBuffer;
-	GLuint											m_IndexBuffer;
-	GLuint											m_VertexArrayObject;
+	GLuint											m_VertexBuffer = 0;
+	GLuint											m_IndexBuffer = 0;
 	std::map<ResourceIdentifier, ModelResource*>	m_Models;
 };
