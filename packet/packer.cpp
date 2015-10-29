@@ -61,7 +61,7 @@ void InterpretProgramArguments( const std::vector<std::string>& programArguments
 	std::vector<Instruction> instructions;
 	InstructionType currentInstructionType = InstructionType::None;
 
-	int currentArgumentIndex = 0;
+	unsigned int currentArgumentIndex = 0;
 	while ( currentArgumentIndex < programArguments.size() ) {
 		if ( programArguments[currentArgumentIndex] == "-o" ) {
 			currentInstructionType = InstructionType::OpenPacket;
@@ -113,7 +113,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 	std::vector<Instruction> orderedInstructions;
 
 	bool foundOpenPacket = false;
-	for ( int i = 0; i < instructions.size(); ++i ) {
+	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type != InstructionType::OpenPacket ) {
 			continue;
 		}
@@ -127,7 +127,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 	}
 
 	if ( !foundOpenPacket ) {
-		for ( int i = 0; i < instructions.size(); ++i ) {
+		for ( unsigned int i = 0; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type != InstructionType::GeneratePacket && instructions[i].Type != InstructionType::TrimPacket && instructions[i].Type != InstructionType::ListAssets ) {
 				continue;
 			}
@@ -144,14 +144,14 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 		return false;
 	}
 
-	for ( int i = 0; i < instructions.size(); ++i ) {
+	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type == InstructionType::NameNextAsset || instructions[i].Type == InstructionType::AppendAsset ) {
 			orderedInstructions.push_back( instructions[i] );	// TODO: Check for duplicates.
 		}
 	}
 
 	auto addInstructionsOfType = [&instructions, &orderedInstructions]( InstructionType type ) {
-		for ( int i = 0; i < instructions.size(); ++i ) {
+		for ( unsigned int i = 0; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type != type ) {
 				continue;
 			}
@@ -176,7 +176,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 	{
 		std::vector<Asset> assets;
-		for ( int i = 1; i < instructions.size(); ++i ) {
+		for ( unsigned int i = 1; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type == InstructionType::NameNextAsset ) {
 				assets.push_back( Asset( instructions[i].Argument, instructions[i + 1].Argument ) );
 				++i;
@@ -194,7 +194,7 @@ bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 		}
 	}
 
-	for ( int i = 0; i < instructions.size(); ++i ) {
+	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type == InstructionType::GeneratePacket ) {
 			GeneratePacket( instructions[0].Argument );
 		} else if ( instructions[i].Type == InstructionType::TrimPacket ) {
@@ -209,9 +209,9 @@ bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 
 std::string	MakeGUIFromFilePath( const std::string& filePath ) {
 	std::string gui = filePath;
-	for ( int i = 0; i < gui.size(); ++i ) {
+	for ( unsigned int i = 0; i < gui.size(); ++i ) {
 		if ( gui[i] == '/' || gui[i] == '\\' ) {
-			gui[i] == '.';
+			gui[i] = '.';
 		}
 	}
 	return gui;
@@ -219,7 +219,7 @@ std::string	MakeGUIFromFilePath( const std::string& filePath ) {
 
 bool AppendAssetsToPacket( const std::string& packetPath, const std::vector<Asset>& assets ) {
 	std::cout << "Appending assets to packet \"" << packetPath << "\"..." << std::endl;
-	for ( int i = 0; i < assets.size(); ++i ) {
+	for ( unsigned int i = 0; i < assets.size(); ++i ) {
 		std::cout << "+ Asset GUI=\"" << assets[i].GUI << "\", Path=\"" << assets[i].FilePath << "\"" << std::endl;
 	}
 
