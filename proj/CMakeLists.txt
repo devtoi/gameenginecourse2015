@@ -116,7 +116,6 @@ find_path(SOIL2Include soil2/SOIL2.h
 find_library(SOIL2Library
 	NAMES soil2 SOIL2 libsoil2 soil2-debug
 	PATHS ${LibraryDirectoryAbsolute})
-message(${SOIL2Library})
 list(APPEND assetLibraries ${SOIL2Library})
 
 # Find assimp

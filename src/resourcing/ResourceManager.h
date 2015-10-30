@@ -1,5 +1,6 @@
 #pragma once
 #include <mutex>
+#include <atomic>
 #include <shared_mutex>
 #include <memory>
 #include <thread>
@@ -36,6 +37,7 @@ private:
 	ResourceManager();
 	~ResourceManager();
 	void WorkerThread( SDL_Window* window );
+	void EvictUntilEnoughMemory( );
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;
@@ -46,6 +48,8 @@ private:
 		FileContent File;
 		ResourceEntry* Entry;
 	};
+
+	const size_t MAX_MEMORY_USAGE = 143;
 
 	pVector<std::unique_ptr<ResourceLoader>> m_ResourceLoaders;
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;
@@ -59,6 +63,8 @@ private:
 	std::thread			m_WorkerThread;
 
 	PackageManager m_PackageManager;
+
+	std::atomic_size_t m_MemoryUsage;
 
 	const size_t WORKER_THREAD_STOP = 10;
 };

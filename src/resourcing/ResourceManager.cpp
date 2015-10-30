@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include <fstream>
 #include "ResourceLoader.h"
 #include "loader/DDSLoader.h"
 #include "loader/ModelLoader.h"
@@ -33,6 +34,7 @@ ResourceManager& ResourceManager::GetInstance() {
 }
 
 ResourceManager::ResourceManager() {
+	m_MemoryUsage = 0;
 	// LSR new for all resource loaders
 	AddResourceLoader( std::make_unique<DDSLoader>(),	  { "dds" } );
 	AddResourceLoader( std::make_unique<ModelLoader>(),	  { "obj", "dae" } );
@@ -70,7 +72,11 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 				job.Entry->ReferenceCount = 0;
 				job.Entry->Resource		  = loaderIterator->second->LoadResource( job.File );
 				m_ResourceLoaderMutex.unlock_shared();
+				m_MemoryUsage += job.Entry->Resource->GetSize();
 				m_ResourceMutex.lock();
+				if ( m_MemoryUsage > MAX_MEMORY_USAGE ) {
+					EvictUntilEnoughMemory();
+				}
 				auto it = m_Resources.emplace( job.File.ID, std::move( *job.Entry ) );
 				m_ResourceMutex.unlock();
 			} else {
@@ -135,9 +141,6 @@ void ResourceManager::UnloadAllResources() {
 }
 
 void ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
-	// std::lock( m_ResourceLoaderMutex, m_ResourcesMutex );
-	// std::lock_guard<std::mutex> resourceLock( m_ResourcesMutex, std::adopt_lock );
-
 	m_ResourceMutex.lock_shared();
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator == m_Resources.end() ) {
@@ -168,19 +171,14 @@ void ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
 }
 
 void ResourceManager::ReleaseResource( const ResourceIdentifier identifier ) {
-	m_ResourceMutex.lock();
+	std::unique_lock<std::shared_timed_mutex>( m_ResourceMutex );
 	auto resourceIterator = m_Resources.find( identifier );
 
 	if ( resourceIterator != m_Resources.end() ) {
 		resourceIterator->second.ReferenceCount--;
-		if ( resourceIterator->second.ReferenceCount <= 0 ) {
-			m_Resources.erase( resourceIterator );
-			Logger::Log( "Unloaded resource", "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
-		}
 	} else {
 		Logger::Log( "Tried to release a resource that was not loaded", "ResourceManager", LogSeverity::WARNING_MSG );
 	}
-	m_ResourceMutex.unlock();
 }
 
 Resource* ResourceManager::GetResourcePointer( const ResourceIdentifier identifier ) {
@@ -208,12 +206,29 @@ void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourc
 }
 
 size_t ResourceManager::GetTotalResourceSize() const {
-	std::shared_lock<std::shared_timed_mutex>( m_ResourceMutex );
-	size_t size = 0;
-
-	for ( const auto& resource : m_Resources ) {
-		size += resource.second.Resource->GetSize();
-	}
-	return size;
+	return m_MemoryUsage;
 }
 
+void ResourceManager::EvictUntilEnoughMemory() {
+    for ( auto resourceIt = m_Resources.begin(); resourceIt != m_Resources.end() && m_MemoryUsage > MAX_MEMORY_USAGE; ) {
+		if ( resourceIt->second.ReferenceCount == 0 ) {
+			m_MemoryUsage -= resourceIt->second.Resource->GetSize();
+			delete resourceIt->second.Resource; // TODOJM: Use correct delete
+            resourceIt = m_Resources.erase( resourceIt );
+        } else {
+            resourceIt++;
+        }
+	}
+	if ( m_MemoryUsage > MAX_MEMORY_USAGE ) { // Could not evict enough
+		Logger::Log( "Out of memory for resource manager. Dumping list of resources...", "ResourceManager", LogSeverity::ERROR_MSG );
+		std::ofstream dumpFile( "resourceDump.txt" );
+		if ( dumpFile.is_open() ) {
+			for ( const auto& resource : m_Resources ) {
+				dumpFile << resource.second.ReferenceCount << " " << resource.first << std::endl; // TODOJM: Reverse lookup
+			}
+		}
+		dumpFile.close();
+		// TODOJM: Log all shit to file
+		assert( false );
+	}
+}
