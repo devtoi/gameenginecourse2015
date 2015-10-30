@@ -1,5 +1,6 @@
 #pragma once
 #include <mutex>
+#include <shared_mutex>
 #include <memory>
 #include <thread>
 #include <memory/Alloc.h>
@@ -48,13 +49,13 @@ private:
 
 	pVector<std::unique_ptr<ResourceLoader>> m_ResourceLoaders;
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;
-	std::mutex m_ResourceLoaderMutex;
+	std::shared_timed_mutex m_ResourceLoaderMutex;
 
 	pUnorderedMap<ResourceIdentifier, ResourceEntry> m_Resources;
 	std::queue<ResourceJob>							 m_JobQueue;
 	mutable std::mutex	m_JobQueueMutex;
 	mutable std::mutex	m_PackageMutex;
-	mutable std::mutex	m_ResourceMutex;
+	mutable std::shared_timed_mutex	m_ResourceMutex;
 	std::thread			m_WorkerThread;
 
 	PackageManager m_PackageManager;

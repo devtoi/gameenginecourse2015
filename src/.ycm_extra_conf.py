@@ -79,7 +79,7 @@ flags = [
     '-I/usr/include/SDL2',
     '-I/usr/include',
     '-I/usr/local/include',
-    '-I/usr/include/c++/5.2.0/',
+    '-I/usr/include/c++/5.2.0',
     '-m64',
     '-std=c++1y',
 ]
