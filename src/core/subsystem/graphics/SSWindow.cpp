@@ -1,11 +1,12 @@
 #include "SSWindow.h"
 #include "SDL.h"
-#include <resourcing/loader/DDSLoader.h>
-#include <resourcing/ResourceManager.h>
-#include <GL/glew.h>
 #include <chrono>
 #include <thread>
 #include <assert.h>
+#include <GL/glew.h>
+#include <resourcing/loader/DDSLoader.h>
+#include <resourcing/ResourceManager.h>
+#include <gfx/GraphicsEngine.h>
 
 const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
@@ -22,7 +23,7 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 
 	glewExperimental = GL_TRUE;
 	glewInit();
-	g_ResourceManager.StartWorkerThread(m_Window->GetWindow());
+	g_ResourceManager.StartWorkerThread( m_Window->GetWindow(), m_Window->GetContext() );
 
 //	DDSLoader ddsloader;
 //	std::chrono::steady_clock::time_point start, end;

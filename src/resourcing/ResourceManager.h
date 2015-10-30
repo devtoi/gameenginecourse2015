@@ -28,13 +28,13 @@ public:
 
 	RESOURCING_API size_t GetTotalResourceSize( ) const;
 
-	RESOURCING_API void StartWorkerThread(SDL_Window* window);
+	RESOURCING_API void StartWorkerThread( SDL_Window* window, SDL_GLContext mainContext );
 	RESOURCING_API void PostQuitJob();
 
 private:
 	ResourceManager();
 	~ResourceManager();
-	void WorkerThread(SDL_Window* window);
+	void WorkerThread( SDL_Window* window );
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;

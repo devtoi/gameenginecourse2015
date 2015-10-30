@@ -22,7 +22,7 @@
     //GLXContext g_LoadingContext;
     //Display* g_Display;
     //Window g_Window;
-	//SDL_GLContext g_SDLLoadContext;
+	SDL_GLContext g_SDLLoadContext;
 	//SDL_Window* g_MainWindow;
 #endif
 
@@ -45,20 +45,7 @@ ResourceManager::~ResourceManager() {
 }
 
 void ResourceManager::WorkerThread( SDL_Window* window ) {
-	SDL_SysWMinfo info;
-	SDL_VERSION(&info.version);
-	if (SDL_GetWindowWMInfo(window, &info) < 0) {
-		assert(false);
-	}
-#if PLATFORM == PLATFORM_WINDOWS
-	HWND hWnd = info.info.win.window;
-	Device = GetDC(hWnd);
-	MainContext = wglGetCurrentContext();
-	LoadingContext = wglCreateContext(Device);
-	wglShareLists(MainContext, LoadingContext);
-#elif PLATFORM == PLATFORM_LINUX
-	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-	SDL_GLContext loadContext = SDL_GL_CreateContext( window );
+#if PLATFORM == PLATFORM_LINUX
 	//g_Display = info.info.x11.display;
 	//g_Window = info.info.x11.window;
 	//g_MainContext = glXGetCurrentContext();
@@ -133,7 +120,7 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 	wglMakeCurrent(Device, LoadingContext);
 #elif PLATFORM == PLATFORM_LINUX
 	//glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
-	SDL_GL_MakeCurrent( window, loadContext );
+	SDL_GL_MakeCurrent( window, g_SDLLoadContext );
 #endif
 	while (true) {
 		//lock mutex for queue
@@ -160,7 +147,31 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 	}
 }
 
-void ResourceManager::StartWorkerThread(SDL_Window* window) {
+void ResourceManager::StartWorkerThread( SDL_Window* window, SDL_GLContext mainContext ) {
+#if PLATFORM == PLATFORM_WINDOWS
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info) < 0) {
+		assert(false);
+	}
+	HWND hWnd = info.info.win.window;
+	Device = GetDC(hWnd);
+	MainContext = wglGetCurrentContext();
+	LoadingContext = wglCreateContext(Device);
+	wglShareLists(MainContext, LoadingContext);
+#endif
+#if PLATFORM == PLATFORM_LINUX
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info) < 0) {
+		assert(false);
+	}
+	SDL_GL_MakeCurrent( window, mainContext );
+	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+	g_SDLLoadContext = SDL_GL_CreateContext( window );
+	SDL_GL_MakeCurrent( window, mainContext );
+#endif
+
 	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this, window);
 	m_WorkerThread.detach();
 }

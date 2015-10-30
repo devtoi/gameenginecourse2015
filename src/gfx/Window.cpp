@@ -79,6 +79,10 @@ SDL_Window* Window::GetWindow() const {
 	return m_Window;
 }
 
+SDL_GLContext Window::GetContext() const {
+	return m_GLContext;
+}
+
 const WindowSettings& Window::GetWindowSettings() const {
 	return m_WindowSettings;
 }

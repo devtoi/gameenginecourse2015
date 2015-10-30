@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "GFXLibraryDefine.h"
+#include "SDL_video.h"
 struct SDL_Window;
 namespace gfx
 {
@@ -25,6 +26,7 @@ class GFX_API Window {
 	void Initialize( const WindowSettings& windowSettings );
 
 	SDL_Window* GetWindow( ) const;
+	SDL_GLContext GetContext( ) const;
 	const WindowSettings& GetWindowSettings( ) const;
 	void MakeCurrent( );
 
