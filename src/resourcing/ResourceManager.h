@@ -49,7 +49,7 @@ private:
 		ResourceEntry* Entry;
 	};
 
-	const size_t MAX_MEMORY_USAGE = 143;
+	const size_t MAX_MEMORY_USAGE = 256 * 1024 * 1024; //256 mebi bytes
 
 	pVector<std::unique_ptr<ResourceLoader>> m_ResourceLoaders;
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;

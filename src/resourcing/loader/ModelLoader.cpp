@@ -26,6 +26,7 @@ RESOURCING_API Resource* ModelLoader::LoadResource(const FileContent& fileConten
 	}
 	g_ModelBank.AddModel(model, fileContent.ID);
 	model->SetReady();
+	model->CalcSize();
 	return model;
 }
 

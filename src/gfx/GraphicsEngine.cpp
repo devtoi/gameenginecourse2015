@@ -163,7 +163,6 @@ void GraphicsEngine::DrawGeometry() {
 	glDisable( GL_BLEND );
 	glEnable( GL_STENCIL_TEST );
 	g_ModelBank.BuildBuffers();
-
 	g_ModelBank.ApplyBuffers();
 	glBindVertexArray(m_VertexArrayObject);
 

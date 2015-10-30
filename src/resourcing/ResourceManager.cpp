@@ -64,7 +64,6 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 			if ( job.File.ID == WORKER_THREAD_STOP ) {
 				return;
 			}
-
 			m_ResourceLoaderMutex.lock_shared();
 			auto loaderIterator = m_ResourceLoaderMapping.find( job.File.Suffix );
 			if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
