@@ -18,12 +18,12 @@
     #include <GL/glxew.h>
     #include "SDL_syswm.h"
     typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-    GLXContext g_MainContext;
-    GLXContext g_LoadingContext;
-    Display* g_Display;
-    Window g_Window;
-	SDL_GLContext g_SDLLoadContext;
-	SDL_Window* g_MainWindow;
+    //GLXContext g_MainContext;
+    //GLXContext g_LoadingContext;
+    //Display* g_Display;
+    //Window g_Window;
+	//SDL_GLContext g_SDLLoadContext;
+	//SDL_Window* g_MainWindow;
 #endif
 
 ResourceManager& ResourceManager::GetInstance() {
@@ -44,39 +44,7 @@ ResourceManager::~ResourceManager() {
 	UnloadAllResources();
 }
 
-void ResourceManager::WorkerThread() {
-#if PLATFORM == PLATFORM_WINDOWS
-	wglMakeCurrent(Device, LoadingContext);
-#elif PLATFORM == PLATFORM_LINUX
-	//glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
-	SDL_GL_MakeCurrent( g_MainWindow, g_SDLLoadContext );
-#endif
-	while (true) {
-		//lock mutex for queue
-		m_JobQueueMutex.lock();
-		if (m_JobQueue.size() > 0) {
-			ResourceJob job = m_JobQueue.front();
-			m_JobQueue.pop();
-			m_JobQueueMutex.unlock();
-			auto loaderIterator = m_ResourceLoaderMapping.find(job.File.Suffix);
-			if (loaderIterator != m_ResourceLoaderMapping.end()) {
-				Logger::Log("Loaded resource", "ResourceManager", LogSeverity::DEBUG_MSG); // TODOJM: Reverse lookup name
-				job.Entry->ReferenceCount = 0;
-				job.Entry->Resource = loaderIterator->second->LoadResource(job.File);
-				auto it = m_Resources.emplace(job.File.ID, std::move(*job.Entry));
-			}
-			else {
-				Logger::Log("Failed to find resource loader for suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::ERROR_MSG);
-				return;
-			}
-		} else {
-			m_JobQueueMutex.unlock();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
-}
-
-void ResourceManager::StartWorkerThread(SDL_Window* window) {
+void ResourceManager::WorkerThread( SDL_Window* window ) {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
 	if (SDL_GetWindowWMInfo(window, &info) < 0) {
@@ -89,9 +57,8 @@ void ResourceManager::StartWorkerThread(SDL_Window* window) {
 	LoadingContext = wglCreateContext(Device);
 	wglShareLists(MainContext, LoadingContext);
 #elif PLATFORM == PLATFORM_LINUX
-	g_MainWindow = window;
 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-	g_SDLLoadContext = SDL_GL_CreateContext( window );
+	SDL_GLContext loadContext = SDL_GL_CreateContext( window );
 	//g_Display = info.info.x11.display;
 	//g_Window = info.info.x11.window;
 	//g_MainContext = glXGetCurrentContext();
@@ -162,7 +129,39 @@ void ResourceManager::StartWorkerThread(SDL_Window* window) {
 	//XFree( vi );
 
 #endif
-	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this);
+#if PLATFORM == PLATFORM_WINDOWS
+	wglMakeCurrent(Device, LoadingContext);
+#elif PLATFORM == PLATFORM_LINUX
+	//glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
+	SDL_GL_MakeCurrent( window, loadContext );
+#endif
+	while (true) {
+		//lock mutex for queue
+		m_JobQueueMutex.lock();
+		if (m_JobQueue.size() > 0) {
+			ResourceJob job = m_JobQueue.front();
+			m_JobQueue.pop();
+			m_JobQueueMutex.unlock();
+			auto loaderIterator = m_ResourceLoaderMapping.find(job.File.Suffix);
+			if (loaderIterator != m_ResourceLoaderMapping.end()) {
+				Logger::Log("Loaded resource", "ResourceManager", LogSeverity::DEBUG_MSG); // TODOJM: Reverse lookup name
+				job.Entry->ReferenceCount = 0;
+				job.Entry->Resource = loaderIterator->second->LoadResource(job.File);
+				auto it = m_Resources.emplace(job.File.ID, std::move(*job.Entry));
+			}
+			else {
+				Logger::Log("Failed to find resource loader for suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::ERROR_MSG);
+				return;
+			}
+		} else {
+			m_JobQueueMutex.unlock();
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+}
+
+void ResourceManager::StartWorkerThread(SDL_Window* window) {
+	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this, window);
 	m_WorkerThread.detach();
 }
 

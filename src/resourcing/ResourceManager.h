@@ -34,7 +34,7 @@ public:
 private:
 	ResourceManager();
 	~ResourceManager();
-	void WorkerThread();
+	void WorkerThread(SDL_Window* window);
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;
