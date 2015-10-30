@@ -1,7 +1,7 @@
 #pragma once
 #include <memory/Alloc.h>
 #include "ProfileMacro.h"
-#include <SDL2/SDL_types.h>
+#include "SDL_types.h"
 
 /**
  * \brief	Handles tracking stats of a profiling entry.

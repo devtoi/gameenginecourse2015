@@ -17,9 +17,10 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	gfx::GraphicsSettings gs;
 	gs.Width = gfxConfig.GetInt("ScreenWidth", 1600);
 	gs.Height = gfxConfig.GetInt("ScreenHeight", 900);
+	g_ModelBank.Init();
+	
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
-
 	m_TestModel = HashResourceName("Model.Suzanne");
 	g_ResourceManager.AquireResource(m_TestModel);
 	//g_ResourceManager.PostQuitJob();

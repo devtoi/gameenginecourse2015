@@ -76,6 +76,7 @@ flags = [
     '-isystem',
     '.',
     '-I/usr/include/freetype2',
+    '-I/usr/include/SDL2',
     '-I/usr/include',
     '-I/usr/local/include',
     '-I/usr/include/c++/5.2.0/',

@@ -79,9 +79,13 @@ set(CMAKE_INSTALL_PREFIX "${ProjectRoot}gameenginecourse")
 set(TargetArchitecture "x86_64")
 
 # Find SDL2
-find_path(SDL2Include SDL2/SDL.h
-	PATHS ${IncludeDirectoryAbsolute})
+find_path(SDL2Include SDL.h
+	PATH_SUFFIXES include/SDL2 include
+	PATHS
+		${IncludeDirectoryAbsolute}/SDL2
+		"/usr/include/SDL2")
 set(SDL2Includes ${SDL2Include})
+
 find_library(SDL2Library
 	NAMES SDL2 SDL2main
 	PATHS ${LibraryDirectoryAbsolute})
@@ -112,6 +116,7 @@ find_path(SOIL2Include soil2/SOIL2.h
 find_library(SOIL2Library
 	NAMES soil2 SOIL2 libsoil2 soil2-debug
 	PATHS ${LibraryDirectoryAbsolute})
+message(${SOIL2Library})
 list(APPEND assetLibraries ${SOIL2Library})
 
 # Find assimp

@@ -16,6 +16,7 @@ ModelBank& ModelBank::GetInstance() {
 
 void ModelBank::AddModel(ModelResource* model, const ResourceIdentifier id) {
 	m_Models[id] = model;
+	m_Updated = true;
 }
 
 void ModelBank::Init() {
@@ -32,7 +33,7 @@ void ModelBank::Clear() {
 }
 
 void ModelBank::BuildBuffers() {
-	if ((int)m_Models.size() <= 0) {
+	if ((int)m_Models.size() <= 0 || !m_Updated) {
 		return;
 	}
 	// Vertex buffer
@@ -43,7 +44,7 @@ void ModelBank::BuildBuffers() {
 	for (auto& model : m_Models) {
 		//set offset
 		model.second->IndexOffset = indexCounter;
-		//update indices to
+		//update indices
 		for (auto& i : model.second->Indices) {
 			i += vertexCounter;
 		}
@@ -57,7 +58,18 @@ void ModelBank::BuildBuffers() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size( ), indices.data(), GL_STATIC_DRAW );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size( ), indices.data() ,GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	GLenum result;
+	while (true)
+	{
+		result = glClientWaitSync(fenceId, GL_SYNC_FLUSH_COMMANDS_BIT, GLuint64(5000000000)); //5 Second timeout 
+		if (result != GL_TIMEOUT_EXPIRED) break; //we ignore timeouts and wait until all OpenGL commands are processed! 
+	}
+	m_Updated = false;
 }
 
 bool ModelBank::ApplyBuffers() {

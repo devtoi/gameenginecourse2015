@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <SDL2/SDL_events.h>
+#include "SDL_events.h"
 #include <utility/Handle.h>
 
 struct SDLEventCallback_tag { };

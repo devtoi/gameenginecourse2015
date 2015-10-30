@@ -1,20 +1,23 @@
 #include "SSWindow.h"
 #include <gfx/Window.h>
-#include <SDL2/SDL.h>
 #include <resourcing/loader/DDSLoader.h>
 #include <resourcing/ResourceManager.h>
 #include <resourcing/ModelBank.h>
-#include <GL/glew.h>
+#include "SDL.h"
 #include <chrono>
 #include <thread>
 #include <assert.h>
+#include <GL/glew.h>
+#include <resourcing/loader/DDSLoader.h>
+#include <resourcing/ResourceManager.h>
+#include <gfx/GraphicsEngine.h>
 
 const pString SSWindow::Name = "Window";
 int SSWindow::ID = -1;
 
 void SSWindow::Startup( SubsystemCollection* const ) {
-	m_Window = pNew( Window );
-	WindowSettings ws;
+	m_Window = pNew( gfx::Window );
+	gfx::WindowSettings ws;
 	ws.Title = m_WindowTitle;
 	ws.OpenGL = true;
 	ws.Width = 1600;
@@ -24,7 +27,7 @@ void SSWindow::Startup( SubsystemCollection* const ) {
 
 	glewExperimental = GL_TRUE;
 	glewInit();
-	g_ResourceManager.StartWorkerThread(m_Window->GetWindow());
+	g_ResourceManager.StartWorkerThread(m_Window->GetWindow(), m_Window->GetContext());
 	g_ModelBank.Init();
 }
 
@@ -48,6 +51,6 @@ int SSWindow::GetStaticID() {
 	return SSWindow::ID;
 }
 
-Window* SSWindow::GetWindow() const {
+gfx::Window* SSWindow::GetWindow() const {
 	return m_Window;
 }

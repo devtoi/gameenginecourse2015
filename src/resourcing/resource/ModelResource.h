@@ -23,7 +23,7 @@ public:
 	void CalcSize();
 
 	std::vector<Vertex> Vertices;
-	std::vector<unsigned int> Indices;
+	std::vector<GLuint> Indices;
 	std::vector<Mesh> Meshes;
 	std::vector<Material*> Materials;
 	unsigned int IndexOffset = 0;

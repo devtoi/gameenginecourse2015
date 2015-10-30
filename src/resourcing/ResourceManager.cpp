@@ -2,22 +2,28 @@
 #include "ResourceLoader.h"
 #include "loader/DDSLoader.h"
 #include "loader/ModelLoader.h"
-#include "Loader/TextureLoader.h"
+#include "loader/TextureLoader.h"
 #include <utility/Logger.h>
 #include "ModelBank.h"
 //glcontext handling
 #include <utility/PlatformDefinitions.h>
-#ifdef PLATFORM == PLATFORM_WINDOWS
-#include <SDL2/SDL_syswm.h>
-#include <GL/wglew.h>
-HGLRC LoadingContext;
-HGLRC MainContext;
-HDC Device;
+
+#if PLATFORM == PLATFORM_WINDOWS
+    #include "SDL_syswm.h"
+    #include <GL/wglew.h>
+    HGLRC LoadingContext;
+    HGLRC MainContext;
+    HDC Device;
 #elif PLATFORM == PLATFORM_LINUX
-#include <GL/glxew.h
-typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
-GLXContext MainContext;
-GLXContext LoadingContext;
+    #include <GL/glxew.h>
+    #include "SDL_syswm.h"
+    typedef GLXContext(*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+    //GLXContext g_MainContext;
+    //GLXContext g_LoadingContext;
+    //Display* g_Display;
+    //Window g_Window;
+	SDL_GLContext g_SDLLoadContext;
+	//SDL_Window* g_MainWindow;
 #endif
 
 ResourceManager& ResourceManager::GetInstance() {
@@ -28,7 +34,7 @@ ResourceManager& ResourceManager::GetInstance() {
 ResourceManager::ResourceManager() {
 	// LSR new for all resource loaders
 	AddResourceLoader( std::make_unique<DDSLoader>(), { "dds" } );
-	AddResourceLoader( std::make_unique<ModelLoader>(), { "obj" } );
+	AddResourceLoader( std::make_unique<ModelLoader>(), { "obj", "dae" } );
 	AddResourceLoader(std::make_unique<TextureLoader>(), { "png" });
 }
 
@@ -38,8 +44,84 @@ ResourceManager::~ResourceManager() {
 	UnloadAllResources();
 }
 
-void ResourceManager::WorkerThread() {
+void ResourceManager::WorkerThread( SDL_Window* window ) {
+#if PLATFORM == PLATFORM_LINUX
+	//g_Display = info.info.x11.display;
+	//g_Window = info.info.x11.window;
+	//g_MainContext = glXGetCurrentContext();
+
+	//// Get a matching FB config
+	//static int visual_attribs[] =
+	//{
+		//GLX_X_RENDERABLE    , True,
+		//GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
+		//GLX_RENDER_TYPE     , GLX_RGBA_BIT,
+		//GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
+		//GLX_RED_SIZE        , 8,
+		//GLX_GREEN_SIZE      , 8,
+		//GLX_BLUE_SIZE       , 8,
+		//GLX_ALPHA_SIZE      , 8,
+		//GLX_DEPTH_SIZE      , 24,
+		//GLX_STENCIL_SIZE    , 8,
+		//GLX_DOUBLEBUFFER    , True,
+		////GLX_SAMPLE_BUFFERS  , 1,
+		////GLX_SAMPLES         , 4,
+		//None
+	//};
+
+	//int fbcount;
+	//GLXFBConfig* fbc = glXChooseFBConfig(g_Display, DefaultScreen(g_Display), visual_attribs, &fbcount);
+	//if (!fbc)
+	//{
+		//printf( "Failed to retrieve a framebuffer config\n" );
+		//exit(1);
+	//}
+	//printf( "Found %d matching FB configs.\n", fbcount );
+
+	//// Pick the FB config/visual with the most samples per pixel
+	//printf( "Getting XVisualInfos\n" );
+	//int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
+
+	//int i;
+	//for (i=0; i<fbcount; ++i)
+	//{
+		//XVisualInfo *vi = glXGetVisualFromFBConfig( g_Display, fbc[i] );
+		//if ( vi )
+		//{
+			//int samp_buf, samples;
+			//glXGetFBConfigAttrib( g_Display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );
+			//glXGetFBConfigAttrib( g_Display, fbc[i], GLX_SAMPLES       , &samples  );
+
+			//printf( "  Matching fbconfig %d, visual ID 0x%2x: SAMPLE_BUFFERS = %d,"
+					//" SAMPLES = %d\n", 
+					//i, vi -> visualid, samp_buf, samples );
+
+			//if ( best_fbc < 0 || samp_buf && samples > best_num_samp )
+				//best_fbc = i, best_num_samp = samples;
+			//if ( worst_fbc < 0 || !samp_buf || samples < worst_num_samp )
+				//worst_fbc = i, worst_num_samp = samples;
+		//}
+		//XFree( vi );
+	//}
+
+	//GLXFBConfig bestFbc = fbc[ best_fbc ];
+
+	//// Be sure to free the FBConfig list allocated by glXChooseFBConfig()
+	//XFree( fbc );
+
+	//// Get a visual
+	//XVisualInfo *vi = glXGetVisualFromFBConfig( g_Display, bestFbc );
+
+	//g_LoadingContext = glXCreateContext( g_Display, vi, g_MainContext, True );
+	//XFree( vi );
+
+#endif
+#if PLATFORM == PLATFORM_WINDOWS
 	wglMakeCurrent(Device, LoadingContext);
+#elif PLATFORM == PLATFORM_LINUX
+	//glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
+	SDL_GL_MakeCurrent( window, g_SDLLoadContext );
+#endif
 	while (true) {
 		//lock mutex for queue
 		m_JobQueueMutex.lock();
@@ -51,7 +133,7 @@ void ResourceManager::WorkerThread() {
 				return;
 			auto loaderIterator = m_ResourceLoaderMapping.find(job.File.Suffix);
 			if (loaderIterator != m_ResourceLoaderMapping.end()) {
-				Logger::Log("Loaded resource", "ResourceManager", LogSeverity::DEBUG_MSG); // TODOJM: Reverse lookup name
+				Logger::Log("Loaded resource with suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG); // TODOJM: Reverse lookup name
 				job.Entry->ReferenceCount = 0;
 				job.Entry->Resource = loaderIterator->second->LoadResource(job.File);
 				auto it = m_Resources.emplace(job.File.ID, std::move(*job.Entry));
@@ -63,11 +145,10 @@ void ResourceManager::WorkerThread() {
 		} else {
 			m_JobQueueMutex.unlock();
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
 
-void ResourceManager::StartWorkerThread(SDL_Window* window) {
+void ResourceManager::StartWorkerThread( SDL_Window* window, SDL_GLContext mainContext ) {
 #if PLATFORM == PLATFORM_WINDOWS
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
@@ -79,11 +160,20 @@ void ResourceManager::StartWorkerThread(SDL_Window* window) {
 	MainContext = wglGetCurrentContext();
 	LoadingContext = wglCreateContext(Device);
 	wglShareLists(MainContext, LoadingContext);
-#elif PLATFORM == PLATFORM_LINUX
-	//TODO:Fill out with GLX code
-	return;
 #endif
-	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this);
+#if PLATFORM == PLATFORM_LINUX
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (SDL_GetWindowWMInfo(window, &info) < 0) {
+		assert(false);
+	}
+	SDL_GL_MakeCurrent( window, mainContext );
+	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+	g_SDLLoadContext = SDL_GL_CreateContext( window );
+	SDL_GL_MakeCurrent( window, mainContext );
+#endif
+
+	m_WorkerThread = std::thread(&ResourceManager::WorkerThread, this, window);
 	m_WorkerThread.detach();
 }
 
@@ -99,7 +189,7 @@ void ResourceManager::PostQuitJob() {
 
 void ResourceManager::UnloadAllResources() {
 	for ( auto& resource : m_Resources ) {
-		Logger::Log( "Resource: " + rToString( resource.first ) + " is still loaded, please release it proberly", "ResourceManager", LogSeverity::WARNING_MSG );
+		Logger::Log( "Resource: " + rToString( resource.first ) + " is still loaded, please release it properly", "ResourceManager", LogSeverity::WARNING_MSG );
         if ( resource.second.Resource ) {
             //ReleaseResource( resource.first );
         }

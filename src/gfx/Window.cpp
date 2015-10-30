@@ -1,6 +1,7 @@
 #include "Window.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_video.h>
+#include "SDL.h"
+#include "SDL_video.h"
+using namespace gfx;
 
 Window::Window() {
 
@@ -76,6 +77,10 @@ void Window::Initialize(const WindowSettings& windowSettings) {
 
 SDL_Window* Window::GetWindow() const {
 	return m_Window;
+}
+
+SDL_GLContext Window::GetContext() const {
+	return m_GLContext;
 }
 
 const WindowSettings& Window::GetWindowSettings() const {

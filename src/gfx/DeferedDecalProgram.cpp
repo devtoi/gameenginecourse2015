@@ -16,8 +16,8 @@ void gfx::DeferedDecalProgram::Initialize(){
 	//Load Shader
 	m_ShaderProg = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedDecals.glsl");
 	//Load model
-	m_Model = HashResourceName("Model.Cube");
-	g_ResourceManager.AquireResource(m_Model);
+	//m_Model = HashResourceName("Model.Cube");
+	//g_ResourceManager.AquireResource(m_Model);
 }
 
 void gfx::DeferedDecalProgram::Render(RenderQueue* rq, GBuffer* gbuffer){

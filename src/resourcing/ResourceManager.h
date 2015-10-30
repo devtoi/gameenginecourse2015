@@ -1,8 +1,9 @@
 #pragma once
 #include <mutex>
-#include <memory/Alloc.h>
 #include <memory>
-#include <SDL2/SDL.h>
+#include <thread>
+#include <memory/Alloc.h>
+#include "SDL.h"
 #include "ResourcingLibraryDefine.h"
 #include "Resource.h"
 #include "ResourceTypes.h"
@@ -27,13 +28,13 @@ public:
 
 	RESOURCING_API size_t GetTotalResourceSize( ) const;
 
-	RESOURCING_API void StartWorkerThread(SDL_Window* window);
+	RESOURCING_API void StartWorkerThread( SDL_Window* window, SDL_GLContext mainContext );
 	RESOURCING_API void PostQuitJob();
 
 private:
 	ResourceManager();
 	~ResourceManager();
-	void WorkerThread();
+	void WorkerThread( SDL_Window* window );
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;

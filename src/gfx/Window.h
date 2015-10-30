@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
 #include "GFXLibraryDefine.h"
+#include "SDL_video.h"
 struct SDL_Window;
+namespace gfx
+{
 struct WindowSettings {
 	int Width = 1600;
 	int Height = 900;
@@ -23,6 +26,7 @@ class GFX_API Window {
 	void Initialize( const WindowSettings& windowSettings );
 
 	SDL_Window* GetWindow( ) const;
+	SDL_GLContext GetContext( ) const;
 	const WindowSettings& GetWindowSettings( ) const;
 	void MakeCurrent( );
 
@@ -32,3 +36,4 @@ class GFX_API Window {
 	WindowSettings m_WindowSettings;
 	bool m_Initialized = false;
 };
+}

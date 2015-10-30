@@ -23,5 +23,6 @@ class ModelBank {
 	ModelBank();
 	GLuint											m_VertexBuffer = 0;
 	GLuint											m_IndexBuffer = 0;
-	std::map<ResourceIdentifier, ModelResource*>	m_Models;
+	std::map <ResourceIdentifier, ModelResource*>	m_Models;
+	bool m_Updated = false;
 };

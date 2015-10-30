@@ -18,27 +18,22 @@ void SkyProgram::Init() {
 	//load Shader
 	m_Shader = g_ShaderBank.LoadShaderProgram("../../../shader/DeferedSky.glsl");
 	//Load model
-	m_Model = HashResourceName("Model.Cube");
+	m_Model = HashResourceName("Model.SkyCube");
 	g_ResourceManager.AquireResource(m_Model);
 }
 void SkyProgram::Render(const CameraData& camera) {
-	glCullFace(GL_FRONT);
-	glDepthFunc(GL_LEQUAL);
-
 	ShaderProgram* prog = g_ShaderBank.GetProgramFromHandle(m_Shader);
 	prog->Apply();
 	prog->SetUniformMat4("g_ProjView", camera.ProjView);
 	prog->SetUniformMat4("g_World", glm::translate(camera.Position));
 	m_Tex->Apply(prog->FetchUniform("g_SkyTex"), 0);
-	if (g_ModelBank.ApplyBuffers()) {
-		ModelResource* model = g_ModelBank.GetModel(m_Model);
-		if (model == nullptr) {
-			glCullFace(GL_BACK);
-			return;
-		}
-		glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
-			(GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
-	}
+	g_ModelBank.ApplyBuffers();
+	ModelResource* model = g_ModelBank.GetModel(m_Model);
+	if (model == nullptr) return;
+	glCullFace(GL_FRONT);
+	glDepthFunc(GL_LEQUAL);
+	glDrawElements(GL_TRIANGLES, model->Meshes[0].IndexCount, GL_UNSIGNED_INT,
+		(GLvoid*)(0 + ((model->IndexOffset + model->Meshes[0].IndexOffset) * sizeof(unsigned int))));
 	glCullFace(GL_BACK);
 }
 void SkyProgram::SetSkyTexture(const char* filename) {
