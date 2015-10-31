@@ -86,11 +86,16 @@ void ModelLoader::LoadMeshes(ModelResource& model, const aiScene* scene) {
 }
 
 void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
+	auto attachResource = [&] ( const char* resourceName ) {
+		ResourceIdentifier identifier = HashResourceName( resourceName );
+		g_ResourceManager.AquireResource(identifier);
+		model.AddDependency( identifier );
+	};
 	if (!m_HasDefault) {
-		g_ResourceManager.AquireResource(HashResourceName("Texture.WhitePixel"));
-		g_ResourceManager.AquireResource(HashResourceName("Texture.Normal"));
-		g_ResourceManager.AquireResource(HashResourceName("Texture.Roughness"));
-		g_ResourceManager.AquireResource(HashResourceName("Texture.Metal"));
+		attachResource("Texture.WhitePixel");
+		attachResource("Texture.Normal");
+		attachResource("Texture.Roughness");
+		attachResource("Texture.Metal");
 		m_HasDefault = true;
 	}
 	if (scene->mNumMaterials == 0) {
@@ -113,7 +118,7 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				attachResource(path.data);
 				modelMat->SetAlbedoTexture(HashResourceName(path.data));
 			}
 		}
@@ -125,7 +130,7 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_HEIGHT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				attachResource(path.data);
 				modelMat->SetNormalTexture(HashResourceName(path.data));
 			}
 		} else {
@@ -136,7 +141,7 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_SPECULAR, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				attachResource(path.data);
 				modelMat->SetRoughnessTexture(HashResourceName(path.data));
 			}
 		} else {
@@ -147,7 +152,7 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 			aiString path;
 			if (mat->GetTexture(aiTextureType_AMBIENT, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
 				std::string fullpath = path.data;
-				g_ResourceManager.AquireResource(HashResourceName(path.data));
+				attachResource(path.data);
 				modelMat->SetMetalTexture(HashResourceName(path.data));
 			}
 		}else {
@@ -155,5 +160,4 @@ void ModelLoader::LoadMaterials(ModelResource& model, const aiScene* scene) {
 		}
 		model.Materials.push_back(modelMat);
 	}
-
 }

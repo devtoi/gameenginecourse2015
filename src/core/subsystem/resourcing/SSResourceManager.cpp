@@ -1,5 +1,6 @@
 #include "SSResourceManager.h"
 #include <resourcing/ResourceManager.h>
+#include <input/InputContext.h>
 
 const pString SSResourceManager::Name = "ResourceManager";
 int SSResourceManager::ID = -1;
@@ -13,7 +14,9 @@ void SSResourceManager::Shutdown( SubsystemCollection* const subsystemCollection
 }
 
 void SSResourceManager::UpdateUserLayer( const float deltaTime ) {
-	// Perform non-simulation update logic here (Don't forget to set update order priority!)
+	if ( g_Input.KeyUpDown( SDL_SCANCODE_M ) ) {
+		std::cout << g_ResourceManager.GetTotalResourceSize() << std::endl;
+	}
 }
 
 void SSResourceManager::UpdateSimulationLayer( const float timeStep ) {

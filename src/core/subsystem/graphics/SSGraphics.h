@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../Subsystem.h"
+#include <resourcing/ResourceTypes.h>
+
 namespace gfx {
 	class GraphicsEngine;
 	class RenderQueue;
-	
 }
 class Camera;
 class SSGraphics : public Subsystem {
@@ -30,6 +31,7 @@ private:
 	gfx::GraphicsEngine* m_GraphicsEngine = nullptr;
 	gfx::RenderQueue* m_RenderQueue = nullptr;
 	Camera* m_Camera = nullptr;
-	size_t m_TestModel;
-	size_t m_CastleModel;
+	ResourceIdentifier m_SkyModel;
+	ResourceIdentifier m_TestModel;
+	ResourceIdentifier m_CastleModel;
 };

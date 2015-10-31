@@ -12,6 +12,7 @@ SkyProgram::SkyProgram() {
 
 SkyProgram::~SkyProgram() {
 	delete m_Tex;
+	g_ResourceManager.ReleaseResource( m_Model );
 }
 
 void SkyProgram::Init() {

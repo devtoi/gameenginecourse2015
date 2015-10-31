@@ -35,23 +35,16 @@ public:
 	RESOURCING_API void PostQuitJob();
 
 private:
-	struct ResourceJob;
-
 	ResourceManager();
 	~ResourceManager();
 
 	bool MakeContextCurrent( SDL_Window* window );
-	Resource* LoadResource( ResourceJob resourceJob );
+	Resource* LoadResource( ResourceIdentifier identifier );
 	void EvictUntilEnoughMemory( );
 
 	struct ResourceEntry {
 		int ReferenceCount = 0;
 		Resource* Resource;
-	};
-
-	struct ResourceJob {
-		FileContent File;
-		ResourceEntry* Entry;
 	};
 
 	const size_t MAX_MEMORY_USAGE = 256 * 1024 * 1024; //256 mebi bytes
@@ -60,9 +53,10 @@ private:
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;
 	std::shared_timed_mutex m_ResourceLoaderMutex;
 
+	pUnorderedSet<ResourceIdentifier> m_ResourcesBeingLoaded;
+	mutable std::mutex	m_ResourcesBeingLoadedMutex;
+
 	pUnorderedMap<ResourceIdentifier, ResourceEntry> m_Resources;
-	std::queue<ResourceJob>							 m_JobQueue;
-	mutable std::mutex	m_JobQueueMutex;
 	mutable std::mutex	m_PackageMutex;
 	mutable std::shared_timed_mutex	m_ResourceMutex;
 	std::thread			m_WorkerThread;

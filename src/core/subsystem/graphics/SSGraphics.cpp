@@ -21,7 +21,8 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
-	g_ResourceManager.AquireResource(HashResourceName("Model.SkyCube"));
+	m_SkyModel = HashResourceName("Model.SkyCube");
+	g_ResourceManager.AquireResource( m_SkyModel );
 	m_TestModel = HashResourceName("Model.Suzanne");
 	g_ResourceManager.AquireResource(m_TestModel);
 	m_CastleModel = HashResourceName("Model.Sponza");
@@ -33,7 +34,9 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 }
 
 void SSGraphics::Shutdown( SubsystemCollection* const subsystemCollection ) {
-	// Perform Cleanup here (Don't forget to set shutdown order priority!)
+	g_ResourceManager.ReleaseResource( m_SkyModel );
+	g_ResourceManager.ReleaseResource( m_TestModel );
+	g_ResourceManager.ReleaseResource( m_CastleModel );
 }
 
 void SSGraphics::UpdateUserLayer( const float deltaTime ) {
