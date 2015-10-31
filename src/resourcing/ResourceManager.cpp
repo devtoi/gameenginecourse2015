@@ -65,7 +65,7 @@ Resource* ResourceManager::LoadResource( ResourceJob job ) {
 	auto loaderIterator = m_ResourceLoaderMapping.find( job.File.Suffix );
 	if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
 		Logger::Log( "Loaded resource with suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
-		job.Entry->ReferenceCount = 0;
+		job.Entry->ReferenceCount = 1;
 		job.Entry->Resource		  = loaderIterator->second->LoadResource( job.File );
 		m_ResourceLoaderMutex.unlock_shared();
 		if ( job.Entry->Resource ) {
@@ -216,12 +216,12 @@ void ResourceManager::EvictUntilEnoughMemory() {
 		Logger::Log( "Out of memory for resource manager. Dumping list of resources...", "ResourceManager", LogSeverity::ERROR_MSG );
 		std::ofstream dumpFile( "resourceDump.txt" );
 		if ( dumpFile.is_open() ) {
+			dumpFile << "ReferenceCount\tIdentifier" << std::endl;
 			for ( const auto& resource : m_Resources ) {
-				dumpFile << resource.second.ReferenceCount << " " << resource.first << std::endl; // TODOJM: Reverse lookup
+				dumpFile << resource.second.ReferenceCount << "\t" << resource.first << std::endl; // TODOJM: Reverse lookup
 			}
 		}
 		dumpFile.close();
-		// TODOJM: Log all shit to file
 		assert( false );
 	}
 }
