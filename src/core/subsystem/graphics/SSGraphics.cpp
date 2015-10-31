@@ -21,10 +21,14 @@ void SSGraphics::Startup( SubsystemCollection* const subsystemCollection ) {
 	
 	m_GraphicsEngine->Initialize(gs);
 	m_RenderQueue = m_GraphicsEngine->GetRenderQueue();
+	g_ResourceManager.AquireResource(HashResourceName("Model.SkyCube"));
 	m_TestModel = HashResourceName("Model.Suzanne");
 	g_ResourceManager.AquireResource(m_TestModel);
+	m_CastleModel = HashResourceName("Model.Sponza");
+	g_ResourceManager.AquireResource(m_CastleModel);
 	//g_ResourceManager.PostQuitJob();
 	m_Camera = pNew(CameraFirstPerson);
+	m_Camera->GetEditableLens().Far = 3000.0f;
 	m_Camera->CalculateViewProjection();
 }
 
@@ -43,6 +47,10 @@ void SSGraphics::UpdateUserLayer( const float deltaTime ) {
 		inputList.push_back(input);
 	}
 	m_RenderQueue->Enqueue(m_TestModel, inputList);
+
+	input.World = glm::mat4(1);
+	input.Color = glm::vec4(1);
+	m_RenderQueue->Enqueue(m_CastleModel, input);
 
 	gfx::Light dl;
 	dl.Color = glm::vec4(0.27f,0.33f,0.39f, 1.0f);

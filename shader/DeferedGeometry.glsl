@@ -62,6 +62,7 @@ layout(location = 2) out vec2 FragmentRoughMetal;
 #pragma optionNV(inline all)
 #pragma optionNV(strict on)
 #pragma optionNV(unroll all)
+layout(early_fragment_tests) in;
 
 vec2 EncodeNormal(vec3 n){
 	float f = sqrt(8 * n.z + 8);
@@ -92,11 +93,9 @@ void main(){
 
 	vec3 normal = CalcBumpedNormal(v_Out.NormalW.xyz, v_Out.TangentW.xyz, g_NormalTex, v_Out.TexCoord.xy);
 	vec4 albedo = texture(g_DiffuseTex, v_Out.TexCoord.xy);
-	if(albedo.a <= 0.01f){
-		discard;
-	}
 	vec3 baseColor = pow(albedo.xyz, vec3(2.2)) * v_Out.Color.xyz; //raise to 2.2(gamma) to be in linear space
-
+	if(albedo.a < 0.1f)
+		baseColor = vec3(0);
 	FragmentNormal = normalize(normal);
 	FragmentColor.xyz = baseColor;
 	FragmentColor.a = 1; //do light calculation

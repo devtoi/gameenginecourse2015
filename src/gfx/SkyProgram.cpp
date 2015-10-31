@@ -28,7 +28,7 @@ void SkyProgram::Render(const CameraData& camera) {
 	prog->SetUniformMat4("g_World", glm::translate(camera.Position));
 	m_Tex->Apply(prog->FetchUniform("g_SkyTex"), 0);
 	g_ModelBank.ApplyBuffers();
-	ModelResource* model = g_ModelBank.GetModel(m_Model);
+	ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(m_Model);
 	if (model == nullptr) return;
 	glCullFace(GL_FRONT);
 	glDepthFunc(GL_LEQUAL);

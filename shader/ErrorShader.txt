@@ -197,7 +197,7 @@ vec3 GGX_Specular(samplerCube SpecEnvMap, vec3 normal, vec3 toeye, float roughne
 
  vec3 AproximateIBLSpecular(samplerCube envMap, sampler2D BRDFTex, vec3 F0 , float roughness, vec3 normal, vec3 toeye){
  	float NoV = saturate(dot(normal, toeye));
- 	NoV = max(0.001, NoV);
+ 	NoV = max(0.01, NoV);
  	vec3 R = 2 * dot(normal, toeye) * normal - toeye;
 
  	ivec2 texDim = textureSize(g_SkyCubeTex,0);
@@ -226,10 +226,11 @@ vec3 CookTorranceSpecular(vec3 normal, vec3 lightDir, vec3 toeye, float roughnes
 
 	vec3 F = F_Schlick(F0 ,hdotl);
 	float D = GGX_D(ndoth, roughness);
-	float G = visibility(ndotl, ndotv, roughness);
+	float G = visibility(ndotl, ndotv, roughness) / ( PI * ndotl * ndotv);
 	//float G = GeometricAtt(ndoth, ndotv, vdoth, ndotl);
-
-	return vec3(F * D * G) / (4 * ndotl * ndotv);
+	if(F > 1)
+		return vec3(1,0,0);
+	return vec3(F * D * G);
 }
 float OrenNayarDiffuse(in vec3 normal,in vec3 lightDir, in vec3 toeye,in float roughness){
 	float ndotl = dot(normal , lightDir);
@@ -279,7 +280,7 @@ vec4 CalcDLight(Light light, vec3 inNormal, vec3 posw, vec3 campos, vec3 baseCol
 	vec3 spec = vec3(0);
 	vec3 diff = vec3(0);
 	float ndotl = dot(inNormal, -lightDir);
-	diff = max(0, ndotl) * baseColor;
+	diff = max(ndotl, 0) * baseColor;
 	if(ndotl > 0){
 		vec3 toeye = normalize(campos - posw);
 		spec = CookTorranceSpecular(inNormal, -lightDir, toeye, roughness, metal, baseColor);
@@ -301,7 +302,7 @@ vec4 CalcPLight( Light light, vec3 inNormal, vec3 posw, vec3 campos, vec3 baseCo
 	{
 		lightDir = normalize(lightDir);
 		vec3 toeye = normalize(campos - posw);
-		float att = light.Intensity / max(dist * dist, 0.01f * 0.01f); //ty frostbite team
+		float att = light.Intensity / max(dist * dist, 0.0001f); //ty frostbite team;
 		vec3 spec = vec3(0);
 		vec3 diff = vec3(0);
 		float ndotl = dot(inNormal, -lightDir);
@@ -314,7 +315,7 @@ vec4 CalcPLight( Light light, vec3 inNormal, vec3 posw, vec3 campos, vec3 baseCo
 		spec = mix(spec, spec * baseColor, metal);
 		diff = saturate(diff);
 		spec = saturate(spec);
-		lightColor.xyz = vec3(light.Color.rgb) * (diff + spec);
+		lightColor.xyz = vec3(light.Color.rgb) * (diff + spec) * att;
 	}
 	return lightColor;
 }
@@ -343,15 +344,15 @@ void main(){
 	float metal = texture(g_MetallicTex, v_Out.TexCoord.xy).r;
 
 	float alpha = color.a * g_Transparency;
-	vec3 normal = normalize(v_Out.NormalW);
+	vec3 normal = normalize(v_Out.NormalW.xyz);
 	vec4 lightColor = vec4(0.0);
 	uint i;
 	for(i = 0; i < g_NumDLights; ++i){
 		Light d = lights[MAX_POINTLIGHTS + i];
 		//just do diffuse half lambert shading
-		float ndotl = saturate(dot(normal, normalize(d.Direction)));
+		float ndotl = saturate(dot(normal, normalize(d.Direction) * -1));
 		ndotl = ndotl * 0.5 + 0.5;
-		color *= ndotl;
+		color.xyz *= ndotl;
 		//lightColor += CalcDLight(d, v_Out.NormalW.xyz, v_Out.PosW.xyz, g_CamPos.xyz, color.xyz, roughness, metal );
 	}
 	acum = vec4(color.xyz, alpha) * w(gl_FragCoord.z, alpha);

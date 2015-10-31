@@ -77,6 +77,8 @@ void gfx::TransparencyProgram::Render(RenderQueue const * rq, GBuffer const * gb
 		// for each model to be rendered
 		for (auto& mo : rq->GetTranparentModelQueue()) {
 			const ModelResource* model = (ModelResource*)g_ResourceManager.GetResourcePointer(mo.Model);
+			if (!model)
+				continue;
 			instanceCount = mo.InstanceCount;
 			prog->SetUniformUInt("g_BufferOffset", bufferOffset);
 			prog->SetUniformFloat("g_Transparency", mo.Transparency);
@@ -90,11 +92,10 @@ void gfx::TransparencyProgram::Render(RenderQueue const * rq, GBuffer const * gb
 				TextureResource* normal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetNormalTexture());
 				TextureResource* roughness = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetRoughnessTexture());
 				TextureResource* metal = (TextureResource*)g_ResourceManager.GetResourcePointer(mat->GetMetalTexture());
-
-				prog->SetUniformTextureHandle("g_DiffuseTex", albedo->GetTexture(), 0);
-				prog->SetUniformTextureHandle("g_NormalTex", normal->GetTexture(), 1);
-				prog->SetUniformTextureHandle("g_RoughnessTex", roughness->GetTexture(), 2);
-				prog->SetUniformTextureHandle("g_MetallicTex", metal->GetTexture(), 3);
+				prog->SetUniformTextureHandle("g_DiffuseTex", (albedo) ? albedo->GetTexture() : 0, 0);
+				prog->SetUniformTextureHandle("g_NormalTex", (normal) ? normal->GetTexture() : 0, 1);
+				prog->SetUniformTextureHandle("g_RoughnessTex", (roughness) ? roughness->GetTexture() : 0, 2);
+				prog->SetUniformTextureHandle("g_MetallicTex", (metal) ? metal->GetTexture() : 0, 3);
 				glDrawElementsInstanced(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT,
 					(GLvoid*)(0 + ((model->IndexOffset + mesh.IndexOffset) * sizeof(unsigned int))), instanceCount);
 			}

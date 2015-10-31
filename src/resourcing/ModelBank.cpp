@@ -15,7 +15,7 @@ ModelBank& ModelBank::GetInstance() {
 }
 
 void ModelBank::AddModel(ModelResource* model, const ResourceIdentifier id) {
-	m_Models[id] = model;
+	m_Models.push_back(model);
 	m_Updated = true;
 }
 
@@ -39,20 +39,22 @@ void ModelBank::BuildBuffers() {
 	// Vertex buffer
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
+	std::vector<GLuint> modelIndices;
 	GLuint indexCounter = 0;
 	GLuint vertexCounter = 0;
 	for (auto& model : m_Models) {
 		//set offset
-		model.second->IndexOffset = indexCounter;
+		model->IndexOffset = indexCounter;
 		//update indices
-		for (auto& i : model.second->Indices) {
-			i += vertexCounter;
+		for (auto& i : model->Indices) {
+			modelIndices.push_back(i + vertexCounter);
 		}
 		//insert vertices and indices
-		vertices.insert(vertices.end(), model.second->Vertices.begin(), model.second->Vertices.end());
-		indices.insert(indices.end(), model.second->Indices.begin(), model.second->Indices.end());
-		indexCounter += model.second->Indices.size();
-		vertexCounter += model.second->Vertices.size();
+		vertices.insert(vertices.end(), model->Vertices.begin(), model->Vertices.end());
+		indices.insert(indices.end(), modelIndices.begin(), modelIndices.end());
+		indexCounter += modelIndices.size();
+		vertexCounter += model->Vertices.size();
+		modelIndices.clear();
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
@@ -82,9 +84,9 @@ bool ModelBank::ApplyBuffers() {
 }
 
 ModelResource* ModelBank::GetModel(const ResourceIdentifier id) {
-	auto model = m_Models.find(id);
-	if (model != m_Models.end()) {
-		return model->second;
-	}
+	//auto model = m_Models.find(id);
+	//if (model != m_Models.end()) {
+	//	return model->second;
+	//}
 	return nullptr;
 }

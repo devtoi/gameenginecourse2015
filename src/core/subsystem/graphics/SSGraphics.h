@@ -31,4 +31,5 @@ private:
 	gfx::RenderQueue* m_RenderQueue = nullptr;
 	Camera* m_Camera = nullptr;
 	size_t m_TestModel;
+	size_t m_CastleModel;
 };

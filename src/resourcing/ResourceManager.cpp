@@ -38,7 +38,7 @@ ResourceManager::ResourceManager() {
 	// LSR new for all resource loaders
 	AddResourceLoader( std::make_unique<DDSLoader>(),	  { "dds" } );
 	AddResourceLoader( std::make_unique<ModelLoader>(),	  { "obj", "dae" } );
-	AddResourceLoader( std::make_unique<TextureLoader>(), { "png" } );
+	AddResourceLoader( std::make_unique<TextureLoader>(), { "png", "tga" } );
 }
 
 ResourceManager::~ResourceManager() {
@@ -71,13 +71,15 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 				job.Entry->ReferenceCount = 0;
 				job.Entry->Resource		  = loaderIterator->second->LoadResource( job.File );
 				m_ResourceLoaderMutex.unlock_shared();
-				m_MemoryUsage += job.Entry->Resource->GetSize();
-				m_ResourceMutex.lock();
-				if ( m_MemoryUsage > MAX_MEMORY_USAGE ) {
-					EvictUntilEnoughMemory();
+				if (job.Entry->Resource) {
+					m_MemoryUsage += job.Entry->Resource->GetSize();
+					m_ResourceMutex.lock();
+					if (m_MemoryUsage > MAX_MEMORY_USAGE) {
+						EvictUntilEnoughMemory();
+					}
+					auto it = m_Resources.emplace(job.File.ID, std::move(*job.Entry));
+					m_ResourceMutex.unlock();
 				}
-				auto it = m_Resources.emplace( job.File.ID, std::move( *job.Entry ) );
-				m_ResourceMutex.unlock();
 			} else {
 				m_ResourceLoaderMutex.unlock_shared();
 				Logger::Log( "Failed to find resource loader for suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
@@ -86,6 +88,7 @@ void ResourceManager::WorkerThread( SDL_Window* window ) {
 		} else {
 			m_JobQueueMutex.unlock();
 		}
+		//std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
 }
 
