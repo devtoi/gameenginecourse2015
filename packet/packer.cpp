@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+	
+const std::string gPacketHeaderVersionInfo = "CustomBigFile v0.1";
 
 enum class InstructionType {
 	None,
@@ -24,6 +27,20 @@ struct Asset {
 	Asset( const std::string& gui, const std::string& filePath ) : GUI(gui), FilePath(filePath) {};
 };
 
+struct Index {
+	struct Entry {
+		std::string		GUI;
+		std::string		FilePath;
+		size_t			Offset;
+		std::streampos	OffsetFilePosition;
+		size_t			Size;
+		std::streampos	SizeFilePosition;
+	};
+
+	std::streampos		AssetCountFilePosition;
+	std::vector<Entry>	Entries;
+};
+
 void		InterpretProgramArguments		( const std::vector<std::string>& programArguments );
 bool		ValidateAndOrderInstructions	( std::vector<Instruction>& instructions );
 bool		ExecuteInstructions				( std::vector<Instruction>& instructions );
@@ -32,6 +49,11 @@ bool		AppendAssetsToPacket			( const std::string& packetPath, const std::vector<
 bool		GeneratePacket					( const std::string& packetPath );
 bool		TrimPacket						( const std::string& packetPath );
 bool		ListAssets						( const std::string& packetPath );
+void		FileWriteInt					( std::fstream& fileStream, size_t value );
+void		FileWriteString					( std::fstream& fileStream, const std::string& string );
+void		FileReadInt						( std::fstream& fileStream, size_t& outValue );
+void		FileReadString					( std::fstream& fileStream, std::string& outString );
+bool		BuildIndex						( std::fstream& fileStream, Index& index );
 
 int main(int argc, char* argv[]) {
 	std::vector<std::string> programArguments;
@@ -47,7 +69,7 @@ int main(int argc, char* argv[]) {
 
 	InterpretProgramArguments( programArguments );
 
-	//system("pause");	// TODOOE: Remove when starting to debug from commandline.
+	system("pause");	// TODOOE: Remove when starting to debug from commandline.
 
 	return 0;
 };
@@ -61,7 +83,7 @@ void InterpretProgramArguments( const std::vector<std::string>& programArguments
 	std::vector<Instruction> instructions;
 	InstructionType currentInstructionType = InstructionType::None;
 
-	unsigned int currentArgumentIndex = 0;
+	size_t currentArgumentIndex = 0;
 	while ( currentArgumentIndex < programArguments.size() ) {
 		if ( programArguments[currentArgumentIndex] == "-o" ) {
 			currentInstructionType = InstructionType::OpenPacket;
@@ -113,7 +135,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 	std::vector<Instruction> orderedInstructions;
 
 	bool foundOpenPacket = false;
-	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
+	for ( size_t i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type != InstructionType::OpenPacket ) {
 			continue;
 		}
@@ -127,7 +149,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 	}
 
 	if ( !foundOpenPacket ) {
-		for ( unsigned int i = 0; i < instructions.size(); ++i ) {
+		for ( size_t i = 0; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type != InstructionType::GeneratePacket && instructions[i].Type != InstructionType::TrimPacket && instructions[i].Type != InstructionType::ListAssets ) {
 				continue;
 			}
@@ -144,14 +166,14 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 		return false;
 	}
 
-	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
+	for ( size_t i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type == InstructionType::NameNextAsset || instructions[i].Type == InstructionType::AppendAsset ) {
 			orderedInstructions.push_back( instructions[i] );	// TODO: Check for duplicates.
 		}
 	}
 
 	auto addInstructionsOfType = [&instructions, &orderedInstructions]( InstructionType type ) {
-		for ( unsigned int i = 0; i < instructions.size(); ++i ) {
+		for ( size_t i = 0; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type != type ) {
 				continue;
 			}
@@ -176,7 +198,7 @@ bool ValidateAndOrderInstructions( std::vector<Instruction>& instructions ) {
 bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 	{
 		std::vector<Asset> assets;
-		for ( unsigned int i = 1; i < instructions.size(); ++i ) {
+		for ( size_t i = 1; i < instructions.size(); ++i ) {
 			if ( instructions[i].Type == InstructionType::NameNextAsset ) {
 				assets.push_back( Asset( instructions[i].Argument, instructions[i + 1].Argument ) );
 				++i;
@@ -194,7 +216,7 @@ bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 		}
 	}
 
-	for ( unsigned int i = 0; i < instructions.size(); ++i ) {
+	for ( size_t i = 0; i < instructions.size(); ++i ) {
 		if ( instructions[i].Type == InstructionType::GeneratePacket ) {
 			GeneratePacket( instructions[0].Argument );
 		} else if ( instructions[i].Type == InstructionType::TrimPacket ) {
@@ -209,7 +231,7 @@ bool ExecuteInstructions( std::vector<Instruction>& instructions ) {
 
 std::string	MakeGUIFromFilePath( const std::string& filePath ) {
 	std::string gui = filePath;
-	for ( unsigned int i = 0; i < gui.size(); ++i ) {
+	for ( size_t i = 0; i < gui.size(); ++i ) {
 		if ( gui[i] == '/' || gui[i] == '\\' ) {
 			gui[i] = '.';
 		}
@@ -218,28 +240,135 @@ std::string	MakeGUIFromFilePath( const std::string& filePath ) {
 }
 
 bool AppendAssetsToPacket( const std::string& packetPath, const std::vector<Asset>& assets ) {
-	std::cout << "Appending assets to packet \"" << packetPath << "\"..." << std::endl;
-	for ( unsigned int i = 0; i < assets.size(); ++i ) {
+	std::fstream fileStream;
+	fileStream.open( packetPath, std::ios::in | std::ios::out | std::ios::binary );
+
+	std::cout << "Creating new packet \"" << packetPath << "\"" << std::endl;
+	fileStream.write( gPacketHeaderVersionInfo.c_str(), gPacketHeaderVersionInfo.length() );
+
+	size_t assetCount = assets.size();
+	FileWriteInt( fileStream, assetCount );
+
+	std::cout << "Creating asset index in packet \"" << packetPath << "\"" << std::endl;
+	for ( size_t i = 0; i < assets.size(); ++i ) {
 		std::cout << "+ Asset GUI=\"" << assets[i].GUI << "\", Path=\"" << assets[i].FilePath << "\"" << std::endl;
+		size_t stringLength = assets[i].GUI.length();
+		FileWriteString( fileStream, assets[i].GUI );
+		FileWriteString( fileStream, assets[i].FilePath );
+		FileWriteInt( fileStream, 0 );	// Offset
+		FileWriteInt( fileStream, 0 );	// Size
 	}
+
+	fileStream.close();
 
 	return true;
 }
 
 bool GeneratePacket ( const std::string& packetPath ) {
-	std::cout << "Generating packet \"" << packetPath << "\"..." << std::endl;
+	std::cout << "Generating packet \"" << packetPath << "\"" << std::endl;
 
 	return true;
 }
 
 bool TrimPacket ( const std::string& packetPath ) {
-	std::cout << "Triming packet \"" << packetPath << "\"..." << std::endl;
+	std::cout << "Triming packet \"" << packetPath << "\"" << std::endl;
 
 	return true;
 }
 
 bool ListAssets ( const std::string& packetPath ) {
-	std::cout << "Listing assets in packet \"" << packetPath << "\"..." << std::endl;
+	std::cout << "Listing assets in packet \"" << packetPath << "\"" << std::endl;
+
+	std::fstream fileStream;
+	fileStream.open( packetPath, std::ios::in | std::ios::binary );
+
+	if ( !fileStream ) {
+		std::cout << "Error: Could not open packet \"" << packetPath << "\"" << std::endl;
+		return false;
+	}
+
+	Index index;
+	if ( !BuildIndex( fileStream, index ) ) {
+		std::cout << "Error: File is not an accepted packet \"" << packetPath << "\"" << std::endl;
+	}
+
+	if ( index.Entries.empty() ) {
+		std::cout << "Packet is empty." << std::endl;
+		return false;
+	}
+
+	for ( auto it = index.Entries.begin(); it != index.Entries.end(); ++it ) {
+		if ( it != index.Entries.begin() ) {
+			std::cout << " ";
+		}
+		std::cout << it->GUI << "(" << it->FilePath << ")";
+	}
+	std::cout << std::endl;
+
+	fileStream.close();
 
 	return true;
 }
+
+void FileWriteInt( std::fstream& fileStream, size_t value ) {
+	fileStream.write( reinterpret_cast<char*>(&value), sizeof(value) );
+}
+
+void FileWriteString( std::fstream& fileStream, const std::string& string ) {
+	FileWriteInt( fileStream, string.length() );
+	fileStream.write( string.c_str(), string.length() );
+}
+
+void FileReadInt( std::fstream& fileStream, size_t& outValue ) {
+	fileStream.read( reinterpret_cast<char*>(&outValue), sizeof(outValue) );
+}
+
+void FileReadString( std::fstream& fileStream, std::string& outString ) {
+	size_t stringLength = 0;
+	FileReadInt( fileStream, stringLength );
+
+	if ( stringLength == 0 ) {
+		outString = "";
+		return;
+	}
+
+	char* buffer = new char[stringLength];
+	fileStream.read( buffer, stringLength );
+
+	outString = std::string( buffer, stringLength );
+
+	delete [] buffer;
+}
+
+bool BuildIndex( std::fstream& fileStream, Index& index ) {
+	char* buffer;
+
+	buffer = new char[gPacketHeaderVersionInfo.size()];
+	fileStream.read( buffer, gPacketHeaderVersionInfo.size() );
+	for ( size_t i = 0; i < gPacketHeaderVersionInfo.size(); ++i ) {
+		if ( buffer[i] != gPacketHeaderVersionInfo[i] ) {
+			return false;
+		}
+	}
+	delete [] buffer;
+
+	size_t assetCount = 0;
+	index.AssetCountFilePosition = fileStream.tellg();
+	FileReadInt( fileStream, assetCount );
+
+	if ( assetCount == 0 ) {
+		return true;
+	}
+
+	index.Entries.resize( assetCount );
+	for ( auto it = index.Entries.begin(); it != index.Entries.end(); ++it ) {
+		FileReadString( fileStream, it->GUI );
+		FileReadString( fileStream, it->FilePath );
+		it->OffsetFilePosition = fileStream.tellg();
+		FileReadInt( fileStream, it->Offset );
+		it->SizeFilePosition = fileStream.tellg();
+		FileReadInt( fileStream, it->Size );
+	}
+
+	return true;
+};
