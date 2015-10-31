@@ -294,8 +294,8 @@ bool GeneratePacket ( const std::string& packetPath ) {
 
 		std::streampos assetFilePosition = assetStream.tellg();
 		assetStream.seekg( 0, std::ios::end );
-		it->Size = assetStream.tellg() - assetFilePosition;
-		it->Offset = fileStream.tellp();
+		it->Size = static_cast<size_t>( assetStream.tellg() - assetFilePosition );
+		it->Offset = static_cast<size_t>( fileStream.tellp() );
 
 		char* assetBuffer = new char[it->Size];
 		assetStream.seekg( 0, std::ios::beg );
