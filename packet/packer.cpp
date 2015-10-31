@@ -67,13 +67,7 @@ int main(int argc, char* argv[]) {
 		programArguments.push_back( argv[i] );
 	}
 
-	//for ( int i = 0; i < programArguments.size(); ++i ) {
-	//	std::cout << "Argument " << i << ": \"" << programArguments[i] << "\"" << std::endl;
-	//}
-
 	InterpretProgramArguments( programArguments );
-
-	system("pause");	// TODOOE: Remove when starting to debug from commandline.
 
 	return 0;
 };
