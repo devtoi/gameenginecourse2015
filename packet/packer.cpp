@@ -38,6 +38,7 @@ struct Index {
 	};
 
 	std::streampos		AssetCountFilePosition;
+	std::streampos		EndOfIndexFilePosition;
 	std::vector<Entry>	Entries;
 };
 
@@ -267,6 +268,52 @@ bool AppendAssetsToPacket( const std::string& packetPath, const std::vector<Asse
 bool GeneratePacket ( const std::string& packetPath ) {
 	std::cout << "Generating packet \"" << packetPath << "\"" << std::endl;
 
+	std::fstream fileStream;
+	fileStream.open( packetPath, std::ios::in | std::ios::out | std::ios::binary );
+
+	if ( !fileStream ) {
+		std::cout << "Error: Could not open packet \"" << packetPath << "\"" << std::endl;
+		return false;
+	}
+
+	Index index;
+	if ( !BuildIndex( fileStream, index ) ) {
+		std::cout << "Error: File is not an accepted packet \"" << packetPath << "\"" << std::endl;
+	}
+
+	fileStream.seekp( index.EndOfIndexFilePosition );
+	for ( auto it = index.Entries.begin(); it != index.Entries.end(); ++it ) {
+		std::fstream assetStream( it->FilePath, std::ios::in | std::ios::binary );
+
+		if ( !assetStream ) {
+			std::cout << "Warning! Could not find asset \"" << it->FilePath << "\"" << std::endl;
+			it->Offset = 0;
+			it->Size = 0;
+			continue;
+		}
+
+		std::streampos assetFilePosition = assetStream.tellg();
+		assetStream.seekg( 0, std::ios::end );
+		it->Size = assetStream.tellg() - assetFilePosition;
+		it->Offset = fileStream.tellp();
+
+		char* assetBuffer = new char[it->Size];
+		assetStream.seekg( 0, std::ios::beg );
+		assetStream.read( assetBuffer, it->Size );
+		fileStream.write( assetBuffer, it->Size );
+		delete [] assetBuffer;
+		assetStream.close();
+	}
+
+	for ( auto it = index.Entries.begin(); it != index.Entries.end(); ++it ) {
+		fileStream.seekp( it->OffsetFilePosition );
+		FileWriteInt( fileStream, it->Offset );
+		fileStream.seekp( it->SizeFilePosition );
+		FileWriteInt( fileStream, it->Size );
+	}
+
+	fileStream.close();
+
 	return true;
 }
 
@@ -294,6 +341,7 @@ bool ListAssets ( const std::string& packetPath ) {
 
 	if ( index.Entries.empty() ) {
 		std::cout << "Packet is empty." << std::endl;
+		fileStream.close();
 		return false;
 	}
 
@@ -357,6 +405,7 @@ bool BuildIndex( std::fstream& fileStream, Index& index ) {
 	FileReadInt( fileStream, assetCount );
 
 	if ( assetCount == 0 ) {
+		index.EndOfIndexFilePosition = fileStream.tellg();
 		return true;
 	}
 
@@ -369,6 +418,8 @@ bool BuildIndex( std::fstream& fileStream, Index& index ) {
 		it->SizeFilePosition = fileStream.tellg();
 		FileReadInt( fileStream, it->Size );
 	}
+
+	index.EndOfIndexFilePosition = fileStream.tellg();
 
 	return true;
 };
