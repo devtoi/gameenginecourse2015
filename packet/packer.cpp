@@ -35,6 +35,9 @@ struct Index {
 		std::streampos	OffsetFilePosition;
 		size_t			Size;
 		std::streampos	SizeFilePosition;
+
+		Entry() {};
+		Entry( const std::string& gui, const std::string& filePath ) : GUI(gui), FilePath(filePath) {};
 	};
 
 	std::streampos		AssetCountFilePosition;
@@ -244,18 +247,54 @@ bool AppendAssetsToPacket( const std::string& packetPath, const std::vector<Asse
 	std::fstream fileStream;
 	fileStream.open( packetPath, std::ios::in | std::ios::out | std::ios::binary );
 
-	std::cout << "Creating new packet \"" << packetPath << "\"" << std::endl;
-	fileStream.write( gPacketHeaderVersionInfo.c_str(), gPacketHeaderVersionInfo.length() );
+	Index index;
+	if ( !fileStream || !BuildIndex( fileStream, index ) ) {
+		fileStream.close();
+		fileStream.open( packetPath, std::ios::out | std::ios::binary );
+		if ( !fileStream ) {
+			std::cout << "Error! Could not open nor create packet using path \"" << packetPath << "\"" << std::endl;
+			fileStream.close();
+			return false;
+		}
+		std::cout << "Creating new packet \"" << packetPath << "\"" << std::endl;
+		fileStream.write( gPacketHeaderVersionInfo.c_str(), gPacketHeaderVersionInfo.length() );
+		index.AssetCountFilePosition = fileStream.tellp();
+		FileWriteInt( fileStream, 0 );
+		index.EndOfIndexFilePosition = fileStream.tellp();
+	}
 
-	size_t assetCount = assets.size();
-	FileWriteInt( fileStream, assetCount );
+	size_t oldIndexSize = index.Entries.size();
+
+	for ( auto it = assets.cbegin(); it != assets.cend(); ++it ) {
+		bool guiAlreadyAdded = false;
+		for ( auto indexIt = index.Entries.cbegin(); indexIt != index.Entries.cend(); ++indexIt ) {
+			if ( it->GUI == indexIt->GUI ) {
+				guiAlreadyAdded = true;
+				continue;
+			}
+		}
+		if ( guiAlreadyAdded ) {
+			std::cout << "Warning! GUI \"" << it->GUI << "\" already exists. Did not append asset to \"" << packetPath << "\"" << std::endl;
+			continue;
+		}
+		index.Entries.push_back( Index::Entry( it->GUI, it->FilePath ) );
+	}
+
+	size_t newIndexSize = index.Entries.size();
+	if ( oldIndexSize >= newIndexSize ) {
+		fileStream.close();
+		return true;
+	}
+
+	fileStream.seekp( index.AssetCountFilePosition );
+	FileWriteInt( fileStream, newIndexSize );
 
 	std::cout << "Creating asset index in packet \"" << packetPath << "\"" << std::endl;
-	for ( size_t i = 0; i < assets.size(); ++i ) {
-		std::cout << "+ Asset GUI=\"" << assets[i].GUI << "\", Path=\"" << assets[i].FilePath << "\"" << std::endl;
-		size_t stringLength = assets[i].GUI.length();
-		FileWriteString( fileStream, assets[i].GUI );
-		FileWriteString( fileStream, assets[i].FilePath );
+	fileStream.seekp( index.EndOfIndexFilePosition );
+	for ( auto it = index.Entries.cbegin() + oldIndexSize; it != index.Entries.cend(); ++it ) {
+		std::cout << "+ Asset GUI=\"" << it->GUI << "\", Path=\"" << it->FilePath << "\"" << std::endl;
+		FileWriteString( fileStream, it->GUI );
+		FileWriteString( fileStream, it->FilePath );
 		FileWriteInt( fileStream, 0 );	// Offset
 		FileWriteInt( fileStream, 0 );	// Size
 	}
