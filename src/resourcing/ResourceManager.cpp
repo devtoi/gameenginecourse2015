@@ -39,56 +39,48 @@ ResourceManager::ResourceManager() {
 	AddResourceLoader( std::make_unique<DDSLoader>(),	  { "dds" } );
 	AddResourceLoader( std::make_unique<ModelLoader>(),	  { "obj", "dae" } );
 	AddResourceLoader( std::make_unique<TextureLoader>(), { "png", "tga" } );
+
+	m_LoaderThread = m_ThreadPool.CreateThread( ThreadType::Dedicated, "Loader thread" );
 }
 
 ResourceManager::~ResourceManager() {
 	m_ResourceLoaders.clear();
 	m_ResourceLoaderMapping.clear();
 	UnloadAllResources();
+    m_ThreadPool.Shutdown();
 }
 
-void ResourceManager::WorkerThread( SDL_Window* window ) {
+bool ResourceManager::MakeContextCurrent( SDL_Window* window ) {
 #if PLATFORM == PLATFORM_WINDOWS
 		wglMakeCurrent( Device, LoadingContext );
 #elif PLATFORM == PLATFORM_LINUX
 		// glXMakeCurrent( g_Display, g_Window, g_LoadingContext );
 		SDL_GL_MakeCurrent( window, g_SDLLoadContext );
 #endif
-	while ( true ) {
-		// lock mutex for queue
-		m_JobQueueMutex.lock();
-		if ( m_JobQueue.size() > 0 ) {
-			ResourceJob job = m_JobQueue.front();
-			m_JobQueue.pop();
-			m_JobQueueMutex.unlock();
-			if ( job.File.ID == WORKER_THREAD_STOP ) {
-				return;
+	return true;
+}
+
+Resource* ResourceManager::LoadResource( ResourceJob job ) {
+	m_ResourceLoaderMutex.lock_shared();
+	auto loaderIterator = m_ResourceLoaderMapping.find( job.File.Suffix );
+	if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
+		Logger::Log( "Loaded resource with suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
+		job.Entry->ReferenceCount = 0;
+		job.Entry->Resource		  = loaderIterator->second->LoadResource( job.File );
+		m_ResourceLoaderMutex.unlock_shared();
+		if ( job.Entry->Resource ) {
+			m_MemoryUsage += job.Entry->Resource->GetSize();
+			std::unique_lock<std::shared_timed_mutex>( m_ResourceMutex );
+			if ( m_MemoryUsage > MAX_MEMORY_USAGE ) {
+				EvictUntilEnoughMemory();
 			}
-			m_ResourceLoaderMutex.lock_shared();
-			auto loaderIterator = m_ResourceLoaderMapping.find( job.File.Suffix );
-			if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
-				Logger::Log( "Loaded resource with suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
-				job.Entry->ReferenceCount = 0;
-				job.Entry->Resource		  = loaderIterator->second->LoadResource( job.File );
-				m_ResourceLoaderMutex.unlock_shared();
-				if (job.Entry->Resource) {
-					m_MemoryUsage += job.Entry->Resource->GetSize();
-					m_ResourceMutex.lock();
-					if (m_MemoryUsage > MAX_MEMORY_USAGE) {
-						EvictUntilEnoughMemory();
-					}
-					auto it = m_Resources.emplace(job.File.ID, std::move(*job.Entry));
-					m_ResourceMutex.unlock();
-				}
-			} else {
-				m_ResourceLoaderMutex.unlock_shared();
-				Logger::Log( "Failed to find resource loader for suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
-				return;
-			}
-		} else {
-			m_JobQueueMutex.unlock();
+			auto it = m_Resources.emplace( job.File.ID, std::move( *job.Entry ) );
+			return it.first->second.Resource;
 		}
-		//std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	} else {
+		m_ResourceLoaderMutex.unlock_shared();
+		Logger::Log( "Failed to find resource loader for suffix: " + job.File.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+		return nullptr;
 	}
 }
 
@@ -116,20 +108,12 @@ void ResourceManager::StartWorkerThread( SDL_Window* window, SDL_GLContext mainC
 		g_SDLLoadContext = SDL_GL_CreateContext( window );
 		SDL_GL_MakeCurrent( window, mainContext );
 #endif
+	std::future<bool> contextJob = m_ThreadPool.EnqueueJob( "Set GL context", m_LoaderThread,
+		std::function<bool( SDL_Window* )>( std::bind( &ResourceManager::MakeContextCurrent, this, std::placeholders::_1 ) ), window );
+	contextJob.get();
 
-	m_WorkerThread = std::thread( &ResourceManager::WorkerThread, this, window );
-	m_WorkerThread.detach();
-}
-
-void ResourceManager::PostQuitJob() {
-	ResourceJob job;
-	FileContent fc;
-
-	fc.ID	 = WORKER_THREAD_STOP;
-	job.File = fc;
-	m_JobQueueMutex.lock();
-	m_JobQueue.push( job );
-	m_JobQueueMutex.unlock();
+	// m_WorkerThread = std::thread( &ResourceManager::WorkerThread, this, window );
+	// m_WorkerThread.detach();
 }
 
 void ResourceManager::UnloadAllResources() {
@@ -142,7 +126,7 @@ void ResourceManager::UnloadAllResources() {
 	m_Resources.clear();
 }
 
-void ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
+std::future<Resource*> ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
 	m_ResourceMutex.lock_shared();
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator == m_Resources.end() ) {
@@ -157,18 +141,24 @@ void ResourceManager::AquireResource( const ResourceIdentifier identifier ) {
 			job.Entry->Resource = new Resource();
 			job.File			= fileContent;
 
-			m_JobQueueMutex.lock();
-			m_JobQueue.push( job );
-			m_JobQueueMutex.unlock();
-
-			return;
+            return m_ThreadPool.EnqueueJob( "Load resource", m_LoaderThread, std::function<Resource*( ResourceJob )>(
+                    std::bind( &ResourceManager::LoadResource, this, std::placeholders::_1 ) ), job );
 		} else {
-			return;
+			std::packaged_task<Resource*( )> task([] () {
+				return nullptr;
+			} );
+			return task.get_future();
 		}
 	} else {
 		resourceIterator->second.ReferenceCount++;
+
+		std::packaged_task<Resource*( Resource* )> task([] ( Resource* resource ) {
+			return resource;
+		} );
+		std::future<Resource*> future = task.get_future();
+		task( resourceIterator->second.Resource );
 		m_ResourceMutex.unlock_shared();
-		return;
+		return future;
 	}
 }
 
@@ -196,6 +186,7 @@ Resource* ResourceManager::GetResourcePointer( const ResourceIdentifier identifi
 
 void ResourceManager::AddResourceLoader( std::unique_ptr<ResourceLoader> resourceLoader, std::initializer_list<pString> fileSuffixes ) {
 	std::unique_lock<std::shared_timed_mutex>( m_ResourceLoaderMutex );
+
 	m_ResourceLoaders.push_back( std::move( resourceLoader ) );
 	for ( const auto& suffix : fileSuffixes ) {
 		auto it = m_ResourceLoaderMapping.find( suffix );
@@ -212,14 +203,14 @@ size_t ResourceManager::GetTotalResourceSize() const {
 }
 
 void ResourceManager::EvictUntilEnoughMemory() {
-    for ( auto resourceIt = m_Resources.begin(); resourceIt != m_Resources.end() && m_MemoryUsage > MAX_MEMORY_USAGE; ) {
+	for ( auto resourceIt = m_Resources.begin(); resourceIt != m_Resources.end() && m_MemoryUsage > MAX_MEMORY_USAGE; ) {
 		if ( resourceIt->second.ReferenceCount == 0 ) {
 			m_MemoryUsage -= resourceIt->second.Resource->GetSize();
 			delete resourceIt->second.Resource; // TODOJM: Use correct delete
-            resourceIt = m_Resources.erase( resourceIt );
-        } else {
-            resourceIt++;
-        }
+			resourceIt = m_Resources.erase( resourceIt );
+		} else {
+			resourceIt++;
+		}
 	}
 	if ( m_MemoryUsage > MAX_MEMORY_USAGE ) { // Could not evict enough
 		Logger::Log( "Out of memory for resource manager. Dumping list of resources...", "ResourceManager", LogSeverity::ERROR_MSG );
@@ -234,3 +225,4 @@ void ResourceManager::EvictUntilEnoughMemory() {
 		assert( false );
 	}
 }
+

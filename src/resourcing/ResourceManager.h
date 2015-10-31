@@ -4,8 +4,9 @@
 #include <shared_mutex>
 #include <memory>
 #include <thread>
-#include <memory/Alloc.h>
 #include "SDL.h"
+#include <memory/Alloc.h>
+#include <utility/ThreadPool.h>
 #include "ResourcingLibraryDefine.h"
 #include "Resource.h"
 #include "ResourceTypes.h"
@@ -22,7 +23,7 @@ public:
 
 	RESOURCING_API void UnloadAllResources();
 
-	RESOURCING_API void AquireResource( const ResourceIdentifier identifier );
+	RESOURCING_API std::future<Resource*> AquireResource( const ResourceIdentifier identifier );
 	RESOURCING_API void ReleaseResource( const ResourceIdentifier identifier );
 	RESOURCING_API Resource* GetResourcePointer( const ResourceIdentifier identifier );
 
@@ -34,9 +35,13 @@ public:
 	RESOURCING_API void PostQuitJob();
 
 private:
+	struct ResourceJob;
+
 	ResourceManager();
 	~ResourceManager();
-	void WorkerThread( SDL_Window* window );
+
+	bool MakeContextCurrent( SDL_Window* window );
+	Resource* LoadResource( ResourceJob resourceJob );
 	void EvictUntilEnoughMemory( );
 
 	struct ResourceEntry {
@@ -67,4 +72,7 @@ private:
 	std::atomic_size_t m_MemoryUsage;
 
 	const size_t WORKER_THREAD_STOP = 10;
+
+	ThreadPool m_ThreadPool;
+	ThreadIdentifier m_LoaderThread;
 };
