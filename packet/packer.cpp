@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -31,9 +32,9 @@ struct Index {
 	struct Entry {
 		std::string		GUI;
 		std::string		FilePath;
-		size_t			Offset;
+		uint64_t		Offset;
 		std::streampos	OffsetFilePosition;
-		size_t			Size;
+		uint64_t		Size;
 		std::streampos	SizeFilePosition;
 
 		Entry() {};
@@ -53,9 +54,9 @@ bool		AppendAssetsToPacket			( const std::string& packetPath, const std::vector<
 bool		GeneratePacket					( const std::string& packetPath );
 bool		TrimPacket						( const std::string& packetPath );
 bool		ListAssets						( const std::string& packetPath );
-void		FileWriteInt					( std::fstream& fileStream, size_t value );
+void		FileWriteInt					( std::fstream& fileStream, uint64_t value );
 void		FileWriteString					( std::fstream& fileStream, const std::string& string );
-void		FileReadInt						( std::fstream& fileStream, size_t& outValue );
+void		FileReadInt						( std::fstream& fileStream, uint64_t& outValue );
 void		FileReadString					( std::fstream& fileStream, std::string& outString );
 bool		BuildIndex						( std::fstream& fileStream, Index& index );
 
@@ -327,8 +328,8 @@ bool GeneratePacket ( const std::string& packetPath ) {
 
 		std::streampos assetFilePosition = assetStream.tellg();
 		assetStream.seekg( 0, std::ios::end );
-		it->Size = static_cast<size_t>( assetStream.tellg() - assetFilePosition );
-		it->Offset = static_cast<size_t>( fileStream.tellp() );
+		it->Size = static_cast<uint64_t>( assetStream.tellg() - assetFilePosition );
+		it->Offset = static_cast<uint64_t>( fileStream.tellp() );
 
 		char* assetBuffer = new char[it->Size];
 		assetStream.seekg( 0, std::ios::beg );
@@ -391,7 +392,7 @@ bool ListAssets ( const std::string& packetPath ) {
 	return true;
 }
 
-void FileWriteInt( std::fstream& fileStream, size_t value ) {
+void FileWriteInt( std::fstream& fileStream, uint64_t value ) {
 	fileStream.write( reinterpret_cast<char*>(&value), sizeof(value) );
 }
 
@@ -400,12 +401,12 @@ void FileWriteString( std::fstream& fileStream, const std::string& string ) {
 	fileStream.write( string.c_str(), string.length() );
 }
 
-void FileReadInt( std::fstream& fileStream, size_t& outValue ) {
+void FileReadInt( std::fstream& fileStream, uint64_t& outValue ) {
 	fileStream.read( reinterpret_cast<char*>(&outValue), sizeof(outValue) );
 }
 
 void FileReadString( std::fstream& fileStream, std::string& outString ) {
-	size_t stringLength = 0;
+	uint64_t stringLength = 0;
 	FileReadInt( fileStream, stringLength );
 
 	if ( stringLength == 0 ) {
@@ -433,7 +434,7 @@ bool BuildIndex( std::fstream& fileStream, Index& index ) {
 	}
 	delete [] buffer;
 
-	size_t assetCount = 0;
+	uint64_t assetCount = 0;
 	index.AssetCountFilePosition = fileStream.tellg();
 	FileReadInt( fileStream, assetCount );
 
