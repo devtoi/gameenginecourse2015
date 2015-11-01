@@ -1,11 +1,14 @@
 #include "PackageManager.h"
 #include "Package.h"
 #include "BigZipFileLoader.h"
+#include "CustomBigFileLoader.h"
 #include <utility/Logger.h>
 
 PackageManager::PackageManager() {
 	m_Packages.push_back( std::make_unique<BigZipFileLoader>() );
 	m_Packages.back().get()->Initialize( "../../../asset/Assets.zip" );
+	m_Packages.push_back( std::make_unique<CustomBigFileLoader>() );
+	m_Packages.back().get()->Initialize( "../../../asset/assets.big" );
 }
 
 PackageManager::~PackageManager() {
