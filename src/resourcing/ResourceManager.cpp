@@ -137,12 +137,19 @@ std::future<Resource*> ResourceManager::AquireResource( const ResourceIdentifier
 }
 
 void ResourceManager::ReleaseResource( const ResourceIdentifier identifier ) {
-	std::unique_lock<std::shared_timed_mutex>( m_ResourceMutex );
+	m_ResourceMutex.lock();
 	auto resourceIterator = m_Resources.find( identifier );
 
 	if ( resourceIterator != m_Resources.end() ) {
 		resourceIterator->second.ReferenceCount--;
+		if ( resourceIterator->second.ReferenceCount == 0 ) {
+			m_ResourceMutex.unlock();
+			resourceIterator->second.Resource->ReleaseDependencies();
+		} else {
+			m_ResourceMutex.unlock();
+		}
 	} else {
+		m_ResourceMutex.unlock();
 		Logger::Log( "Tried to release a resource that was not loaded", "ResourceManager", LogSeverity::WARNING_MSG );
 	}
 }
@@ -176,7 +183,7 @@ size_t ResourceManager::GetTotalResourceSize() const {
 	return m_MemoryUsage;
 }
 
-Resource* ResourceManager::LoadResource( ResourceIdentifier identifier ) {
+Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 	m_PackageMutex.lock();
 	FileContent fileContent = m_PackageManager.GetFileContent( identifier );
 	m_PackageMutex.unlock();
@@ -184,16 +191,15 @@ Resource* ResourceManager::LoadResource( ResourceIdentifier identifier ) {
 	m_ResourceMutex.lock_shared();
 	auto resourceIterator = m_Resources.find( identifier );
 	if ( resourceIterator == m_Resources.end() ) {
-		m_ResourceMutex.unlock_shared();
-
+		m_ResourceMutex.unlock_shared(); 
 		m_ResourceLoaderMutex.lock_shared();
 		auto loaderIterator = m_ResourceLoaderMapping.find( fileContent.Suffix );
 		if ( loaderIterator != m_ResourceLoaderMapping.end() ) {
-			Logger::Log( "Loaded resource with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
 			ResourceEntry resourceEntry;
 			resourceEntry.Resource = loaderIterator->second->LoadResource( fileContent );
 			m_ResourceLoaderMutex.unlock_shared();
 			if ( resourceEntry.Resource ) {
+				Logger::Log( "Loaded resource " + LookupResourceName( identifier ) + " with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
 				m_MemoryUsage += resourceEntry.Resource->GetSize();
 				std::unique_lock<std::shared_timed_mutex>( m_ResourceMutex );
 				if ( m_MemoryUsage > MAX_MEMORY_USAGE ) {
@@ -202,7 +208,7 @@ Resource* ResourceManager::LoadResource( ResourceIdentifier identifier ) {
 				auto it = m_Resources.emplace( identifier, std::move( resourceEntry ) );
 				return it.first->second.Resource;
 			} else {
-				Logger::Log( "Failed to load resource with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+				Logger::Log( "Failed to load resource " + LookupResourceName( identifier ) + " with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
 				return nullptr;
 			}
 		} else {
@@ -214,6 +220,7 @@ Resource* ResourceManager::LoadResource( ResourceIdentifier identifier ) {
 		m_ResourceMutex.unlock_shared();
 		return resourceIterator->second.Resource;
 	}
+	free( fileContent.Content );
 }
 
 void ResourceManager::EvictUntilEnoughMemory() {
@@ -222,6 +229,7 @@ void ResourceManager::EvictUntilEnoughMemory() {
 			m_MemoryUsage -= resourceIt->second.Resource->GetSize();
 			delete resourceIt->second.Resource; // TODOJM: Use correct delete
 			resourceIt = m_Resources.erase( resourceIt );
+			Logger::Log( "Evicting resource " + LookupResourceName( resourceIt->first ), "ResourceManager", LogSeverity::DEBUG_MSG );
 		} else {
 			resourceIt++;
 		}
@@ -232,11 +240,10 @@ void ResourceManager::EvictUntilEnoughMemory() {
 		if ( dumpFile.is_open() ) {
 			dumpFile << "ReferenceCount\tIdentifier" << std::endl;
 			for ( const auto& resource : m_Resources ) {
-				dumpFile << resource.second.ReferenceCount << "\t" << resource.first << std::endl; // TODOJM: Reverse lookup
+				dumpFile << resource.second.ReferenceCount << "\t" << LookupResourceName( resource.first ) << std::endl; // TODOJM: Reverse lookup
 			}
 		}
 		dumpFile.close();
 		assert( false );
 	}
 }
-

@@ -13,3 +13,6 @@
 #else
 #include RESOURCING_ALLOCATION_HEADER
 #endif
+
+#define RESOURCE_REVERSE_LOOKUP
+

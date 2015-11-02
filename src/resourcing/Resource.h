@@ -12,6 +12,7 @@ public:
 	void SetReady();
 	bool IsReady() const;
 	void AddDependency( const ResourceIdentifier identifier );
+	void ReleaseDependencies( );
 private:
 	size_t m_Size = 0;
 	bool m_Ready = false;

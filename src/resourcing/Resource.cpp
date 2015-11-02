@@ -6,9 +6,6 @@ Resource::Resource( ) {
 }
 
 Resource::~Resource( ) {
-	for ( const auto& identifier : m_Dependencies ) {
-		g_ResourceManager.ReleaseResource( identifier );
-	}
 }
 
 size_t Resource::GetSize() const {
@@ -29,4 +26,10 @@ bool Resource::IsReady() const {
 
 void Resource::AddDependency( const ResourceIdentifier identifier ) {
 	m_Dependencies.push_back( identifier );
+}
+
+void Resource::ReleaseDependencies( ) {
+	for ( const auto& identifier : m_Dependencies ) {
+		g_ResourceManager.ReleaseResource( identifier );
+	}
 }

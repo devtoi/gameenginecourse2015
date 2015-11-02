@@ -39,7 +39,7 @@ private:
 	~ResourceManager();
 
 	bool MakeContextCurrent( SDL_Window* window );
-	Resource* LoadResource( ResourceIdentifier identifier );
+	Resource* LoadResource( const ResourceIdentifier identifier );
 	void EvictUntilEnoughMemory( );
 
 	struct ResourceEntry {
