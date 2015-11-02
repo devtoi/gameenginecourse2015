@@ -53,9 +53,6 @@ private:
 	pMap<pString, ResourceLoader*> m_ResourceLoaderMapping;
 	std::shared_timed_mutex m_ResourceLoaderMutex;
 
-	pUnorderedSet<ResourceIdentifier> m_ResourcesBeingLoaded;
-	mutable std::mutex	m_ResourcesBeingLoadedMutex;
-
 	pUnorderedMap<ResourceIdentifier, ResourceEntry> m_Resources;
 	mutable std::mutex	m_PackageMutex;
 	mutable std::shared_timed_mutex	m_ResourceMutex;

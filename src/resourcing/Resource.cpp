@@ -33,3 +33,9 @@ void Resource::ReleaseDependencies( ) {
 		g_ResourceManager.ReleaseResource( identifier );
 	}
 }
+
+void Resource::ReaddDependencies ( ) {
+	for ( const auto& identifier : m_Dependencies ) {
+		g_ResourceManager.AquireResource( identifier );
+	}
+}

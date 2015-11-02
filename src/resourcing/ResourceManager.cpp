@@ -125,6 +125,9 @@ std::future<Resource*> ResourceManager::AquireResource( const ResourceIdentifier
 		// }
 	} else {
 		resourceIterator->second.ReferenceCount++;
+		if ( resourceIterator->second.ReferenceCount == 1 ) {
+			resourceIterator->second.Resource->ReaddDependencies();
+		}
 
 		std::packaged_task<Resource*( Resource* )> task([] ( Resource* resource ) {
 			return resource;
@@ -217,8 +220,13 @@ Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 			return nullptr;
 		}
 	} else {
+		Resource* resource = resourceIterator->second.Resource;
+		resourceIterator->second.ReferenceCount++;
+		if ( resourceIterator->second.ReferenceCount == 1 ) {
+			resource->ReaddDependencies();
+		}
 		m_ResourceMutex.unlock_shared();
-		return resourceIterator->second.Resource;
+		return resource;
 	}
 	free( fileContent.Content );
 }
