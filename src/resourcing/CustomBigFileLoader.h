@@ -16,8 +16,9 @@ private:
 	struct PacketAsset {
 		uint64_t	Offset;
 		uint64_t	Size;
-		std::string	OriginalFilePath;	// Debug info.
 		std::string	Suffix;
+		std::string	OriginalFilePath;	// Debug info.
+		std::string	GUI;				// Debug info.
 	};
 
 	std::string											m_PacketPath	= "";

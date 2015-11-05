@@ -39,6 +39,7 @@ bool CustomBigFileLoader::Initialize( const pString& path ) {
 		FileReadString( fileStream, packetAsset.OriginalFilePath );
 		FileReadInt( fileStream, packetAsset.Offset );
 		FileReadInt( fileStream, packetAsset.Size );
+		packetAsset.GUI = gui;
 
 		size_t dotPos = packetAsset.OriginalFilePath.find_last_of( "." );
 		if ( dotPos != std::string::npos ) {
@@ -76,10 +77,8 @@ FileContent CustomBigFileLoader::GetFileContent( ResourceIdentifier identifier )
 	fileContent.Suffix	= assetInfo.Suffix;
 	fileContent.Loaded	= true;
 
-	delete [] buffer;
-
 	fileStream.close();
-	return INVALID_FILE_CONTENT;
+	return fileContent;
 }
 
 void CustomBigFileLoader::FileReadInt( std::fstream& fileStream, uint64_t& outValue ) {
