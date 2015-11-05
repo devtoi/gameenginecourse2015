@@ -5,6 +5,7 @@
 #include <zzip/zzip.h>
 #include <utility/Config.h>
 #include <utility/Logger.h>
+#include <memory/DrinQStackAllocator.h>
 
 BigZipFileLoader::~BigZipFileLoader() {
 	if( m_Dir ) { 
@@ -29,7 +30,7 @@ void BigZipFileLoader::Recurse( Config& cfg, std::string scopeString, rMap<pStri
 	}
 }
 
-bool BigZipFileLoader::Initialize( const pString& path ) {
+bool BigZipFileLoader::Initialize( const pString& path, DrinQStackAllocator* allocator ) {
 	
 	m_Dir = zzip_dir_open( path.c_str(), 0 );
 	if ( !m_Dir ) {
@@ -45,7 +46,12 @@ bool BigZipFileLoader::Initialize( const pString& path ) {
 	zzip_file_stat( fp, &stats );
 
 	int length = stats.st_size;
-	char* buffer = new char[length];
+
+	char* buffer;
+	//assert( allocator->GetMarker() + allocator->GetSize() < length );
+	size_t marker = allocator->GetMarker();
+	buffer = (char*)allocator->Allocate( length );
+
 	buffer[length] = '\0';
 	
 	zzip_ssize_t len = zzip_file_read( fp, buffer, length );
@@ -59,10 +65,13 @@ bool BigZipFileLoader::Initialize( const pString& path ) {
 	rString scopeString = "";
 	Recurse( cfg, scopeString, assetScope );
 
+	allocator->Unwind( marker );
+	//delete buffer;
+
 	return result;
 }
 
-FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier ) {
+FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier, DrinQStackAllocator* allocator ) {
 	if( !m_Dir ) {
 		Logger::Log( "Tried to get content from zip archive that is not loaded", "ZipLoader", LogSeverity::ERROR_MSG );
 		return INVALID_FILE_CONTENT;
@@ -84,7 +93,10 @@ FileContent BigZipFileLoader::GetFileContent( ResourceIdentifier identifier ) {
 		zzip_file_stat( fp, &stats );
 
 		int length = stats.st_size;
-		void* buffer = malloc( length );
+
+		void* buffer = nullptr;
+		//assert(  allocator->GetMarker() + allocator->GetSize() < length );
+		buffer = allocator->Allocate( length );
 
 		zzip_ssize_t len = zzip_file_read( fp, buffer, length );
 

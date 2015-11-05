@@ -5,6 +5,7 @@
 #include "loader/ModelLoader.h"
 #include "loader/TextureLoader.h"
 #include <utility/Logger.h>
+#include <memory/DrinQStackAllocator.h>
 #include "ModelBank.h"
 // glcontext handling
 #include <utility/PlatformDefinitions.h>
@@ -34,6 +35,9 @@ ResourceManager& ResourceManager::GetInstance() {
 }
 
 ResourceManager::ResourceManager() {
+	m_Allocator = new DrinQStackAllocator( STACK_ALLOCATOR_SIZE );
+	m_PackageManager = new PackageManager( m_Allocator );
+
 	m_MemoryUsage = 0;
 	// LSR new for all resource loaders
 	AddResourceLoader( std::make_unique<DDSLoader>(),	  { "dds" } );
@@ -48,6 +52,7 @@ ResourceManager::~ResourceManager() {
 	m_ResourceLoaderMapping.clear();
 	UnloadAllResources();
 	m_ThreadPool.Shutdown();
+	delete m_Allocator;
 }
 
 bool ResourceManager::MakeContextCurrent( SDL_Window* window ) {
@@ -188,7 +193,8 @@ size_t ResourceManager::GetTotalResourceSize() const {
 
 Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 	m_PackageMutex.lock();
-	FileContent fileContent = m_PackageManager.GetFileContent( identifier );
+	size_t marker = m_Allocator->GetMarker();
+	FileContent fileContent = m_PackageManager->GetFileContent( identifier, m_Allocator );
 	m_PackageMutex.unlock();
 
 	m_ResourceMutex.lock_shared();
@@ -203,6 +209,7 @@ Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 			m_ResourceLoaderMutex.unlock_shared();
 			if ( resourceEntry.Resource ) {
 				Logger::Log( "Loaded resource " + LookupResourceName( identifier ) + " with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::DEBUG_MSG ); // TODOJM: Reverse lookup name
+				m_Allocator->Unwind( marker );
 				m_MemoryUsage += resourceEntry.Resource->GetSize();
 				std::unique_lock<std::shared_timed_mutex>( m_ResourceMutex );
 				if ( m_MemoryUsage > MAX_MEMORY_USAGE ) {
@@ -212,11 +219,13 @@ Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 				return it.first->second.Resource;
 			} else {
 				Logger::Log( "Failed to load resource " + LookupResourceName( identifier ) + " with suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+				m_Allocator->Unwind( marker );
 				return nullptr;
 			}
 		} else {
 			m_ResourceLoaderMutex.unlock_shared();
 			Logger::Log( "Failed to find resource loader for suffix: " + fileContent.Suffix, "ResourceManager", LogSeverity::ERROR_MSG );
+			m_Allocator->Unwind( marker );
 			return nullptr;
 		}
 	} else {
@@ -225,10 +234,13 @@ Resource* ResourceManager::LoadResource( const ResourceIdentifier identifier ) {
 		if ( resourceIterator->second.ReferenceCount == 1 ) {
 			resource->ReaddDependencies();
 		}
+		m_Allocator->Unwind( marker );
 		m_ResourceMutex.unlock_shared();
 		return resource;
 	}
-	free( fileContent.Content );
+
+	
+	//free( fileContent.Content );
 }
 
 void ResourceManager::EvictUntilEnoughMemory() {

@@ -4,10 +4,12 @@
 #include <stdint.h>
 #include "ResourcingLibraryDefine.h"
 
+class DrinQStackAllocator;
+
 class CustomBigFileLoader : public Package {
 public:
-	RESOURCING_API bool				Initialize( const pString& path ) override;
-	RESOURCING_API FileContent		GetFileContent( ResourceIdentifier identifier ) override;
+	RESOURCING_API bool				Initialize( const pString& path, DrinQStackAllocator* allocator ) override;
+	RESOURCING_API FileContent		GetFileContent( ResourceIdentifier identifier, DrinQStackAllocator* allocator ) override;
 
 private:
 	void							FileReadInt( std::fstream& fileStream, uint64_t& outValue );

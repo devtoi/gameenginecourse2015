@@ -1,10 +1,11 @@
 #include "CustomBigFileLoader.h"
+#include <memory/DrinQStackAllocator.h>
 
 #include <fstream>
 
 const std::string gPacketHeaderVersionInfo = "CustomBigFile v0.1";
 
-bool CustomBigFileLoader::Initialize( const pString& path ) {
+bool CustomBigFileLoader::Initialize( const pString& path, DrinQStackAllocator* allocator ) {
 	m_PacketPath = path;
 
 	std::fstream fileStream;
@@ -14,7 +15,9 @@ bool CustomBigFileLoader::Initialize( const pString& path ) {
 		return false;
 	}
 
-	char* buffer = new char[gPacketHeaderVersionInfo.size()];
+	size_t marker = allocator->GetMarker();
+	char* buffer = (char*)allocator->Allocate( gPacketHeaderVersionInfo.size() );
+	//char* buffer = new char[gPacketHeaderVersionInfo.size()];
 	fileStream.read( buffer, gPacketHeaderVersionInfo.size() );
 	for ( size_t i = 0; i < gPacketHeaderVersionInfo.size(); ++i ) {
 		if ( buffer[i] != gPacketHeaderVersionInfo[i] ) {
@@ -22,7 +25,8 @@ bool CustomBigFileLoader::Initialize( const pString& path ) {
 			return false;
 		}
 	}
-	delete [] buffer;
+	//delete [] buffer;
+	allocator->Unwind( marker );
 
 	uint64_t assetCount = 0;
 	FileReadInt( fileStream, assetCount );
@@ -53,7 +57,7 @@ bool CustomBigFileLoader::Initialize( const pString& path ) {
 	return true;
 }
 
-FileContent CustomBigFileLoader::GetFileContent( ResourceIdentifier identifier ) {
+FileContent CustomBigFileLoader::GetFileContent( ResourceIdentifier identifier, DrinQStackAllocator* allocator ) {
 	auto indexEntry = m_PackageIndex.find( identifier );
 	if ( indexEntry == m_PackageIndex.end() ) {
 		return INVALID_FILE_CONTENT;
@@ -67,7 +71,8 @@ FileContent CustomBigFileLoader::GetFileContent( ResourceIdentifier identifier )
 		return INVALID_FILE_CONTENT;
 	}
 
-	char* buffer = new char[assetInfo.Size];
+	//char* buffer = new char[assetInfo.Size];
+	char* buffer = (char*)allocator->Allocate( assetInfo.Size );
 	fileStream.seekg( assetInfo.Offset );
 	fileStream.read( buffer, assetInfo.Size );
 	

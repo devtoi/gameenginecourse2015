@@ -16,6 +16,9 @@
 
 class Resource;
 class ResourceLoader;
+class DrinQStackAllocator;
+
+#define STACK_ALLOCATOR_SIZE 1024 * 1024 * 40 //40 MB
 
 class ResourceManager {
 public:
@@ -58,7 +61,8 @@ private:
 	mutable std::shared_timed_mutex	m_ResourceMutex;
 	std::thread			m_WorkerThread;
 
-	PackageManager m_PackageManager;
+	DrinQStackAllocator* m_Allocator;
+	PackageManager* m_PackageManager;
 
 	std::atomic_size_t m_MemoryUsage;
 

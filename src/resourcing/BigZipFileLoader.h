@@ -9,13 +9,15 @@
 
 typedef struct zzip_dir	ZZIP_DIR;
 
+class DrinQStackAllocator;
+
 class BigZipFileLoader : public Package {
 public:
 	~BigZipFileLoader();
 
-	RESOURCING_API bool Initialize( const pString& path ) override;
+	RESOURCING_API bool Initialize( const pString& path, DrinQStackAllocator* allocator  ) override;
 
-	RESOURCING_API FileContent GetFileContent( ResourceIdentifier identifier ) override;
+	RESOURCING_API FileContent GetFileContent( ResourceIdentifier identifier, DrinQStackAllocator* allocator  ) override;
 
 private:
 	void Recurse( Config& cfg, std::string scopeString, rMap<pString, Config::ConfigEntry*>* scope );
